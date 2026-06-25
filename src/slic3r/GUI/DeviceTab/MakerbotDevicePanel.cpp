@@ -13,6 +13,8 @@
 #include <wx/log.h>
 #include <boost/log/trivial.hpp>
 #include <algorithm>
+#include <fstream>
+#include <cstdlib>
 
 namespace Slic3r {
 namespace GUI {
@@ -107,6 +109,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_z_offset_slider = nullptr;
     m_z_offset_text = nullptr;
     m_btn_z_calib = m_btn_load_fil = m_btn_unload_fil = m_btn_firmware_update = nullptr;
+    m_btn_start_print = nullptr;
 
     // Eine offene Sitzung gehört zum VORHERIGEN Drucker - sonst würden wir
     // nach einem Druckerwechsel stillschweigend weiter mit dem alten Host
@@ -239,9 +242,14 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
 
     m_main_sizer->Add(controls_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
 
+    // "Druck starten" in eigener Zeile, optisch hervorgehoben (voller Breite).
+    m_btn_start_print = new wxButton(this, wxID_ANY, _L("Start Print"));
+    m_main_sizer->Add(m_btn_start_print, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_load_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("load_filament"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
+    m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
 }
 
 // -----------------------------------------------------------------------------------------
@@ -383,7 +391,49 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
 
     nlohmann::json resp;
     bool ok = false;
-    if (action_id == "z_calibration") {
+    if (action_id == "start_print") {
+        // remote_path aus der pending-Datei lesen (von upload() geschrieben).
+        std::string host;
+        if (const auto* opt = m_active_config->option<ConfigOptionString>("print_host"))
+            host = opt->value;
+        const char* home = std::getenv("HOME");
+        std::string base = home ? std::string(home) : std::string("/tmp");
+        std::string safe = host;
+        for (char& c : safe) if (c == '/' || c == ':' || c == '\\') c = '_';
+        const std::string pending = base + "/.config/OrcaSlicer/makerbot_pending/" + safe + ".txt";
+
+        std::string remote_path;
+        { std::ifstream pf(pending); if (pf) std::getline(pf, remote_path); }
+        if (remote_path.empty()) {
+            wxMessageDialog(this,
+                _L("No uploaded file found for this printer yet.\n\n"
+                   "Slice a model and use \"Print\" first to upload it, "
+                   "then start the print here."),
+                _L("Nothing to print"), wxOK | wxICON_INFORMATION).ShowModal();
+            return;
+        }
+
+        // Kamera-Sichtpruefung durch den Nutzer + Warnhinweis.
+        wxMessageDialog confirm(this,
+            _L("Please check the live camera image and make sure the build "
+               "plate is completely empty.\n\n"
+               "WARNING: If any object or residual material is still on the "
+               "plate, the print head can be damaged or the print will fail.\n\n"
+               "Is the build plate clear?"),
+            _L("Check Build Plate"), wxYES_NO | wxICON_WARNING);
+        confirm.SetYesNoLabels(_L("Build plate is clear - Start Print"), _L("Cancel"));
+        if (confirm.ShowModal() != wxID_YES)
+            return;
+
+        nlohmann::json params;
+        params["filepath"] = remote_path;
+        params["transfer_wait"] = true; // neue Firmware (newPrintFlow)
+        ok = m_kaiten_session->call("print", params, resp, error, 30);
+        if (ok) {
+            wxMessageDialog(this, _L("Print started."),
+                _L("Print"), wxOK | wxICON_INFORMATION).ShowModal();
+        }
+    } else if (action_id == "z_calibration") {
         ok = m_kaiten_session->call("calibrate_z_offset", nlohmann::json::object(), resp, error);
     } else if (action_id == "load_filament") {
         // tool_index 0: einziger bestätigter Fall im Capture (Single-

@@ -54,6 +54,7 @@ private:
     wxButton* m_btn_z_calib     = nullptr;
     wxButton* m_btn_load_fil    = nullptr;
     wxButton* m_btn_unload_fil  = nullptr;
+    wxButton* m_btn_start_print = nullptr;
 
     // --- Firmware-Flash via avrdude (nur Legacy: Cupcake...Replicator 2X) ---
     wxButton* m_btn_firmware_update = nullptr;
