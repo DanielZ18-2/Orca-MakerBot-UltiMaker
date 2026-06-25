@@ -142,9 +142,18 @@ void BirdwingHandshakeDialog::on_auth_result(bool success,
                               "Orca Slicer is now paired with your MakerBot."));
         m_status->SetForegroundColour(wxColour(0, 160, 80));
         m_status->Refresh();
-        // Close after short delay so user can see success message
-        wxMilliSleep(1500);
-        EndModal(wxID_OK);
+        m_status->Update();   // force immediate repaint of the success message
+        // Close after a short delay WITHOUT blocking the GUI thread, so the
+        // success message is actually painted. wxMilliSleep() here froze the
+        // event loop and the message never rendered.
+        auto* close_timer = new wxTimer();
+        close_timer->Bind(wxEVT_TIMER, [this, close_timer](wxTimerEvent&) {
+            close_timer->Stop();
+            delete close_timer;
+            if (IsModal())
+                EndModal(wxID_OK);
+        });
+        close_timer->StartOnce(1500);
     } else {
         m_status->SetLabel(wxString::FromUTF8("❌  " + token_or_error));
         m_status->SetForegroundColour(wxColour(220, 60, 60));

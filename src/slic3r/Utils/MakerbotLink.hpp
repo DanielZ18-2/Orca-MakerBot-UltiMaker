@@ -38,7 +38,8 @@ public:
     bool open(const std::string& host, const std::string& access_token, std::string& error);
 
     bool call(const std::string& method, const nlohmann::json& params,
-              nlohmann::json& out, std::string& error, int timeout_s = 5);
+              nlohmann::json& out, std::string& error, int timeout_s = 5,
+              const std::string* extra_raw = nullptr);
 
     bool is_open() const;
     void close();
@@ -120,10 +121,27 @@ public:
 
 private:
     std::string m_host;
-    std::string m_access_token;
+    std::string m_access_token;   // Alt-Format (nur falls kein Refresh moeglich)
     std::string m_client_id;
+    std::string m_client_secret;  // fuer Token-Refresh bei Wiederverbindung
+    std::string m_birdwing_code;  // fuer Token-Refresh bei Wiederverbindung
     bool        m_is_birdwing { false };
     int         m_port        { LAVA_PORT };
+
+    // Holt frischen onetime-access_token via HTTPS:443 (Wiederverbindung)
+    bool refresh_access_token(std::string& token_out, std::string& error) const;
+
+    // Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) auf einer
+    // bereits offenen + authentifizierten Session. remote_path z.B.
+    // "/home/current_thing/<name>.makerbot". Verifiziert gegen echten Z18.
+    bool kaiten_upload_file(KaitenSession& session,
+                            const std::string& local_path,
+                            const std::string& remote_path,
+                            ProgressFn prg_fn, std::string& error) const;
+    // Startet den Druck der bereits hochgeladenen Datei.
+    bool kaiten_print(KaitenSession& session,
+                      const std::string& remote_path,
+                      bool new_flow, std::string& error) const;
 
     // HTTP RPC for Lava/Method
     bool lava_rpc(const std::string&    method,

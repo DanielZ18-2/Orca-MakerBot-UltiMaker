@@ -9,6 +9,8 @@
 //   Plain HTTP JSON-RPC on port 2222 via libcurl (Http class).
 
 #include "MakerbotLink.hpp"
+#include <zlib.h>
+#include <fstream>
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -156,36 +158,102 @@ void KaitenSession::close()
 }
 
 bool KaitenSession::call(const std::string& method, const nlohmann::json& params,
-                          nlohmann::json& out, std::string& error, int timeout_s)
+                          nlohmann::json& out, std::string& error, int timeout_s,
+                          const std::string* extra_raw)
 {
     if (!is_open()) { error = "KaitenSession is not connected."; return false; }
 
+    const int req_id = m_impl->next_id++;
     const nlohmann::json request = {
-        {"jsonrpc", "2.0"}, {"method", method}, {"params", params}, {"id", m_impl->next_id++}
+        {"jsonrpc", "2.0"}, {"method", method}, {"params", params}, {"id", req_id}
     };
 
     try {
-        const std::string msg = request.dump() + "\r\n";
-        asio::write(m_impl->socket, asio::buffer(msg));
-
-        asio::streambuf buf;
-        boost::system::error_code ec;
-        m_impl->socket.non_blocking(false);
-        asio::read_until(m_impl->socket, buf, '\n', ec);
-        if (ec) { error = ec.message(); close(); return false; }
-
-        std::istream is(&buf);
-        std::string line;
-        std::getline(is, line);
-        boost::algorithm::trim(line);
-        if (line.empty()) { error = "Empty response from MakerBot (port 9999)"; return false; }
-
-        out = nlohmann::json::parse(line);
-        if (out.contains("error")) {
-            error = out["error"].value("message", "RPC error");
-            return false;
+        if (extra_raw != nullptr) {
+            // put_raw: nacktes JSON OHNE \r\n, dann sofort die Rohbytes
+            // (verifiziert: ein \r\n wuerde als erste 2 Block-Bytes
+            // fehlinterpretiert -> CRC falsch / Timeout).
+            const std::string head = request.dump();
+            asio::write(m_impl->socket, asio::buffer(head));
+            asio::write(m_impl->socket, asio::buffer(*extra_raw));
+        } else {
+            const std::string msg = request.dump() + "\r\n";
+            asio::write(m_impl->socket, asio::buffer(msg));
         }
-        return true;
+
+        // Kaiten rahmt JSON-Nachrichten per BRACE-COUNTING, NICHT per Newline
+        // (verifiziert gegen conveyor/json_reader.py, MakerWare 3.10.1).
+        // Ausserdem sendet der Drucker die Antwort als "system_notification"
+        // (params.info), nicht zwingend als result. Wir lesen ein komplettes
+        // Top-Level-JSON-Objekt (Klammern zaehlen), bis es geschlossen ist.
+        m_impl->socket.non_blocking(false);
+        const auto t_start = std::chrono::steady_clock::now();
+
+        // Antwort lesen, dabei unaufgeforderte system_notification-Nachrichten
+        // (Telemetrie-Push des Z18) ueberspringen: nur die Nachricht mit
+        // unserer req_id - oder eine mit result/error und ohne fremde id -
+        // gilt als Antwort. Verifiziert gegen kaiten_upload_probe.py.
+        while (true) {
+            std::string raw;
+            {
+                boost::system::error_code ec;
+                int depth = 0; bool in_str = false, escaped = false, started = false;
+                char c;
+                while (true) {
+                    if (std::chrono::steady_clock::now() - t_start
+                            > std::chrono::seconds(timeout_s)) {
+                        error = "Timeout reading from MakerBot (port 9999)";
+                        close(); return false;
+                    }
+                    size_t got = m_impl->socket.read_some(asio::buffer(&c, 1), ec);
+                    if (ec) { error = ec.message(); close(); return false; }
+                    if (got == 0) continue;
+                    if (!started) {
+                        if (c == '{' || c == '[') { started = true; depth = 1; raw.push_back(c); }
+                        continue; // Whitespace/Newline vor dem Objekt ignorieren
+                    }
+                    raw.push_back(c);
+                    if (in_str) {
+                        if (!escaped && c == '"') in_str = false;
+                        escaped = (c == '\\') && !escaped;
+                        continue;
+                    }
+                    if (c == '"') in_str = true;
+                    else if (c == '{' || c == '[') depth++;
+                    else if (c == '}' || c == ']') {
+                        depth--;
+                        if (depth == 0) break; // komplettes Objekt gelesen
+                    }
+                }
+            }
+            if (raw.empty()) { error = "Empty response from MakerBot (port 9999)"; return false; }
+
+            nlohmann::json msg = nlohmann::json::parse(raw);
+
+            // Gehoert diese Nachricht zu unserem Request?
+            bool is_our_response = false;
+            if (msg.contains("id") && !msg["id"].is_null()) {
+                // id-traegt -> nur akzeptieren, wenn sie unserer req_id entspricht
+                try { is_our_response = (msg["id"].get<long long>() == (long long)req_id); }
+                catch (...) { is_our_response = false; }
+            } else if (msg.contains("result") || msg.contains("error")) {
+                // Antwort ohne id (manche Firmware) -> als unsere Antwort werten
+                is_our_response = true;
+            }
+            if (!is_our_response) {
+                // unaufgeforderte Notification (z.B. system_notification) -> skip
+                continue;
+            }
+
+            out = std::move(msg);
+            if (out.contains("error") && !out["error"].is_null()) {
+                error = out["error"].is_object()
+                            ? out["error"].value("message", "RPC error")
+                            : std::string("RPC error");
+                return false;
+            }
+            return true;
+        }
     } catch (const std::exception& e) {
         error = e.what();
         close();
@@ -210,22 +278,20 @@ bool KaitenSession::open(const std::string& host, const std::string& access_toke
         return false;
     }
 
-    nlohmann::json resp;
-    if (!call("handshake", nlohmann::json::object(), resp, error, 10)) {
-        close();
-        return false;
-    }
-
+    // KEIN handshake! Verifiziert gegen conveyor/machine/birdwing.py:
+    // authenticate_connection() ruft direkt authenticate, ohne handshake.
+    // Der handshake gehoert nur zum erstmaligen Client-Thread-Aufbau und
+    // wird vom Drucker auf dem Wiederverbindungs-Pfad nicht beantwortet
+    // (fuehrte zum Timeout). Der access_token ist ein ONETIME-Token, der
+    // unmittelbar vorher per HTTPS:443 frisch geholt wurde (siehe
+    // open_kaiten_session -> refresh_access_token).
     if (access_token.empty()) {
-        // Re-Authentifizierung ohne vorherige Erstauthentifizierung (SSL/
-        // 12309) ergibt keinen Sinn in diesem Protokoll - klar scheitern
-        // lassen statt eine vermutlich vom Z18 ohnehin abgelehnte,
-        // unauthentifizierte Session als "offen" zu melden.
-        error = "No access_token available - printer must be paired (Erstauthentifizierung) first.";
+        error = "No fresh access_token - token refresh (HTTPS:443) failed.";
         close();
         return false;
     }
 
+    nlohmann::json resp;
     const nlohmann::json auth_params = {{"access_token", access_token}};
     if (!call("authenticate", auth_params, resp, error, 10)) {
         close();
@@ -247,10 +313,26 @@ MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
     if (const auto* opt = config->opt<ConfigOptionString>("printhost_password"))
         stored_auth = opt->value;
 
-    const size_t colon = stored_auth.find(':');
-    if (colon != std::string::npos) {
-        m_client_id    = stored_auth.substr(0, colon);
-        m_access_token = stored_auth.substr(colon + 1);
+    // Format (NEU, fuer Token-Refresh bei Wiederverbindung):
+    //   "OrcaSlicer:<client_secret>:<birdwing_code>"
+    // Alt-Format (nur access_token) wird noch toleriert: "OrcaSlicer:<token>"
+    {
+        std::vector<std::string> parts;
+        size_t start = 0, pos;
+        while ((pos = stored_auth.find(':', start)) != std::string::npos) {
+            parts.push_back(stored_auth.substr(start, pos - start));
+            start = pos + 1;
+        }
+        parts.push_back(stored_auth.substr(start));
+        if (parts.size() >= 3) {
+            m_client_id     = parts[0];                 // "OrcaSlicer"
+            m_client_secret = parts[1];                 // orca_xxxxxxxx
+            m_birdwing_code = parts[2];                 // 32-stelliger Code
+        } else if (parts.size() == 2) {
+            // Alt-Format: nur access_token (kein Refresh moeglich)
+            m_client_id    = parts[0];
+            m_access_token = parts[1];
+        }
     }
 
     for (const auto& prefix : { "https://", "http://" })
@@ -313,17 +395,156 @@ bool MakerbotLink::birdwing_rpc(const std::string&    method,
 }
 
 
+// ── Token-Refresh (HTTPS:443) ────────────────────────────────────────────────
+// Holt einen frischen onetime-access_token aus client_secret + birdwing_code.
+// Verifiziert gegen conveyor get_birdwing_token / do_auth_get('token', ...).
+bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& error) const
+{
+    if (m_host.empty()) { error = "No IP address configured."; return false; }
+    if (m_client_secret.empty() || m_birdwing_code.empty()) {
+        error = "Missing client_secret/birdwing_code - printer must be re-paired.";
+        return false;
+    }
+
+    const std::string url = "https://" + m_host + ":443/auth?response_type=token"
+        "&client_id=MakerWare&client_secret=" + Http::url_encode(m_client_secret) +
+        "&context=jsonrpc&auth_code=" + Http::url_encode(m_birdwing_code);
+
+    std::string body, err;
+    bool ok = false;
+    Http::get(url)
+        .timeout_connect(10)
+        .timeout_max(15)
+        .tls_verify(false) // Z18 self-signed cert
+        .on_complete([&](std::string resp_body, unsigned) { body = std::move(resp_body); ok = true; })
+        .on_error([&](std::string, std::string e, unsigned) { err = e; })
+        .perform_sync();
+
+    if (!ok) { error = "Token refresh (HTTPS:443) failed: " + err; return false; }
+
+    nlohmann::json j;
+    try { j = nlohmann::json::parse(body); }
+    catch (...) { error = "Unexpected token response: " + body; return false; }
+
+    if (j.value("status", "") == "success" && j.contains("access_token")) {
+        token_out = j["access_token"].get<std::string>();
+        BOOST_LOG_TRIVIAL(info) << "MakerbotLink: refreshed access_token via HTTPS:443";
+        return true;
+    }
+    error = "Token refresh rejected: " + body;
+    return false;
+}
+
+
+// ── Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) ────────────
+// Verifiziert gegen echten Z18 (kaiten_upload_probe.py): JSON-RPC ueber 9999,
+// put_raw sendet nacktes JSON + direkt 32KB-Rohbytes, put_term mit CRC32.
+bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
+                                      const std::string& local_path,
+                                      const std::string& remote_path,
+                                      ProgressFn prg_fn, std::string& error) const
+{
+    namespace fs = boost::filesystem;
+    const uint64_t total = (uint64_t)fs::file_size(local_path);
+    const int block_size = 32768;
+    // file_id: 3 Bytes base64, hier konstant 0 -> "AAAA" (eine Datei pro Session)
+    const std::string file_id = "AAAA";
+
+    // put_init (erst mit length; bei -32602 ohne)
+    nlohmann::json resp;
+    nlohmann::json p_init = {
+        {"file_path", remote_path}, {"file_id", file_id},
+        {"block_size", block_size}, {"length", total}
+    };
+    if (!session.call("put_init", p_init, resp, error, 30)) {
+        // evtl. length nicht akzeptiert -> ohne length erneut
+        nlohmann::json p2 = {
+            {"file_path", remote_path}, {"file_id", file_id}, {"block_size", block_size}
+        };
+        if (!session.call("put_init", p2, resp, error, 30)) {
+            error = "put_init failed: " + error;
+            return false;
+        }
+    }
+
+    std::ifstream f(local_path, std::ios::binary);
+    if (!f) { error = "cannot open " + local_path; return false; }
+
+    uint32_t crc = crc32(0L, Z_NULL, 0);
+    uint64_t sent = 0;
+    std::vector<char> buf(block_size);
+    while (f) {
+        f.read(buf.data(), block_size);
+        std::streamsize n = f.gcount();
+        if (n <= 0) break;
+        const std::string block(buf.data(), (size_t)n);
+        // put_raw: params [file_id, len], extra = Rohbytes (ohne \r\n)
+        nlohmann::json p_raw = nlohmann::json::array({file_id, (int)n});
+        if (!session.call("put_raw", p_raw, resp, error, 30, &block)) {
+            error = "put_raw failed: " + error;
+            return false;
+        }
+        crc = crc32(crc, (const Bytef*)block.data(), (uInt)n);
+        sent += (uint64_t)n;
+        if (prg_fn) {
+            bool cancel = false;
+            prg_fn(Http::Progress(total, 0, sent, 0, ""), cancel);
+            if (cancel) { error = "cancelled"; return false; }
+        }
+        if ((size_t)n < (size_t)block_size) break;
+    }
+
+    nlohmann::json p_term = {
+        {"file_id", file_id}, {"length", sent}, {"crc", (uint64_t)crc}
+    };
+    if (!session.call("put_term", p_term, resp, error, 30)) {
+        error = "put_term failed: " + error;
+        return false;
+    }
+    BOOST_LOG_TRIVIAL(info) << "MakerbotLink: kaiten upload OK (" << sent << " bytes)";
+    return true;
+}
+
+bool MakerbotLink::kaiten_print(KaitenSession& session,
+                                const std::string& remote_path,
+                                bool new_flow, std::string& error) const
+{
+    nlohmann::json params;
+    if (new_flow) {
+        params["filepath"] = remote_path;
+        params["transfer_wait"] = true;
+    } else {
+        params["filepath"] = boost::filesystem::path(remote_path).filename().string();
+    }
+    nlohmann::json resp;
+    if (!session.call("print", params, resp, error, 30)) {
+        error = "print failed: " + error;
+        return false;
+    }
+    BOOST_LOG_TRIVIAL(info) << "MakerbotLink: print started for " << remote_path;
+    return true;
+}
+
+
 // ── Plaintext kaiten session (port 9999) ─────────────────────────────────────
 
 std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& error) const
 {
     if (m_host.empty()) { error = "No IP address configured."; return nullptr; }
 
-    // Re-Authentifizierung über Port 9999 setzt eine erfolgte Erstauthenti-
-    // fizierung über SSL/12309 voraus (siehe birdwing_authorize() /
-    // BirdwingHandshakeDialog). Ohne gespeicherten Token gar nicht erst
-    // versuchen - das spart eine verwirrende RPC-Fehlermeldung weiter unten.
-    if (m_access_token.empty()) {
+    // Wiederverbindung: PRO Verbindung einen frischen onetime-access_token
+    // ueber HTTPS:443 aus client_secret + birdwing_code holen (verifiziert
+    // gegen conveyor get_birdwing_token). Der beim Pairing erhaltene Token
+    // ist bereits verbraucht und NICHT wiederverwendbar.
+    std::string fresh_token;
+    if (!m_client_secret.empty() && !m_birdwing_code.empty()) {
+        if (!refresh_access_token(fresh_token, error))
+            return nullptr;
+    } else if (!m_access_token.empty()) {
+        // Alt-Format ohne Refresh-Zutaten: einmaliger Versuch mit altem Token
+        // (schlaegt i.d.R. fehl -> Hinweis zum Neu-Pairen).
+        fresh_token = m_access_token;
+    } else {
         error = "Printer not paired yet. Pair it first in Printer Settings "
                 "(confirm the one-time handshake on the printer's handwheel), "
                 "then reopen the Device tab.";
@@ -331,7 +552,7 @@ std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& er
     }
 
     auto session = std::make_shared<KaitenSession>();
-    if (!session->open(m_host, m_access_token, error))
+    if (!session->open(m_host, fresh_token, error))
         return nullptr;
 
     BOOST_LOG_TRIVIAL(info) << "MakerbotLink: opened plaintext kaiten session on "
@@ -507,8 +728,13 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
         return BirdwingAuthResult::ConnectionFailed;
     }
     if (j3.value("status", "") == "success" && j3.contains("access_token")) {
-        error_or_token = j3["access_token"].get<std::string>();
-        BOOST_LOG_TRIVIAL(info) << "MakerbotLink birdwing_authorize: paired successfully, token obtained.";
+        // NEU: statt des (verbrauchten) access_token geben wir die dauerhaft
+        // wiederverwendbaren Zutaten zurueck: client_secret + birdwing_code.
+        // Format wird vom Dialog als printhost_password gespeichert:
+        //   "<client_secret>:<birdwing_code>"
+        // (Das "OrcaSlicer:"-Praefix setzt der Dialog davor.)
+        error_or_token = client_secret + ":" + birdwing_code;
+        BOOST_LOG_TRIVIAL(info) << "MakerbotLink birdwing_authorize: paired successfully (secret+code stored for reconnect).";
         return BirdwingAuthResult::Success;
     }
 
@@ -614,15 +840,33 @@ bool MakerbotLink::upload(PrintHostUpload upload_data,
     std::string err;
 
     if (m_is_birdwing) {
-        // For Birdwing uploads, the one_time_token must already be stored
-        // (obtained via the Handshake Dialog in PhysicalPrinterDialog).
-        // Here we just verify and proceed.
-        info_fn("", "Verifying MakerBot Birdwing connection...");
-        nlohmann::json resp;
-        if (!birdwing_rpc("handshake", nlohmann::json::object(), resp, err, 10)) {
-            err_fn("MakerBot Birdwing connection failed: " + err);
+        // Birdwing-Upload ueber Kaiten (port 9999): Token-Refresh ->
+        // authenticate -> put_init/raw/term -> print. Verifiziert gegen Z18.
+        info_fn("", "Connecting to MakerBot Birdwing...");
+        std::shared_ptr<KaitenSession> session = open_kaiten_session(err);
+        if (!session) { err_fn("MakerBot Birdwing connection failed: " + err); return false; }
+
+        const boost::filesystem::path src(upload_data.source_path.string());
+        const std::string name = src.filename().string();
+        // Firmware-Flow: neuere Firmware nutzt /home/current_thing/
+        const std::string remote_path = "/home/current_thing/" + name;
+
+        info_fn("", "Uploading .makerbot to printer...");
+        if (!kaiten_upload_file(*session, src.string(), remote_path, prg_fn, err)) {
+            err_fn("Upload failed: " + err);
             return false;
         }
+
+        info_fn("", "Starting print...");
+        if (!kaiten_print(*session, remote_path, /*new_flow=*/true, err)) {
+            err_fn("Print start failed: " + err);
+            return false;
+        }
+
+        info_fn("", "Print started.");
+        bool cancel = false;
+        prg_fn(Http::Progress(0, 0, 100, 100, ""), cancel);
+        return true;
     } else {
         info_fn("", "Authenticating with MakerBot Lava/Method...");
         nlohmann::json resp;

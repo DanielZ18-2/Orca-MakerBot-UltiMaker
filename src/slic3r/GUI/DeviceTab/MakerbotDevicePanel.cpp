@@ -514,7 +514,18 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
     //   result.toolheads.extruder[] : {current_temperature, target_temperature, tool_id, error}
     //   result.toolheads.chamber[]  : {current_temperature, door_open}
     try {
-        const auto& result = resp.at("result");
+        // Der Z18 antwortet als "system_notification" mit Daten unter
+        // params.info (verifiziert via kaiten_fullflow.py). Fallback auf
+        // result fuer evtl. andere Firmware-Staende.
+        const nlohmann::json* infop = nullptr;
+        if (resp.contains("params") && resp["params"].is_object()
+            && resp["params"].contains("info") && resp["params"]["info"].is_object())
+            infop = &resp["params"]["info"];
+        else if (resp.contains("result") && resp["result"].is_object())
+            infop = &resp["result"];
+        else
+            throw std::runtime_error("no params.info or result in response");
+        const auto& result = *infop;
 
         std::string status_str = "Connected";
         int progress = -1;
@@ -527,6 +538,12 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
         } else {
             status_str = "Idle";
         }
+
+        // Z-Offset-Slider + Textfeld nur im Leerlauf bedienbar, damit eine
+        // Verstellung waehrend eines laufenden Drucks ausgeschlossen ist.
+        const bool is_idle = (status_str == "Idle");
+        if (m_z_offset_slider) m_z_offset_slider->Enable(is_idle);
+        if (m_z_offset_text)   m_z_offset_text->Enable(is_idle);
 
         int temp_ext = -1, temp_chamber = -1;
         if (result.contains("toolheads") && result["toolheads"].is_object()) {

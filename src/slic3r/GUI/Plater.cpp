@@ -62,6 +62,7 @@
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PrintConfig.hpp"
+#include "libslic3r/Format/MakerBotExport.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
 #include "libslic3r/PresetBundle.hpp"
@@ -16524,6 +16525,15 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         // Orca: a gcode-in-3mf bundle is named ".gcode.3mf" (matching "Export plate sliced file")
         default_output_file.replace_extension(".gcode.3mf");
     }
+    {
+        // MakerBot/UltiMaker: Send-Dialog soll den nativen Dateinamen zeigen.
+        const auto* _gcf = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
+        const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
+        if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
+            default_output_file.replace_extension(".makerbot");
+        else if (_flavor == gcfUltiGCode)
+            default_output_file.replace_extension(".ufp");
+    }
 
     // Repetier specific: Query the server for the list of file groups.
     wxArrayString groups;
@@ -16676,6 +16686,28 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         }
 
         upload_job.upload_data.source_path = p->m_print_job_data._3mf_path;
+
+        // MakerBot/UltiMaker: nicht die generische .3mf hochladen, sondern die
+        // beim Slicen (BackgroundSlicingProcess::pack_to_archive) erzeugte
+        // native Archiv-Datei (.makerbot bzw. .ufp). Sie liegt neben der
+        // tmp-G-Code-Datei (gleicher Stamm). schedule_export laeuft vor
+        // schedule_upload, daher ist sie zum Upload-Zeitpunkt fertig.
+        {
+            const auto* _gcf = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
+            const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
+            std::string _ext;
+            if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
+                _ext = ".makerbot";
+            else if (_flavor == gcfUltiGCode)
+                _ext = ".ufp";
+            if (!_ext.empty()) {
+                fs::path _archive = fs::path(p->m_print_job_data._3mf_path);
+                _archive.replace_extension(_ext);
+                upload_job.upload_data.source_path = _archive;
+                BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker upload: source_path -> "
+                                        << _archive.string();
+            }
+        }
     }
 
     p->export_gcode(fs::path(), false, std::move(upload_job));
