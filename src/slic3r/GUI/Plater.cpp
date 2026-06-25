@@ -16660,6 +16660,16 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         config->set_bool("open_device_tab_post_upload", pDlg->switch_to_device_tab());
         // PrintHostUpload upload_data;
         upload_job.switch_to_device_tab    = pDlg->switch_to_device_tab();
+        // MakerBot/UltiMaker: nach dem Upload IMMER ins Device-Tab wechseln,
+        // damit der Nutzer dort die Bauplatte pruefen und den Druck starten kann.
+        {
+            const auto _ht_opt = physical_printer_config->option<ConfigOptionEnum<PrintHostType>>("host_type");
+            if (_ht_opt != nullptr &&
+                (_ht_opt->value == htMakerbotLink || _ht_opt->value == htUltimakerLink)) {
+                upload_job.switch_to_device_tab = true;
+                config->set_bool("open_device_tab_post_upload", true);
+            }
+        }
         upload_job.upload_data.upload_path = pDlg->filename();
         upload_job.upload_data.post_action = pDlg->post_action();
         upload_job.upload_data.group       = pDlg->group();

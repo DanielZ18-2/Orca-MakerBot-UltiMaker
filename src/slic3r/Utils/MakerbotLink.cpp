@@ -11,6 +11,7 @@
 #include "MakerbotLink.hpp"
 #include <zlib.h>
 #include <fstream>
+#include <cstdlib>
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -436,6 +437,33 @@ bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& err
 }
 
 
+// ── pending-print-Datei: merkt den remote_path der zuletzt hochgeladenen ─────
+// Datei pro Drucker (Host). Das Device-Tab liest sie beim "Druck starten".
+// Liegt unter ~/.config/OrcaSlicer/makerbot_pending/<host>.txt
+static std::string makerbot_pending_path(const std::string& host)
+{
+    const char* home = std::getenv("HOME");
+    std::string base = home ? std::string(home) : std::string("/tmp");
+    std::string dir = base + "/.config/OrcaSlicer/makerbot_pending";
+    boost::filesystem::create_directories(dir);
+    // host (IP) als Dateiname; Doppelpunkte etc. ersetzen
+    std::string safe = host;
+    for (char& c : safe) if (c == '/' || c == ':' || c == '\\') c = '_';
+    return dir + "/" + safe + ".txt";
+}
+
+static void write_pending_print(const std::string& host, const std::string& remote_path)
+{
+    try {
+        std::ofstream f(makerbot_pending_path(host), std::ios::trunc);
+        f << remote_path;
+        BOOST_LOG_TRIVIAL(info) << "MakerbotLink: pending print -> " << remote_path
+                                << " (host " << host << ")";
+    } catch (const std::exception& e) {
+        BOOST_LOG_TRIVIAL(warning) << "MakerbotLink: could not write pending file: " << e.what();
+    }
+}
+
 // ── Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) ────────────
 // Verifiziert gegen echten Z18 (kaiten_upload_probe.py): JSON-RPC ueber 9999,
 // put_raw sendet nacktes JSON + direkt 32KB-Rohbytes, put_term mit CRC32.
@@ -857,13 +885,14 @@ bool MakerbotLink::upload(PrintHostUpload upload_data,
             return false;
         }
 
-        info_fn("", "Starting print...");
-        if (!kaiten_print(*session, remote_path, /*new_flow=*/true, err)) {
-            err_fn("Print start failed: " + err);
-            return false;
-        }
+        // KEIN print hier! Der echte MakerBot-Flow (newPrintFlow) trennt Upload
+        // und Druckstart: erst put (oben), dann spaeter print ueber dieselbe
+        // (Device-Tab-)Session. Wir merken den remote_path in einer pending-
+        // Datei pro Drucker; das Device-Tab loest den Druck per "Druck starten"
+        // aus, nachdem der Nutzer die freie Bauplatte im Kamerabild bestaetigt.
+        write_pending_print(m_host, remote_path);
 
-        info_fn("", "Print started.");
+        info_fn("", "Upload complete. Open the Device tab to start the print.");
         bool cancel = false;
         prg_fn(Http::Progress(0, 0, 100, 100, ""), cancel);
         return true;
