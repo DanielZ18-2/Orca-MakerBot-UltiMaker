@@ -63,7 +63,14 @@ private:
     wxButton* m_btn_firmware_update = nullptr;
 
     // --- Background Tasks & State ---
+    // P5c: explizite Timer-IDs, damit der wxEVT_TIMER-Bind beide Timer
+    // (Telemetrie 2s, Kamera 1s) trennscharf an unterschiedliche Handler
+    // routet statt beide an denselben (wxID_ANY waere ein Wildcard-Match,
+    // der auch Events des jeweils anderen Timers einsammeln wuerde).
+    static const int ID_TELEMETRY_TIMER = wxID_HIGHEST + 101;
+    static const int ID_CAMERA_TIMER    = wxID_HIGHEST + 102;
     wxTimer m_telemetry_timer;
+    wxTimer m_camera_timer; // P5c: eigener 1s-Tick nur fuer das Kamerabild
     const DynamicPrintConfig* m_active_config;
     MBDeviceCategory m_category = MBDeviceCategory::Legacy;
 
@@ -79,6 +86,7 @@ private:
     void on_z_offset_slider_changed(wxCommandEvent& event);
     void on_firmware_update_clicked(wxCommandEvent& event);
     void on_telemetry_tick(wxTimerEvent& event);
+    void on_camera_tick(wxTimerEvent& event); // P5c: eigener Kamera-Tick (1s)
 
     // --- Helper Methods ---
     static MBDeviceCategory category_for_config(const DynamicPrintConfig& config);

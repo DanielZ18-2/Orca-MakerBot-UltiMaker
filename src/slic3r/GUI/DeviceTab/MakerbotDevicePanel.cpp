@@ -136,8 +136,13 @@ MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     this->SetSizer(m_main_sizer);
 
     // Bind the telemetry timer to the tick event handler
-    m_telemetry_timer.SetOwner(this);
-    this->Bind(wxEVT_TIMER, &MakerbotDevicePanel::on_telemetry_tick, this);
+    // P5c: explizite IDs fuer beide Timer (s. Kommentar in der .hpp) -
+    // sonst wuerde der generische wxEVT_TIMER-Bind (wxID_ANY) auch die
+    // Kamera-Tick-Events an on_telemetry_tick routen statt an on_camera_tick.
+    m_telemetry_timer.SetOwner(this, ID_TELEMETRY_TIMER);
+    this->Bind(wxEVT_TIMER, &MakerbotDevicePanel::on_telemetry_tick, this, ID_TELEMETRY_TIMER);
+    m_camera_timer.SetOwner(this, ID_CAMERA_TIMER);
+    this->Bind(wxEVT_TIMER, &MakerbotDevicePanel::on_camera_tick, this, ID_CAMERA_TIMER);
 }
 
 MakerbotDevicePanel::~MakerbotDevicePanel() {
@@ -347,6 +352,8 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
 
     // "Druck starten" in eigener Zeile, optisch hervorgehoben (voller Breite).
     m_btn_start_print = new wxButton(this, wxID_ANY, _L("Start Print"));
+    m_btn_start_print->SetBackgroundColour(wxColour(0, 179, 134)); // #00b386, P5c-Akzent (wie Donut)
+    m_btn_start_print->SetForegroundColour(*wxWHITE);
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
@@ -609,12 +616,20 @@ void MakerbotDevicePanel::start_telemetry_polling() {
         m_telemetry_timer.Start(2000);
         BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Telemetry polling routine started.";
     }
+    if (!m_camera_timer.IsRunning()) {
+        m_camera_timer.Start(1000); // P5c: schnellerer, von Telemetrie entkoppelter Tick
+        BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Camera polling routine started.";
+    }
 }
 
 void MakerbotDevicePanel::stop_telemetry_polling() {
     if (m_telemetry_timer.IsRunning()) {
         m_telemetry_timer.Stop();
         BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Telemetry polling routine stopped.";
+    }
+    if (m_camera_timer.IsRunning()) {
+        m_camera_timer.Stop();
+        BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Camera polling routine stopped.";
     }
     if (m_kaiten_session) {
         m_kaiten_session->close();
@@ -733,33 +748,39 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
         }
 
         update_telemetry_ui(status_str, temp_ext, temp_chamber, progress);
-
-        // Kamera-Einzelbild abrufen (YUYV) und anzeigen. Fehler hier sind
-        // nicht kritisch fuer die restliche Telemetrie - nur ueberspringen.
-        if (m_camera_bitmap) {
-            std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
-            auto* mb = dynamic_cast<MakerbotLink*>(host.get());
-            if (mb && m_kaiten_session) {
-                int cw=0, ch=0; std::string yuyv, cam_err;
-                if (mb->get_camera_frame(*m_kaiten_session, cw, ch, yuyv, cam_err)) {
-                    wxImage img = yuyv_to_wximage_rot90ccw(yuyv, cw, ch);
-                    if (img.IsOk()) {
-                        m_raw_camera_frame = img;
-                        // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen.
-                        if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
-                            wxCommandEvent dummy;
-                            on_zoom_changed(dummy);
-                        } else {
-                            m_camera_bitmap->SetBitmap(wxBitmap(m_raw_camera_frame));
-                            m_camera_bitmap->Refresh();
-                        }
-                    }
-                }
-            }
-        }
     } catch (const std::exception& e) {
         if (m_lbl_telemetry_status)
             m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: parse error (%s)"), e.what()));
+    }
+}
+
+void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
+    // P5c: eigener 1s-Tick, entkoppelt von der 2s-Telemetrie - betrifft nur
+    // das Kamerabild, verdoppelt nicht die Telemetrie-RPC-Last.
+    if (!m_active_config || m_category != MBDeviceCategory::Birdwing) return;
+    if (!m_camera_bitmap) return;
+
+    std::string error;
+    if (!ensure_kaiten_session(error)) return; // Fehleranzeige macht der Telemetrie-Tick
+
+    std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+    auto* mb = dynamic_cast<MakerbotLink*>(host.get());
+    if (!mb || !m_kaiten_session) return;
+
+    int cw = 0, ch = 0; std::string yuyv, cam_err;
+    if (mb->get_camera_frame(*m_kaiten_session, cw, ch, yuyv, cam_err)) {
+        wxImage img = yuyv_to_wximage_rot90ccw(yuyv, cw, ch);
+        if (img.IsOk()) {
+            m_raw_camera_frame = img;
+            // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen.
+            if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
+                wxCommandEvent dummy;
+                on_zoom_changed(dummy);
+            } else {
+                m_camera_bitmap->SetBitmap(wxBitmap(m_raw_camera_frame));
+                m_camera_bitmap->Refresh();
+            }
+        }
     }
 }
 
