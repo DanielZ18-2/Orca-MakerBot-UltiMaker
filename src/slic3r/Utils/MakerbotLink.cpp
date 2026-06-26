@@ -12,6 +12,8 @@
 #include <zlib.h>
 #include <fstream>
 #include <cstdlib>
+#include <sys/socket.h> // Folgefix: SO_RCVTIMEO fuer KaitenSession-Reads
+#include <sys/time.h>
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -207,6 +209,7 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                         close(); return false;
                     }
                     size_t got = m_impl->socket.read_some(asio::buffer(&c, 1), ec);
+                    if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                     if (ec) { error = ec.message(); close(); return false; }
                     if (got == 0) continue;
                     if (!started) {
@@ -273,6 +276,19 @@ bool KaitenSession::open(const std::string& host, const std::string& access_toke
         auto eps = resolver.resolve(host, std::to_string(MakerbotLink::KAITEN_PLAINTEXT_PORT));
         asio::connect(m_impl->socket, eps);
         m_impl->socket.set_option(tcp::no_delay(true));
+        // Folgefix: SO_RCVTIMEO, sonst blockiert ein read_some() OHNE jede
+        // Antwort (z.B. Drucker beschaeftigt/Kalibrierung) den GUI-Thread
+        // fuer immer - der manuelle Timeout-Check in call()/
+        // fetch_camera_frame() greift nur ZWISCHEN abgeschlossenen reads,
+        // nie WAEHREND eines blockierenden read_some() ohne jede Antwort.
+        // 1s, damit die groesseren Timeouts (5s/8s) noch mehrfach pruefen
+        // koennen statt nur einmal.
+        {
+            struct timeval tv{};
+            tv.tv_sec = 1; tv.tv_usec = 0;
+            ::setsockopt(m_impl->socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO,
+                         reinterpret_cast<const char*>(&tv), sizeof(tv));
+        }
         m_impl->connected = true;
     } catch (const std::exception& e) {
         error = e.what();
@@ -431,6 +447,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
                 if (timed_out()) { error="camera timeout (json)"; return false; }
                 boost::system::error_code ec;
                 size_t got = m_impl->socket.read_some(asio::buffer(&c,1), ec);
+                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                 if (ec) { error=ec.message(); return false; }
                 if (got==0) continue;
                 if (!started) { if (c=='{'||c=='['){started=true;depth=1;acc.push_back(c);} continue; }
@@ -450,6 +467,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
                 size_t want = std::min(sizeof(tmp), n - out_raw.size());
                 boost::system::error_code ec;
                 size_t got = m_impl->socket.read_some(asio::buffer(tmp, want), ec);
+                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                 if (ec) { error=ec.message(); return false; }
                 out_raw.append(tmp, got);
             }
