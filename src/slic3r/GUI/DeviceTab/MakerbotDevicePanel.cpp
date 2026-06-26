@@ -598,9 +598,32 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
         int temp_ext = -1, temp_chamber = -1;
         if (result.contains("toolheads") && result["toolheads"].is_object()) {
             const auto& th = result["toolheads"];
-            if (th.contains("extruder") && th["extruder"].is_array() && !th["extruder"].empty()
-                && th["extruder"][0].contains("current_temperature"))
-                temp_ext = th["extruder"][0]["current_temperature"].get<int>();
+            if (th.contains("extruder") && th["extruder"].is_array() && !th["extruder"].empty()) {
+                const auto& ex = th["extruder"][0];
+                if (ex.contains("current_temperature"))
+                    temp_ext = ex["current_temperature"].get<int>();
+
+                // Extruder-Status ehrlich aus den belegbaren Feldern bilden,
+                // statt einer geratenen Typbezeichnung. (Die exakte
+                // tool_id->Typname-Tabelle ist nicht gesichert; tool_id 99 =
+                // kein Werkzeug/idle laut Capture.)
+                if (m_lbl_extruder_1) {
+                    bool fil = ex.value("filament_presence", false);
+                    bool preheating = ex.value("preheating", false);
+                    int tool_id = ex.value("tool_id", -1);
+                    int tgt = ex.value("target_temperature", 0);
+
+                    wxString s = _L("Smart Extruder");
+                    if (tool_id >= 0 && tool_id != 99)
+                        s += wxString::Format(" (Tool %d)", tool_id);
+                    s += ": ";
+                    s += fil ? _L("Filament loaded") : _L("no filament");
+                    if (preheating)
+                        s += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
+                    m_lbl_extruder_1->SetLabel(s);
+                    m_lbl_extruder_1->Refresh();
+                }
+            }
             if (th.contains("chamber") && th["chamber"].is_array() && !th["chamber"].empty()
                 && th["chamber"][0].contains("current_temperature"))
                 temp_chamber = th["chamber"][0]["current_temperature"].get<int>();
