@@ -32,6 +32,8 @@ class MakerbotDevicePanel : public wxPanel {
 private:
     // --- UI Layout Containers ---
     wxBoxSizer* m_main_sizer;
+    wxBoxSizer* m_col_left  = nullptr;  // linke Spalte (Kamera)
+    wxBoxSizer* m_col_right = nullptr;  // rechte Spalte (Status/Z-Offset/Steuerung)
     wxStaticBoxSizer* m_extruder_info_sizer;
 
     // --- Webcam & Digital Zoom (nur Birdwing/Lava/UltiMaker) ---

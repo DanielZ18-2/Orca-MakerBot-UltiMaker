@@ -130,6 +130,8 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
 
     // Clear existing UI elements to prevent stacking during printer switch
     m_main_sizer->Clear(true);
+    m_col_left = nullptr;   // gehoeren dem soeben geleerten Sizer-Baum
+    m_col_right = nullptr;
     m_camera_bitmap = nullptr;
     m_zoom_slider = nullptr;
     m_z_offset_slider = nullptr;
@@ -148,12 +150,21 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
 
     const bool is_networked = (m_category != MBDeviceCategory::Legacy);
 
-    // Netzwerk-Druckerfamilien: Kamera + Z-Offset + Live-Status + Steuerung
+    // Netzwerk-Druckerfamilien: zweispaltiges Layout.
+    //   LINKS  = Kamera (gross), RECHTS = Status + Z-Offset + Steuerung.
     if (is_networked) {
-        build_camera_section();
-        build_z_offset_section();
-        build_extruder_and_telemetry_section();
-        build_hardware_controls_section();
+        wxBoxSizer* columns = new wxBoxSizer(wxHORIZONTAL);
+        m_col_left  = new wxBoxSizer(wxVERTICAL);
+        m_col_right = new wxBoxSizer(wxVERTICAL);
+        // linke Spalte etwas breiter (Kamera), rechte schmaler (Infos/Buttons)
+        columns->Add(m_col_left,  3, wxEXPAND | wxRIGHT, FromDIP(5));
+        columns->Add(m_col_right, 2, wxEXPAND, 0);
+        m_main_sizer->Add(columns, 1, wxEXPAND | wxALL, FromDIP(5));
+
+        build_camera_section();                  // -> m_col_left
+        build_extruder_and_telemetry_section();  // -> m_col_right
+        build_z_offset_section();                // -> m_col_right
+        build_hardware_controls_section();       // -> m_col_right
     } else {
         // Legacy (Cupcake...Replicator 2X): kein Netzwerk, keine Kamera,
         // kein RPC - nur statische Infos + Firmware-Flash via avrdude.
@@ -186,7 +197,9 @@ void MakerbotDevicePanel::build_camera_section() {
     zoom_sizer->Add(m_zoom_slider, 1, wxEXPAND | wxALL, FromDIP(5));
     camera_sizer->Add(zoom_sizer, 0, wxEXPAND | wxALL, FromDIP(2));
 
-    m_main_sizer->Add(camera_sizer, 0, wxEXPAND | wxALL, FromDIP(10));
+    // In die linke Spalte (P5a). Fallback auf m_main_sizer, falls (Legacy o.ae.)
+    // kein Spalten-Layout aktiv ist.
+    (m_col_left ? m_col_left : m_main_sizer)->Add(camera_sizer, 1, wxEXPAND | wxALL, FromDIP(5));
 
     m_zoom_slider->Bind(wxEVT_SLIDER, &MakerbotDevicePanel::on_zoom_changed, this);
 }
@@ -206,7 +219,7 @@ void MakerbotDevicePanel::build_z_offset_section() {
     z_offset_sizer->Add(m_z_offset_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(2));
     z_offset_sizer->Add(z_unit, 0, wxALIGN_CENTER_VERTICAL, FromDIP(5));
 
-    m_main_sizer->Add(z_offset_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     m_z_offset_text->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& e){
         wxCommandEvent dummy; on_z_offset_slider_changed(dummy);
@@ -245,7 +258,7 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
     m_extruder_info_sizer->Add(m_lbl_telemetry_status, 0, wxBOTTOM, FromDIP(2));
     m_extruder_info_sizer->Add(m_lbl_telemetry_progress, 0, wxBOTTOM, FromDIP(2));
 
-    m_main_sizer->Add(m_extruder_info_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(m_extruder_info_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 }
 
 // -----------------------------------------------------------------------------------------
@@ -266,11 +279,11 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     controls_sizer->Add(m_btn_load_fil, 1, wxRIGHT, FromDIP(5));
     controls_sizer->Add(m_btn_unload_fil, 1, 0);
 
-    m_main_sizer->Add(controls_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(controls_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     // "Druck starten" in eigener Zeile, optisch hervorgehoben (voller Breite).
     m_btn_start_print = new wxButton(this, wxID_ANY, _L("Start Print"));
-    m_main_sizer->Add(m_btn_start_print, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_load_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("load_filament"); });
