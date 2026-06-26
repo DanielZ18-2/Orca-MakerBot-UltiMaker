@@ -33,6 +33,32 @@ int extruder_count(const DynamicPrintConfig& config)
     return 1;
 }
 
+// YUYV(YUV422) -> wxImage (RGB), anschliessend 90 Grad nach links gedreht.
+static wxImage yuyv_to_wximage_rot90ccw(const std::string& yuyv, int w, int h)
+{
+    auto clamp=[](int x){ return x<0?0:(x>255?255:x); };
+    wxImage img(w, h);
+    unsigned char* rgb = img.GetData();
+    const unsigned char* d = reinterpret_cast<const unsigned char*>(yuyv.data());
+    const size_t need = (size_t)w*h*2;
+    if (yuyv.size() < need) return wxImage(); // ungueltig
+    for (int i = 0; i < w*h; i += 2) {
+        size_t b = (size_t)i*2;
+        int Y0=d[b], U=d[b+1], Y1=d[b+2], V=d[b+3];
+        for (int j=0;j<2;++j) {
+            int Y = (j==0)?Y0:Y1;
+            int C=Y-16, D=U-128, E=V-128;
+            int R=clamp((298*C+409*E+128)>>8);
+            int G=clamp((298*C-100*D-208*E+128)>>8);
+            int B=clamp((298*C+516*D+128)>>8);
+            int idx=(i+j)*3;
+            rgb[idx]=R; rgb[idx+1]=G; rgb[idx+2]=B;
+        }
+    }
+    // 90 Grad nach links (gegen Uhrzeigersinn): Sensor ist gedreht verbaut.
+    return img.Rotate90(false);
+}
+
 } // namespace
 
 // -----------------------------------------------------------------------------------------
@@ -630,6 +656,30 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
         }
 
         update_telemetry_ui(status_str, temp_ext, temp_chamber, progress);
+
+        // Kamera-Einzelbild abrufen (YUYV) und anzeigen. Fehler hier sind
+        // nicht kritisch fuer die restliche Telemetrie - nur ueberspringen.
+        if (m_camera_bitmap) {
+            std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+            auto* mb = dynamic_cast<MakerbotLink*>(host.get());
+            if (mb && m_kaiten_session) {
+                int cw=0, ch=0; std::string yuyv, cam_err;
+                if (mb->get_camera_frame(*m_kaiten_session, cw, ch, yuyv, cam_err)) {
+                    wxImage img = yuyv_to_wximage_rot90ccw(yuyv, cw, ch);
+                    if (img.IsOk()) {
+                        m_raw_camera_frame = img;
+                        // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen.
+                        if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
+                            wxCommandEvent dummy;
+                            on_zoom_changed(dummy);
+                        } else {
+                            m_camera_bitmap->SetBitmap(wxBitmap(m_raw_camera_frame));
+                            m_camera_bitmap->Refresh();
+                        }
+                    }
+                }
+            }
+        }
     } catch (const std::exception& e) {
         if (m_lbl_telemetry_status)
             m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: parse error (%s)"), e.what()));

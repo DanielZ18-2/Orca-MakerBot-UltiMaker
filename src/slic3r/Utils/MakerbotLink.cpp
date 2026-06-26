@@ -396,6 +396,98 @@ bool MakerbotLink::birdwing_rpc(const std::string&    method,
 }
 
 
+// ── Kamera-Einzelbild (YUYV) ueber Kaiten ────────────────────────────────────
+// Verifiziert am Z18: request_camera_frame -> camera_frame-Notification ->
+// 16-Byte-Header (total,width,height,format als big-endian uint32) + YUYV.
+bool KaitenSession::fetch_camera_frame(int& width, int& height,
+                                       std::string& yuyv_out,
+                                       std::string& error, int timeout_s)
+{
+    if (!m_impl) { error = "session closed"; return false; }
+    try {
+        // request_camera_frame senden
+        const int req_id = m_impl->next_id++;
+        const nlohmann::json req = {
+            {"jsonrpc","2.0"},{"method","request_camera_frame"},
+            {"params",nlohmann::json::object()},{"id",req_id}
+        };
+        const std::string msg = req.dump() + "\r\n";
+        asio::write(m_impl->socket, asio::buffer(msg));
+
+        // Bytes lesen, bis wir die camera_frame-Notification gesehen haben;
+        // danach kommen direkt 16 Byte Header + YUYV-Daten.
+        // Wir nutzen einen kleinen lokalen Lese-Puffer ueber read_some.
+        m_impl->socket.non_blocking(false);
+        std::string buf;
+        const auto t_start = std::chrono::steady_clock::now();
+        auto timed_out = [&](){ return std::chrono::steady_clock::now() - t_start
+                                       > std::chrono::seconds(timeout_s); };
+
+        // Hilfsfunktion: ein komplettes Top-Level-JSON aus dem Stream lesen.
+        auto read_json = [&](std::string& out_json)->bool {
+            int depth=0; bool in_str=false, esc=false, started=false; char c;
+            std::string acc;
+            while (true) {
+                if (timed_out()) { error="camera timeout (json)"; return false; }
+                boost::system::error_code ec;
+                size_t got = m_impl->socket.read_some(asio::buffer(&c,1), ec);
+                if (ec) { error=ec.message(); return false; }
+                if (got==0) continue;
+                if (!started) { if (c=='{'||c=='['){started=true;depth=1;acc.push_back(c);} continue; }
+                acc.push_back(c);
+                if (in_str) { if(!esc&&c=='"')in_str=false; esc=(c=='\\')&&!esc; continue; }
+                if (c=='"') in_str=true;
+                else if (c=='{'||c=='[') depth++;
+                else if (c=='}'||c==']') { if(--depth==0){ out_json=acc; return true; } }
+            }
+        };
+        // Hilfsfunktion: exakt n Rohbytes lesen.
+        auto read_raw = [&](size_t n, std::string& out_raw)->bool {
+            out_raw.clear(); out_raw.reserve(n);
+            while (out_raw.size() < n) {
+                if (timed_out()) { error="camera timeout (raw)"; return false; }
+                char tmp[8192];
+                size_t want = std::min(sizeof(tmp), n - out_raw.size());
+                boost::system::error_code ec;
+                size_t got = m_impl->socket.read_some(asio::buffer(tmp, want), ec);
+                if (ec) { error=ec.message(); return false; }
+                out_raw.append(tmp, got);
+            }
+            return true;
+        };
+
+        // JSONs lesen, bis camera_frame-Notification kommt (request-Antwort
+        // result:true vorher ueberspringen).
+        bool got_frame_notif = false;
+        for (int i = 0; i < 20 && !got_frame_notif; ++i) {
+            std::string js;
+            if (!read_json(js)) return false;
+            nlohmann::json j = nlohmann::json::parse(js, nullptr, false);
+            if (j.is_discarded()) continue;
+            if (j.value("method", "") == "camera_frame") { got_frame_notif = true; break; }
+        }
+        if (!got_frame_notif) { error="no camera_frame notification"; return false; }
+
+        // 16-Byte-Header
+        std::string hdr;
+        if (!read_raw(16, hdr)) return false;
+        auto be32 = [&](int off){
+            return (uint32_t(uint8_t(hdr[off]))<<24)|(uint32_t(uint8_t(hdr[off+1]))<<16)
+                  |(uint32_t(uint8_t(hdr[off+2]))<<8)|uint32_t(uint8_t(hdr[off+3])); };
+        uint32_t total = be32(0); width = (int)be32(4); height = (int)be32(8);
+        size_t pixlen = (total >= 16) ? (total - 16) : (size_t)width*height*2;
+        if (width <= 0 || height <= 0 || pixlen != (size_t)width*height*2) {
+            error = "implausible camera header"; return false;
+        }
+        if (!read_raw(pixlen, yuyv_out)) return false;
+        return true;
+    } catch (const std::exception& e) {
+        error = std::string("camera exception: ") + e.what();
+        return false;
+    }
+}
+
+
 // ── Token-Refresh (HTTPS:443) ────────────────────────────────────────────────
 // Holt einen frischen onetime-access_token aus client_secret + birdwing_code.
 // Verifiziert gegen conveyor get_birdwing_token / do_auth_get('token', ...).
@@ -467,6 +559,13 @@ static void write_pending_print(const std::string& host, const std::string& remo
 // ── Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) ────────────
 // Verifiziert gegen echten Z18 (kaiten_upload_probe.py): JSON-RPC ueber 9999,
 // put_raw sendet nacktes JSON + direkt 32KB-Rohbytes, put_term mit CRC32.
+bool MakerbotLink::get_camera_frame(KaitenSession& session, int& width,
+                                   int& height, std::string& yuyv_out,
+                                   std::string& error) const
+{
+    return session.fetch_camera_frame(width, height, yuyv_out, error, 8);
+}
+
 bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
                                       const std::string& local_path,
                                       const std::string& remote_path,

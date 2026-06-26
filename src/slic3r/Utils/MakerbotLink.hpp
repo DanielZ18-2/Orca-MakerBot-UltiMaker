@@ -41,6 +41,12 @@ public:
               nlohmann::json& out, std::string& error, int timeout_s = 5,
               const std::string* extra_raw = nullptr);
 
+    // Ruft ein Kamera-Einzelbild ab: sendet request_camera_frame, liest die
+    // camera_frame-Notification + 16-Byte-Header + YUYV-Pixeldaten.
+    // yuyv_out erhaelt die rohen YUYV(YUV422)-Bytes (width*height*2).
+    bool fetch_camera_frame(int& width, int& height, std::string& yuyv_out,
+                            std::string& error, int timeout_s = 8);
+
     bool is_open() const;
     void close();
 
@@ -102,6 +108,10 @@ public:
     // calls (e.g. while the Device tab is visible) and closes it when done.
     // Returns nullptr with `error` set on failure.
     std::shared_ptr<KaitenSession> open_kaiten_session(std::string& error) const;
+
+    // Ruft ein Kamera-Einzelbild (YUYV) ueber eine offene Session ab.
+    bool get_camera_frame(KaitenSession& session, int& width, int& height,
+                          std::string& yuyv_out, std::string& error) const;
 
     // Query connected Smart Extruder type via kaiten get_system_information
     // Returns: "mk13", "mk13_impla", "mk13_experimental", "mk12" or ""
