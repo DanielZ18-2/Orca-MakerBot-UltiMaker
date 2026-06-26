@@ -51,6 +51,7 @@ private:
     wxStaticText* m_lbl_telemetry_temp    = nullptr;
     wxStaticText* m_lbl_telemetry_status  = nullptr;
     wxStaticText* m_lbl_telemetry_progress= nullptr;
+    wxPanel*      m_progress_donut       = nullptr; // ProgressDonut* (Cast in .cpp)
 
     // --- Hardware Controls (nur Birdwing/Lava/UltiMaker) ---
     wxButton* m_btn_z_calib     = nullptr;

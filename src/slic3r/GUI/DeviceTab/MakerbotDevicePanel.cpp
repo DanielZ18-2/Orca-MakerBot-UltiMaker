@@ -9,6 +9,8 @@
 #include "slic3r/Utils/MakerbotLink.hpp"
 
 #include <wx/msgdlg.h>
+#include <wx/graphics.h>
+#include <wx/dcbuffer.h>
 #include <wx/choicdlg.h>
 #include <wx/log.h>
 #include <boost/log/trivial.hpp>
@@ -58,6 +60,64 @@ static wxImage yuyv_to_wximage_rot90ccw(const std::string& yuyv, int w, int h)
     // 90 Grad nach links (gegen Uhrzeigersinn): Sensor ist gedreht verbaut.
     return img.Rotate90(false);
 }
+
+// Fortschritts-Ring (Doughnut): grauer Hintergrundring + farbiger Bogen ab
+// 12 Uhr im Uhrzeigersinn + Prozenttext mittig. Wert -1 = kein Druck (leer).
+class ProgressDonut : public wxPanel {
+public:
+    ProgressDonut(wxWindow* parent, const wxSize& size)
+        : wxPanel(parent, wxID_ANY, wxDefaultPosition, size) {
+        SetBackgroundStyle(wxBG_STYLE_PAINT);
+        Bind(wxEVT_PAINT, &ProgressDonut::on_paint, this);
+    }
+    void set_progress(int p) {
+        int np = (p < 0) ? -1 : (p > 100 ? 100 : p);
+        if (np != m_progress) { m_progress = np; Refresh(); }
+    }
+private:
+    int m_progress = -1;
+    void on_paint(wxPaintEvent&) {
+        wxAutoBufferedPaintDC dc(this);
+        dc.SetBackground(wxBrush(GetBackgroundColour()));
+        dc.Clear();
+        wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+        if (!gc) return;
+        const wxSize sz = GetClientSize();
+        const double W = sz.GetWidth(), H = sz.GetHeight();
+        const double thickness = std::max(6.0, std::min(W, H) * 0.14);
+        const double r = (std::min(W, H) - thickness) / 2.0 - 2.0;
+        const double cx = W / 2.0, cy = H / 2.0;
+        const double start = -M_PI / 2.0; // 12 Uhr
+
+        // Hintergrundring (grau)
+        gc->SetPen(wxPen(wxColour(80, 80, 80), thickness));
+        wxGraphicsPath bg = gc->CreatePath();
+        bg.AddArc(cx, cy, r, start, start + 2 * M_PI, true);
+        gc->StrokePath(bg);
+
+        // Fortschrittsbogen (Akzentfarbe) - nur wenn progress >= 0
+        if (m_progress >= 0 && m_progress <= 100) {
+            const double frac = m_progress / 100.0;
+            gc->SetPen(wxPen(wxColour(0, 179, 134), thickness)); // #00b386
+            wxGraphicsPath fg = gc->CreatePath();
+            fg.AddArc(cx, cy, r, start, start + 2 * M_PI * frac, true);
+            gc->StrokePath(fg);
+        }
+
+        // Prozent-Text mittig
+        wxString txt = (m_progress >= 0) ? wxString::Format("%d%%", m_progress)
+                                         : wxString::FromUTF8("\xe2\x80\x93"); // Gedankenstrich
+        wxFont font = GetFont();
+        font.SetPointSize(std::max(10, (int)(std::min(W, H) * 0.18)));
+        font.SetWeight(wxFONTWEIGHT_BOLD);
+        gc->SetFont(font, GetForegroundColour().IsOk() ? GetForegroundColour() : *wxWHITE);
+        double tw = 0, th = 0;
+        gc->GetTextExtent(txt, &tw, &th);
+        gc->DrawText(txt, cx - tw / 2.0, cy - th / 2.0);
+
+        delete gc;
+    }
+};
 
 } // namespace
 
@@ -138,6 +198,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_z_offset_text = nullptr;
     m_btn_z_calib = m_btn_load_fil = m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
+    m_progress_donut = nullptr;
 
     // Eine offene Sitzung gehört zum VORHERIGEN Drucker - sonst würden wir
     // nach einem Druckerwechsel stillschweigend weiter mit dem alten Host
@@ -252,11 +313,14 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
 
     m_lbl_telemetry_temp = new wxStaticText(this, wxID_ANY, _L("Temperatures (Extruder / Chamber): -- °C / -- °C"));
     m_lbl_telemetry_status = new wxStaticText(this, wxID_ANY, _L("Status: Connecting..."));
-    m_lbl_telemetry_progress = new wxStaticText(this, wxID_ANY, _L("Progress: --"));
+    // Fortschritt als Doughnut-Ring (ersetzt die fruehere Progress-Textzeile).
+    ProgressDonut* donut = new ProgressDonut(this, wxSize(FromDIP(110), FromDIP(110)));
+    m_progress_donut = donut;
+    m_lbl_telemetry_progress = nullptr; // wird nicht mehr als Text gezeigt
 
     m_extruder_info_sizer->Add(m_lbl_telemetry_temp, 0, wxTOP | wxBOTTOM, FromDIP(5));
     m_extruder_info_sizer->Add(m_lbl_telemetry_status, 0, wxBOTTOM, FromDIP(2));
-    m_extruder_info_sizer->Add(m_lbl_telemetry_progress, 0, wxBOTTOM, FromDIP(2));
+    m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, FromDIP(8));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_extruder_info_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 }
@@ -710,6 +774,9 @@ void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int tem
     if (m_lbl_telemetry_status) {
         m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), status.c_str()));
         m_lbl_telemetry_status->Refresh();
+    }
+    if (m_progress_donut) {
+        static_cast<ProgressDonut*>(m_progress_donut)->set_progress(progress);
     }
     if (m_lbl_telemetry_progress) {
         if (progress >= 0)
