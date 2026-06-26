@@ -12,8 +12,9 @@
 #include <zlib.h>
 #include <fstream>
 #include <cstdlib>
-#include <sys/socket.h> // Folgefix: SO_RCVTIMEO fuer KaitenSession-Reads
+#include <sys/socket.h> // Folgefix: SO_RCVTIMEO fuer KaitenSession-Reads (wirkungslos, s.u.)
 #include <sys/time.h>
+#include <poll.h> // Korrektur-Fix: echtes Timeout via rohes poll() vor jedem read_some()
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -138,6 +139,22 @@ private:
 // repeated calls, all on the SAME connection - unlike BirdwingRpcClient
 // above (SSL/12309), which reconnects per call.
 
+// Korrektur-Fix: SO_RCVTIMEO (siehe open()) wird von Boost.Asios eigenem
+// Reactor nicht beruecksichtigt - read_some() kann trotzdem ewig blockieren.
+// poll() ist ein roher POSIX-Syscall ausserhalb von Asios Verwaltung und
+// liefert daher zuverlaessig einen Timeout. Rueckgabe: true = Daten da,
+// false = Timeout/Fehler (Aufrufer prueft dann seinen eigenen, groesseren
+// Timeout und versucht es ggf. erneut).
+static bool kaiten_wait_readable(int fd, int timeout_ms)
+{
+    pollfd pfd{};
+    pfd.fd = fd;
+    pfd.events = POLLIN;
+    int rc = ::poll(&pfd, 1, timeout_ms);
+    if (rc <= 0) return false; // Timeout (0) oder Fehler (<0)
+    return (pfd.revents & POLLIN) != 0;
+}
+
 struct KaitenSession::Impl
 {
     std::string      host;
@@ -208,6 +225,7 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                         error = "Timeout reading from MakerBot (port 9999)";
                         close(); return false;
                     }
+                    if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
                     size_t got = m_impl->socket.read_some(asio::buffer(&c, 1), ec);
                     if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                     if (ec) { error = ec.message(); close(); return false; }
@@ -446,6 +464,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
             while (true) {
                 if (timed_out()) { error="camera timeout (json)"; return false; }
                 boost::system::error_code ec;
+                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
                 size_t got = m_impl->socket.read_some(asio::buffer(&c,1), ec);
                 if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                 if (ec) { error=ec.message(); return false; }
@@ -466,6 +485,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
                 char tmp[8192];
                 size_t want = std::min(sizeof(tmp), n - out_raw.size());
                 boost::system::error_code ec;
+                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
                 size_t got = m_impl->socket.read_some(asio::buffer(tmp, want), ec);
                 if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
                 if (ec) { error=ec.message(); return false; }
