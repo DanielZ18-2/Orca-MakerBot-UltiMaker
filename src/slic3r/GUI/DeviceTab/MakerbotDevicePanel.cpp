@@ -265,6 +265,54 @@ private:
     wxString m_extruder_label;
 };
 
+// ---------------------------------------------------------------------------
+// KaitenCameraJob - Schritt 2 der GUI-Freeze-Behebung.
+// Laeuft auf demselben m_kaiten_worker wie KaitenTelemetryJob - dieselbe
+// sequentielle Job-Queue schliesst die Session-Oeffnungs-Race zwischen
+// Kamera- und Telemetrie-Pfad architektonisch aus (siehe Kommentar oben).
+// process() (Worker-Thread) baut nur das wxImage (reine Pixel-Arithmetik,
+// kein natives Fenster involviert) - die Zuweisung an das wxStaticBitmap
+// passiert erst in finalize() (GUI-Thread) ueber apply_camera_frame().
+// ---------------------------------------------------------------------------
+class KaitenCameraJob : public Job {
+public:
+    KaitenCameraJob(MakerbotDevicePanel* panel,
+                     std::unique_ptr<PrintHost> host,
+                     std::shared_ptr<KaitenSession> session)
+        : m_panel(panel), m_host(std::move(host)), m_session(std::move(session))
+    {}
+
+    void process(Ctl& /*ctl*/) override {
+        auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
+        if (!mb) return;
+
+        if (!m_session || !m_session->is_open()) {
+            std::string err;
+            m_session = mb->open_kaiten_session(err);
+            if (!m_session) return; // kein Bild diesen Tick - Telemetrie zeigt den Fehler
+        }
+
+        int cw = 0, ch = 0; std::string yuyv, cam_err;
+        if (mb->get_camera_frame(*m_session, cw, ch, yuyv, cam_err)) {
+            m_image = yuyv_to_wximage_rot90ccw(yuyv, cw, ch);
+        }
+    }
+
+    void finalize(bool canceled, std::exception_ptr& eptr) override {
+        eptr = nullptr;
+        if (canceled || !m_panel) return;
+        m_panel->set_kaiten_session(m_session);
+        if (m_image.IsOk())
+            m_panel->apply_camera_frame(m_image);
+    }
+
+private:
+    MakerbotDevicePanel*           m_panel;
+    std::unique_ptr<PrintHost>     m_host;
+    std::shared_ptr<KaitenSession> m_session;
+    wxImage m_image;
+};
+
 MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY), m_active_config(nullptr)
 {
@@ -843,34 +891,41 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
     m_kaiten_worker->push(job);
 }
 
+void MakerbotDevicePanel::apply_camera_frame(const wxImage& img) {
+    if (!img.IsOk()) return;
+    m_raw_camera_frame = img;
+    // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen. Zoom-Status
+    // wird hier (GUI-Thread, zum Anwendungszeitpunkt) frisch gelesen statt
+    // beim Job-Start mitgegeben - vermeidet einen 1s alten Zoom-Stand.
+    if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
+        wxCommandEvent dummy;
+        on_zoom_changed(dummy);
+    } else if (m_camera_bitmap) {
+        m_camera_bitmap->SetBitmap(wxBitmap(m_raw_camera_frame));
+        m_camera_bitmap->Refresh();
+    }
+}
+
 void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
-    // P5c: eigener 1s-Tick, entkoppelt von der 2s-Telemetrie - betrifft nur
-    // das Kamerabild, verdoppelt nicht die Telemetrie-RPC-Last.
+    // P5c: eigener 1s-Tick, entkoppelt von der 2s-Telemetrie.
+    // Schritt 2 der GUI-Freeze-Behebung: kein Netzwerk-Call mehr auf dem
+    // GUI-Thread - Job auf DENSELBEN Worker wie die Telemetrie schieben,
+    // damit beide nie gleichzeitig eine Session oeffnen koennen.
     if (!m_active_config || m_category != MBDeviceCategory::Birdwing) return;
     if (!m_camera_bitmap) return;
 
-    std::string error;
-    if (!ensure_kaiten_session(error)) return; // Fehleranzeige macht der Telemetrie-Tick
+    if (!m_kaiten_worker)
+        m_kaiten_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, nullptr, "kaiten_telemetry_worker");
+
+    if (!m_kaiten_worker->is_idle())
+        return; // Telemetrie- oder vorheriger Kamera-Job laeuft noch - diesen Tick auslassen
 
     std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
-    auto* mb = dynamic_cast<MakerbotLink*>(host.get());
-    if (!mb || !m_kaiten_session) return;
+    if (!dynamic_cast<MakerbotLink*>(host.get()))
+        return;
 
-    int cw = 0, ch = 0; std::string yuyv, cam_err;
-    if (mb->get_camera_frame(*m_kaiten_session, cw, ch, yuyv, cam_err)) {
-        wxImage img = yuyv_to_wximage_rot90ccw(yuyv, cw, ch);
-        if (img.IsOk()) {
-            m_raw_camera_frame = img;
-            // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen.
-            if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
-                wxCommandEvent dummy;
-                on_zoom_changed(dummy);
-            } else {
-                m_camera_bitmap->SetBitmap(wxBitmap(m_raw_camera_frame));
-                m_camera_bitmap->Refresh();
-            }
-        }
-    }
+    auto job = std::make_shared<KaitenCameraJob>(this, std::move(host), m_kaiten_session);
+    m_kaiten_worker->push(job);
 }
 
 void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress) {

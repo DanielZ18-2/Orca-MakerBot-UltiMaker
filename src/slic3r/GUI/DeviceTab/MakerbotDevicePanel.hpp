@@ -21,6 +21,7 @@ namespace GUI {
 
 class Worker;             // Jobs/Worker.hpp - loest Kaiten-Calls vom GUI-Thread
 class KaitenTelemetryJob; // in MakerbotDevicePanel.cpp definiert, braucht Friend-Zugriff
+class KaitenCameraJob;    // dito - fuer den Kamera-Tick (Schritt 2)
 
 // Welche der vier unterstützten MakerBot/UltiMaker-Druckerfamilien gerade
 // aktiv ist - bestimmt, welche UI-Sektionen überhaupt sinnvoll sind:
@@ -92,6 +93,7 @@ private:
     // Kamera-Tick (P5c) bleibt vorerst synchron - folgt als naechster Schritt.
     std::unique_ptr<Worker> m_kaiten_worker;
     friend class KaitenTelemetryJob;
+    friend class KaitenCameraJob;
 
     // --- Event Handlers ---
     void on_zoom_changed(wxCommandEvent& event);
@@ -114,6 +116,7 @@ private:
     void set_telemetry_error(const std::string& error);
     void set_extruder_label(const wxString& text);
     void set_z_offset_controls_enabled(bool enabled);
+    void apply_camera_frame(const wxImage& img); // fuer KaitenCameraJob::finalize()
 
     // UI-Bausteinmethoden - eine pro Sektion, jeweils nur aufgerufen wenn die
     // aktive Kategorie sie tatsächlich unterstützt.
