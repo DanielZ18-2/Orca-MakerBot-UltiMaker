@@ -11,6 +11,7 @@
 #include "slic3r/GUI/Jobs/Worker.hpp"
 #include "slic3r/GUI/Jobs/PlaterWorker.hpp"
 #include "slic3r/GUI/Jobs/BoostThreadWorker.hpp"
+#include <map>
 
 #include <wx/msgdlg.h>
 #include <wx/graphics.h>
@@ -137,6 +138,45 @@ private:
 // Jobs in on_telemetry_tick) - process() bekommt einen fertigen PrintHost,
 // fasst die Config selbst nie an.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Smart-Extruder-Typnamen, aus tool_mappings.py extrahiert (Firmware Z18
+// 2.6.3.736) und live gegen den echten Drucker verifiziert (2026-06-27,
+// kaiten_machine_config_probe.py). toolheads.extruder[].tool_id aus der
+// normalen Telemetrie indiziert DIREKT hier rein - keine zweite RPC-Stufe
+// noetig (get_machine_config liefert auf dieser Firmware ohnehin nur
+// dieselbe Telemetrie-Struktur erneut, keine eigene Mapping-Tabelle).
+// ---------------------------------------------------------------------------
+static const std::map<int, std::string>& smart_extruder_names()
+{
+    static const std::map<int, std::string> table = {
+        {1,   "Smart Extruder 11.0"},
+        {2,   "Smart Extruder 11.1"},
+        {3,   "Smart Extruder 11.2"},
+        {4,   "Smart Extruder 11.3"},
+        {5,   "Smart Extruder 12.0"},
+        {6,   "Smart Extruder 12.5"},
+        {7,   "Smart Extruder 12.1"},
+        {8,   "Smart Extruder+"},
+        {9,   "Smart Extruder 12.2"},
+        {10,  "Smart Extruder 12.2.1"},
+        {11,  "Smart Extruder 12.3"},
+        {12,  "Smart Extruder 12.4"},
+        {13,  "Smart Extruder 12.6"},
+        {14,  "Tough Smart Extruder+"},
+        {15,  "Smart Extruder+"},
+        {16,  "Tough Smart Extruder+"},
+        {17,  "Smart Extruder+"},
+        {18,  "Tough Smart Extruder+"},
+        {19,  "Smart Extruder+"},
+        {20,  "Tough Smart Extruder+"},
+        {21,  "Smart Extruder+"},
+        {22,  "Tough Smart Extruder+"},
+        {99,  "Experimental Extruder"}, // s. Warnhinweis oben im Patch-Header
+        {100, "Shiny Octo Parakeet"},
+    };
+    return table;
+}
+
 class KaitenTelemetryJob : public Job {
 public:
     KaitenTelemetryJob(MakerbotDevicePanel* panel,
@@ -206,15 +246,23 @@ public:
                     int tool_id = ex.value("tool_id", -1);
                     int tgt = ex.value("target_temperature", 0);
 
-                    wxString s = _L("Smart Extruder");
-                    if (tool_id >= 0 && tool_id != 99)
-                        s += wxString::Format(" (Tool %d)", tool_id);
+                    wxString s;
+                    const auto& names = smart_extruder_names();
+                    auto it = names.find(tool_id);
+                    if (it != names.end())
+                        s = it->second; // echter Firmware-Name (tool_mappings.py)
+                    else {
+                        s = _L("Smart Extruder");
+                        if (tool_id >= 0)
+                            s += wxString::Format(" (Tool %d)", tool_id);
+                    }
                     s += ": ";
                     s += fil ? _L("Filament loaded") : _L("no filament");
                     if (preheating)
                         s += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
                     m_extruder_label = s;
                     m_has_extruder_label = true;
+                    m_tool_id = tool_id;
                 }
                 if (th.contains("chamber") && th["chamber"].is_array() && !th["chamber"].empty()
                     && th["chamber"][0].contains("current_temperature"))
@@ -242,8 +290,10 @@ public:
             return;
         }
 
-        if (m_has_extruder_label)
+        if (m_has_extruder_label) {
             m_panel->set_extruder_label(m_extruder_label);
+            m_panel->m_current_toolhead_id = m_tool_id; // noch nicht an Prepare-Tab gekoppelt
+        }
         m_panel->set_z_offset_controls_enabled(m_status == "Idle");
         m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress);
     }
@@ -263,6 +313,7 @@ private:
     int  m_progress                 = -1;
     bool m_has_extruder_label       = false;
     wxString m_extruder_label;
+    int  m_tool_id                  = -1;
 };
 
 // ---------------------------------------------------------------------------

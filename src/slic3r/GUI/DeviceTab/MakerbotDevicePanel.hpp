@@ -85,6 +85,12 @@ private:
     bool m_z_calibration_supported = false; // gated via has_z_calibration_routine
     bool m_capability_checked = false;      // reset whenever a new session opens
 
+    // tool_id aus der letzten Telemetrie (toolheads.extruder[0].tool_id),
+    // direkter Schluessel in die Smart-Extruder-Namenstabelle. Noch nicht
+    // an die Prepare-Tab-Vorauswahl gekoppelt - das Widget dafuer fehlt mir
+    // noch. -1 = noch keine Telemetrie erhalten.
+    int m_current_toolhead_id = -1;
+
     // Schritt 1 der GUI-Freeze-Behebung: Telemetrie-Kaiten-Calls laufen jetzt
     // auf einem eigenen Worker-Thread statt synchron im Timer-Tick. NACH
     // m_kaiten_session deklariert, damit der Worker beim Zerstoeren VOR der
