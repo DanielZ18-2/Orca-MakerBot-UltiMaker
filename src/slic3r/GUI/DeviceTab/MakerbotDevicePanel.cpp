@@ -7,6 +7,10 @@
 #include "slic3r/GUI/DeviceCore/DevFirmware.h"
 #include "slic3r/Utils/PrintHost.hpp"
 #include "slic3r/Utils/MakerbotLink.hpp"
+#include "slic3r/GUI/Jobs/Job.hpp"
+#include "slic3r/GUI/Jobs/Worker.hpp"
+#include "slic3r/GUI/Jobs/PlaterWorker.hpp"
+#include "slic3r/GUI/Jobs/BoostThreadWorker.hpp"
 
 #include <wx/msgdlg.h>
 #include <wx/graphics.h>
@@ -124,6 +128,143 @@ private:
 // -----------------------------------------------------------------------------------------
 // Constructor: Initialize the main UI container and placeholder variables
 // -----------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// KaitenTelemetryJob - Schritt 1 der GUI-Freeze-Behebung.
+// process() laeuft auf dem Worker-Thread und fasst NIE ein wx-Widget an -
+// nur Daten in Member sammeln. finalize() laeuft auf dem GUI-Thread (Job-
+// Vertrag) und wendet die Ergebnisse ueber set_*/apply_*-Methoden an.
+// m_active_config wird NUR auf dem GUI-Thread gelesen (beim Erzeugen des
+// Jobs in on_telemetry_tick) - process() bekommt einen fertigen PrintHost,
+// fasst die Config selbst nie an.
+// ---------------------------------------------------------------------------
+class KaitenTelemetryJob : public Job {
+public:
+    KaitenTelemetryJob(MakerbotDevicePanel* panel,
+                        std::unique_ptr<PrintHost> host,
+                        std::shared_ptr<KaitenSession> session,
+                        bool capability_already_checked)
+        : m_panel(panel), m_host(std::move(host)), m_session(std::move(session)),
+          m_capability_checked_in(capability_already_checked)
+    {}
+
+    void process(Ctl& /*ctl*/) override {
+        auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
+        if (!mb) { m_error = "Active printer is not a MakerbotLink host."; return; }
+
+        if (!m_session || !m_session->is_open()) {
+            std::string err;
+            m_session = mb->open_kaiten_session(err);
+            if (!m_session) { m_error = err; return; }
+            m_capability_checked_in = false; // neue Sitzung - Capability-Check erneut noetig
+        }
+
+        if (!m_capability_checked_in) {
+            nlohmann::json cap_resp; std::string cap_err;
+            if (m_session->call("has_z_calibration_routine", nlohmann::json::object(), cap_resp, cap_err)) {
+                try { m_z_calibration_supported = cap_resp.at("result").get<bool>(); }
+                catch (...) { m_z_calibration_supported = true; }
+            }
+            m_capability_checked_out = true;
+        }
+
+        nlohmann::json resp; std::string error;
+        if (!m_session->call("get_system_information", nlohmann::json::object(), resp, error, 5)) {
+            m_error = error; return;
+        }
+
+        try {
+            const nlohmann::json* infop = nullptr;
+            if (resp.contains("params") && resp["params"].is_object()
+                && resp["params"].contains("info") && resp["params"]["info"].is_object())
+                infop = &resp["params"]["info"];
+            else if (resp.contains("result") && resp["result"].is_object())
+                infop = &resp["result"];
+            else
+                throw std::runtime_error("no params.info or result in response");
+            const auto& result = *infop;
+
+            m_status = "Connected";
+            if (result.contains("current_process") && result["current_process"].is_object()) {
+                const auto& proc = result["current_process"];
+                if (proc.contains("step") && proc["step"].is_string())
+                    m_status = proc["step"].get<std::string>();
+                if (proc.contains("progress") && proc["progress"].is_number())
+                    m_progress = proc["progress"].get<int>();
+            } else {
+                m_status = "Idle";
+            }
+
+            if (result.contains("toolheads") && result["toolheads"].is_object()) {
+                const auto& th = result["toolheads"];
+                if (th.contains("extruder") && th["extruder"].is_array() && !th["extruder"].empty()) {
+                    const auto& ex = th["extruder"][0];
+                    if (ex.contains("current_temperature"))
+                        m_temp_ext = ex["current_temperature"].get<int>();
+
+                    bool fil = ex.value("filament_presence", false);
+                    bool preheating = ex.value("preheating", false);
+                    int tool_id = ex.value("tool_id", -1);
+                    int tgt = ex.value("target_temperature", 0);
+
+                    wxString s = _L("Smart Extruder");
+                    if (tool_id >= 0 && tool_id != 99)
+                        s += wxString::Format(" (Tool %d)", tool_id);
+                    s += ": ";
+                    s += fil ? _L("Filament loaded") : _L("no filament");
+                    if (preheating)
+                        s += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
+                    m_extruder_label = s;
+                    m_has_extruder_label = true;
+                }
+                if (th.contains("chamber") && th["chamber"].is_array() && !th["chamber"].empty()
+                    && th["chamber"][0].contains("current_temperature"))
+                    m_temp_chamber = th["chamber"][0]["current_temperature"].get<int>();
+            }
+            m_ok = true;
+        } catch (const std::exception& e) {
+            m_error = std::string("parse error (") + e.what() + ")";
+        }
+    }
+
+    void finalize(bool canceled, std::exception_ptr& eptr) override {
+        eptr = nullptr; // Fehler laufen ueber m_error, nicht ueber Exceptions
+        if (canceled || !m_panel) return;
+
+        // Sitzung zurueckschreiben, auch bei Fehler weiter unten - sonst
+        // geht eine frisch geoeffnete Sitzung beim naechsten Tick wieder
+        // verloren und wir verbinden bei jedem Tick neu.
+        m_panel->set_kaiten_session(m_session);
+        if (m_capability_checked_out)
+            m_panel->apply_capability_check(m_z_calibration_supported);
+
+        if (!m_ok) {
+            m_panel->set_telemetry_error(m_error);
+            return;
+        }
+
+        if (m_has_extruder_label)
+            m_panel->set_extruder_label(m_extruder_label);
+        m_panel->set_z_offset_controls_enabled(m_status == "Idle");
+        m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress);
+    }
+
+private:
+    MakerbotDevicePanel*            m_panel;
+    std::unique_ptr<PrintHost>      m_host;
+    std::shared_ptr<KaitenSession>  m_session;
+    bool m_capability_checked_in;
+    bool m_capability_checked_out   = false;
+    bool m_z_calibration_supported  = true;
+    bool m_ok                       = false;
+    std::string m_error;
+    std::string m_status            = "Connected";
+    int  m_temp_ext                 = -1;
+    int  m_temp_chamber             = -1;
+    int  m_progress                 = -1;
+    bool m_has_extruder_label       = false;
+    wxString m_extruder_label;
+};
+
 MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY), m_active_config(nullptr)
 {
@@ -631,10 +772,46 @@ void MakerbotDevicePanel::stop_telemetry_polling() {
         m_camera_timer.Stop();
         BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Camera polling routine stopped.";
     }
-    if (m_kaiten_session) {
-        m_kaiten_session->close();
-        m_kaiten_session.reset();
+    if (m_kaiten_worker) {
+        // Worker stoppen lassen, BEVOR wir unsere eigene Referenz auf die
+        // Sitzung unten fallen lassen. Kein explizites close() mehr hier:
+        // falls ein Job noch laeuft, haelt seine eigene shared_ptr-Kopie die
+        // Sitzung am Leben, bis er fertig ist; der KaitenSession-Destruktor
+        // ruft close() automatisch auf DEM Thread auf, der die letzte
+        // Referenz fallen laesst - nie gleichzeitig mit einem noch
+        // laufenden call() auf dem Worker-Thread.
+        m_kaiten_worker->cancel_all();
+        m_kaiten_worker->wait_for_idle(2000);
     }
+    m_kaiten_session.reset();
+}
+
+void MakerbotDevicePanel::set_kaiten_session(std::shared_ptr<KaitenSession> session) {
+    m_kaiten_session = std::move(session);
+}
+
+void MakerbotDevicePanel::apply_capability_check(bool supported) {
+    m_z_calibration_supported = supported;
+    m_capability_checked = true;
+    if (m_btn_z_calib)
+        m_btn_z_calib->Enable(m_z_calibration_supported);
+}
+
+void MakerbotDevicePanel::set_telemetry_error(const std::string& error) {
+    if (m_lbl_telemetry_status)
+        m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), error.c_str()));
+}
+
+void MakerbotDevicePanel::set_extruder_label(const wxString& text) {
+    if (m_lbl_extruder_1) {
+        m_lbl_extruder_1->SetLabel(text);
+        m_lbl_extruder_1->Refresh();
+    }
+}
+
+void MakerbotDevicePanel::set_z_offset_controls_enabled(bool enabled) {
+    if (m_z_offset_slider) m_z_offset_slider->Enable(enabled);
+    if (m_z_offset_text)   m_z_offset_text->Enable(enabled);
 }
 
 void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
@@ -648,110 +825,22 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
         return;
     }
 
-    std::string error;
-    if (!ensure_kaiten_session(error)) {
-        if (m_lbl_telemetry_status)
-            m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), error.c_str()));
-        return;
-    }
+    // Schritt 1 der GUI-Freeze-Behebung: ab hier kein Netzwerk-Call mehr auf
+    // dem GUI-Thread. Nur PrintHost konstruieren (kein Netzwerk, schnell) und
+    // einen Job auf den Worker schieben - der macht den eigentlichen Kaiten-
+    // Call und liefert ueber finalize() (GUI-Thread) das Ergebnis zurueck.
+    if (!m_kaiten_worker)
+        m_kaiten_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, nullptr, "kaiten_telemetry_worker");
 
-    // Capability-Gate für den Z-Kalibrierungs-Button - einmalig pro Sitzung,
-    // nicht jeden Tick neu abfragen (nichts spricht dafür, dass sich das
-    // während einer Sitzung ändert).
-    if (!m_capability_checked) {
-        nlohmann::json cap_resp;
-        std::string cap_err;
-        if (m_kaiten_session->call("has_z_calibration_routine", nlohmann::json::object(), cap_resp, cap_err)) {
-            try { m_z_calibration_supported = cap_resp.at("result").get<bool>(); }
-            catch (...) { m_z_calibration_supported = true; /* unklare Antwort: nicht vorsorglich sperren */ }
-        }
-        if (m_btn_z_calib)
-            m_btn_z_calib->Enable(m_z_calibration_supported);
-        m_capability_checked = true;
-    }
+    if (!m_kaiten_worker->is_idle())
+        return; // voriger Tick laeuft noch (Drucker antwortet langsam) - diesen Tick auslassen
 
-    nlohmann::json resp;
-    if (!m_kaiten_session->call("get_system_information", nlohmann::json::object(), resp, error, 5)) {
-        if (m_lbl_telemetry_status)
-            m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), error.c_str()));
-        return;
-    }
+    std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+    if (!dynamic_cast<MakerbotLink*>(host.get()))
+        return; // sollte wegen des category-Checks oben nicht vorkommen
 
-    // Bestätigtes Schema (Capture Z18 / MakerBot Desktop 4.10.1, 2026-06):
-    //   result.current_process.{step, progress, error, ...}
-    //   result.toolheads.extruder[] : {current_temperature, target_temperature, tool_id, error}
-    //   result.toolheads.chamber[]  : {current_temperature, door_open}
-    try {
-        // Der Z18 antwortet als "system_notification" mit Daten unter
-        // params.info (verifiziert via kaiten_fullflow.py). Fallback auf
-        // result fuer evtl. andere Firmware-Staende.
-        const nlohmann::json* infop = nullptr;
-        if (resp.contains("params") && resp["params"].is_object()
-            && resp["params"].contains("info") && resp["params"]["info"].is_object())
-            infop = &resp["params"]["info"];
-        else if (resp.contains("result") && resp["result"].is_object())
-            infop = &resp["result"];
-        else
-            throw std::runtime_error("no params.info or result in response");
-        const auto& result = *infop;
-
-        std::string status_str = "Connected";
-        int progress = -1;
-        if (result.contains("current_process") && result["current_process"].is_object()) {
-            const auto& proc = result["current_process"];
-            if (proc.contains("step") && proc["step"].is_string())
-                status_str = proc["step"].get<std::string>();
-            if (proc.contains("progress") && proc["progress"].is_number())
-                progress = proc["progress"].get<int>();
-        } else {
-            status_str = "Idle";
-        }
-
-        // Z-Offset-Slider + Textfeld nur im Leerlauf bedienbar, damit eine
-        // Verstellung waehrend eines laufenden Drucks ausgeschlossen ist.
-        const bool is_idle = (status_str == "Idle");
-        if (m_z_offset_slider) m_z_offset_slider->Enable(is_idle);
-        if (m_z_offset_text)   m_z_offset_text->Enable(is_idle);
-
-        int temp_ext = -1, temp_chamber = -1;
-        if (result.contains("toolheads") && result["toolheads"].is_object()) {
-            const auto& th = result["toolheads"];
-            if (th.contains("extruder") && th["extruder"].is_array() && !th["extruder"].empty()) {
-                const auto& ex = th["extruder"][0];
-                if (ex.contains("current_temperature"))
-                    temp_ext = ex["current_temperature"].get<int>();
-
-                // Extruder-Status ehrlich aus den belegbaren Feldern bilden,
-                // statt einer geratenen Typbezeichnung. (Die exakte
-                // tool_id->Typname-Tabelle ist nicht gesichert; tool_id 99 =
-                // kein Werkzeug/idle laut Capture.)
-                if (m_lbl_extruder_1) {
-                    bool fil = ex.value("filament_presence", false);
-                    bool preheating = ex.value("preheating", false);
-                    int tool_id = ex.value("tool_id", -1);
-                    int tgt = ex.value("target_temperature", 0);
-
-                    wxString s = _L("Smart Extruder");
-                    if (tool_id >= 0 && tool_id != 99)
-                        s += wxString::Format(" (Tool %d)", tool_id);
-                    s += ": ";
-                    s += fil ? _L("Filament loaded") : _L("no filament");
-                    if (preheating)
-                        s += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
-                    m_lbl_extruder_1->SetLabel(s);
-                    m_lbl_extruder_1->Refresh();
-                }
-            }
-            if (th.contains("chamber") && th["chamber"].is_array() && !th["chamber"].empty()
-                && th["chamber"][0].contains("current_temperature"))
-                temp_chamber = th["chamber"][0]["current_temperature"].get<int>();
-        }
-
-        update_telemetry_ui(status_str, temp_ext, temp_chamber, progress);
-    } catch (const std::exception& e) {
-        if (m_lbl_telemetry_status)
-            m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: parse error (%s)"), e.what()));
-    }
+    auto job = std::make_shared<KaitenTelemetryJob>(this, std::move(host), m_kaiten_session, m_capability_checked);
+    m_kaiten_worker->push(job);
 }
 
 void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {

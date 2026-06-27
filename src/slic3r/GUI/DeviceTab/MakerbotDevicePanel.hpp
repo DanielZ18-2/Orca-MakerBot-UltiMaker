@@ -19,6 +19,9 @@ class KaitenSession;
 
 namespace GUI {
 
+class Worker;             // Jobs/Worker.hpp - loest Kaiten-Calls vom GUI-Thread
+class KaitenTelemetryJob; // in MakerbotDevicePanel.cpp definiert, braucht Friend-Zugriff
+
 // Welche der vier unterstützten MakerBot/UltiMaker-Druckerfamilien gerade
 // aktiv ist - bestimmt, welche UI-Sektionen überhaupt sinnvoll sind:
 //   Legacy     Cupcake...Replicator 2X: nur USB/seriell, kein Netzwerk,
@@ -81,6 +84,15 @@ private:
     bool m_z_calibration_supported = false; // gated via has_z_calibration_routine
     bool m_capability_checked = false;      // reset whenever a new session opens
 
+    // Schritt 1 der GUI-Freeze-Behebung: Telemetrie-Kaiten-Calls laufen jetzt
+    // auf einem eigenen Worker-Thread statt synchron im Timer-Tick. NACH
+    // m_kaiten_session deklariert, damit der Worker beim Zerstoeren VOR der
+    // Session abgebaut wird (umgekehrte Deklarationsreihenfolge) - kein
+    // laufender Job darf nach Zerstoerung der Session noch darauf schreiben.
+    // Kamera-Tick (P5c) bleibt vorerst synchron - folgt als naechster Schritt.
+    std::unique_ptr<Worker> m_kaiten_worker;
+    friend class KaitenTelemetryJob;
+
     // --- Event Handlers ---
     void on_zoom_changed(wxCommandEvent& event);
     void on_z_offset_slider_changed(wxCommandEvent& event);
@@ -94,6 +106,14 @@ private:
     void sync_z_offset_to_hardware(double offset_mm);
     void execute_printer_action(const std::string& action_id);
     void update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress);
+
+    // Schreibzugriffe fuer KaitenTelemetryJob::finalize() (laeuft auf dem
+    // GUI-Thread) - der Job selbst fasst nie ein wx-Widget direkt an.
+    void set_kaiten_session(std::shared_ptr<KaitenSession> session);
+    void apply_capability_check(bool supported);
+    void set_telemetry_error(const std::string& error);
+    void set_extruder_label(const wxString& text);
+    void set_z_offset_controls_enabled(bool enabled);
 
     // UI-Bausteinmethoden - eine pro Sektion, jeweils nur aufgerufen wenn die
     // aktive Kategorie sie tatsächlich unterstützt.
