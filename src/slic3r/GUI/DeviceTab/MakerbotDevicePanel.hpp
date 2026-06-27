@@ -100,6 +100,7 @@ private:
     std::unique_ptr<Worker> m_kaiten_worker;
     friend class KaitenTelemetryJob;
     friend class KaitenCameraJob;
+    friend class KaitenActionJob;
 
     // --- Event Handlers ---
     void on_zoom_changed(wxCommandEvent& event);
