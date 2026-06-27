@@ -877,8 +877,15 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
     // dem GUI-Thread. Nur PrintHost konstruieren (kein Netzwerk, schnell) und
     // einen Job auf den Worker schieben - der macht den eigentlichen Kaiten-
     // Call und liefert ueber finalize() (GUI-Thread) das Ergebnis zurueck.
+    // Folgefix: reiner BoostThreadWorker statt PlaterWorker<BoostThreadWorker>
+    // - PlaterWorker haengt jeden Job in einen CursorSetterRAII-Wrapper
+    // (Sanduhr-Cursor), richtig fuer einmalige Plater-Jobs, aber bei
+    // sekuendlichem Polling ein staendig flackernder "Lade"-Cursor.
+    // process_events() rufen wir deshalb jetzt selbst hier auf statt
+    // automatisch via wxEVT_IDLE/PAINT.
     if (!m_kaiten_worker)
-        m_kaiten_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, nullptr, "kaiten_telemetry_worker");
+        m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
+    m_kaiten_worker->process_events();
 
     if (!m_kaiten_worker->is_idle())
         return; // voriger Tick laeuft noch (Drucker antwortet langsam) - diesen Tick auslassen
@@ -915,7 +922,8 @@ void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
     if (!m_camera_bitmap) return;
 
     if (!m_kaiten_worker)
-        m_kaiten_worker = std::make_unique<PlaterWorker<BoostThreadWorker>>(this, nullptr, "kaiten_telemetry_worker");
+        m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
+    m_kaiten_worker->process_events();
 
     if (!m_kaiten_worker->is_idle())
         return; // Telemetrie- oder vorheriger Kamera-Job laeuft noch - diesen Tick auslassen
