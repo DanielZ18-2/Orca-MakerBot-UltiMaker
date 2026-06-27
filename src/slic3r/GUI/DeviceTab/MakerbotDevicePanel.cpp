@@ -387,6 +387,71 @@ private:
     wxImage m_image;
 };
 
+// ---------------------------------------------------------------------------
+// KaitenActionJob - Schritt 3 der Kaiten-Session-Race-Behebung.
+// Laeuft auf DEMSELBEN m_kaiten_worker wie Telemetrie/Kamera - schliesst
+// die per Log bestaetigte Race (korruptes JSON, zerrissene Kamerabilder)
+// architektonisch aus, da alle drei Job-Typen dieselbe sequentielle Queue
+// teilen. process() macht nur den RPC-Call, finalize() (GUI-Thread) zeigt
+// Erfolg/Fehler-Dialog - kein wx-Widget-Zugriff aus process().
+// ---------------------------------------------------------------------------
+class KaitenActionJob : public Job {
+public:
+    KaitenActionJob(MakerbotDevicePanel* panel,
+                     std::unique_ptr<PrintHost> host,
+                     std::shared_ptr<KaitenSession> session,
+                     std::string method,
+                     nlohmann::json params,
+                     int timeout_s,
+                     wxString success_message)
+        : m_panel(panel), m_host(std::move(host)), m_session(std::move(session)),
+          m_method(std::move(method)), m_params(std::move(params)),
+          m_timeout_s(timeout_s), m_success_message(std::move(success_message))
+    {}
+
+    void process(Ctl& /*ctl*/) override {
+        auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
+        if (!mb) { m_error = "Active printer is not a MakerbotLink host."; return; }
+
+        if (!m_session || !m_session->is_open()) {
+            std::string err;
+            m_session = mb->open_kaiten_session(err);
+            if (!m_session) { m_error = err; return; }
+        }
+
+        nlohmann::json resp;
+        m_ok = m_session->call(m_method, m_params, resp, m_error, m_timeout_s);
+    }
+
+    void finalize(bool canceled, std::exception_ptr& eptr) override {
+        eptr = nullptr;
+        if (canceled || !m_panel) return;
+        m_panel->set_kaiten_session(m_session);
+
+        BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: action '" << m_method
+            << "' -> " << (m_ok ? "OK" : "FAILED: " + m_error);
+
+        if (m_ok) {
+            if (!m_success_message.empty())
+                wxMessageDialog(m_panel, m_success_message, _L("Print"), wxOK | wxICON_INFORMATION).ShowModal();
+        } else {
+            wxMessageDialog(m_panel, wxString::Format(_L("Command failed: %s"), m_error.c_str()),
+                _L("Error"), wxOK | wxICON_ERROR).ShowModal();
+        }
+    }
+
+private:
+    MakerbotDevicePanel*           m_panel;
+    std::unique_ptr<PrintHost>     m_host;
+    std::shared_ptr<KaitenSession> m_session;
+    std::string m_method;
+    nlohmann::json m_params;
+    int m_timeout_s;
+    wxString m_success_message;
+    bool m_ok = false;
+    std::string m_error;
+};
+
 MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY), m_active_config(nullptr)
 {
@@ -755,15 +820,11 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         return;
     }
 
-    std::string error;
-    if (!ensure_kaiten_session(error)) {
-        wxMessageDialog(this, wxString::Format(_L("Could not connect: %s"), error.c_str()),
-            _L("Connection Error"), wxOK | wxICON_ERROR).ShowModal();
-        return;
-    }
+    std::string method;
+    nlohmann::json params = nlohmann::json::object();
+    int timeout_s = 5;
+    wxString success_message; // leer = keine Erfolgsmeldung
 
-    nlohmann::json resp;
-    bool ok = false;
     if (action_id == "start_print") {
         // remote_path aus der pending-Datei lesen (von upload() geschrieben).
         std::string host;
@@ -798,32 +859,35 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         if (confirm.ShowModal() != wxID_YES)
             return;
 
-        nlohmann::json params;
+        method = "print";
         params["filepath"] = remote_path;
         params["transfer_wait"] = true; // neue Firmware (newPrintFlow)
-        ok = m_kaiten_session->call("print", params, resp, error, 30);
-        if (ok) {
-            wxMessageDialog(this, _L("Print started."),
-                _L("Print"), wxOK | wxICON_INFORMATION).ShowModal();
-        }
+        timeout_s = 30;
+        success_message = _L("Print started.");
     } else if (action_id == "z_calibration") {
-        ok = m_kaiten_session->call("calibrate_z_offset", nlohmann::json::object(), resp, error);
+        method = "calibrate_z_offset";
     } else if (action_id == "load_filament") {
         // tool_index 0: einziger bestätigter Fall im Capture (Single-
         // Extruder-Z18). Für Dual-Extrusion (Lava/UltiMaker) ohnehin oben
         // schon ausgeschlossen - kommt erst mit eigener Bestätigung dazu.
-        const nlohmann::json params = {{"tool_index", 0}};
-        ok = m_kaiten_session->call("load_filament", params, resp, error);
+        method = "load_filament";
+        params["tool_index"] = 0;
     } else {
         BOOST_LOG_TRIVIAL(warning) << "MakerbotDevicePanel: unknown action_id '" << action_id << "'";
         return;
     }
 
-    if (!ok) {
-        wxMessageDialog(this, wxString::Format(_L("Command failed: %s"), error.c_str()),
-            _L("Error"), wxOK | wxICON_ERROR).ShowModal();
-    }
-    BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: action '" << action_id << "' -> " << (ok ? "OK" : "FAILED: " + error);
+    // Schritt 3: ueber DENSELBEN Worker wie Telemetrie/Kamera - schliesst
+    // die per Log bestaetigte Race auf m_kaiten_session aus.
+    if (!m_kaiten_worker)
+        m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
+
+    std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+    if (!dynamic_cast<MakerbotLink*>(host.get())) return;
+
+    auto job = std::make_shared<KaitenActionJob>(this, std::move(host), m_kaiten_session,
+                                                  method, params, timeout_s, success_message);
+    m_kaiten_worker->push(job);
 }
 
 // -----------------------------------------------------------------------------------------
