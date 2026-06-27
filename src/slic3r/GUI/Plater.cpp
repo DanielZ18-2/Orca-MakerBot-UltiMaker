@@ -2870,6 +2870,36 @@ void Sidebar::update_all_preset_comboboxes()
     p_mainframe->m_tabpanel->SetSelection(p_mainframe->m_tabpanel->GetSelection());
 }
 
+void Sidebar::set_detected_smart_extruder_type(int slot, const std::string& value)
+{
+    if (value.empty() || slot < 0)
+        return; // unbekannter/nicht zuordenbarer Typ - lieber nichts als falsch raten
+
+    PresetBundle* bundle = wxGetApp().preset_bundle;
+    if (!bundle) return;
+    DynamicPrintConfig& cfg = bundle->printers.get_edited_preset().config;
+
+    std::vector<std::string> vals;
+    if (const auto* o = cfg.opt<ConfigOptionStrings>("smart_extruder_type"))
+        vals = o->values;
+    if (vals.size() <= size_t(slot))
+        vals.resize(size_t(slot) + 1, "none");
+
+    if (vals[size_t(slot)] == value)
+        return; // unveraendert - nicht erneut schreiben/dirty markieren
+
+    vals[size_t(slot)] = value;
+    auto* new_opt = new ConfigOptionStrings();
+    new_opt->values = vals;
+    cfg.set_key_value("smart_extruder_type", new_opt);
+
+    if (Tab* tab = wxGetApp().get_tab(Preset::TYPE_PRINTER)) {
+        tab->reload_config();
+        tab->update_dirty();
+    }
+    update_presets(Preset::TYPE_PRINTER); // Sidebar-Dropdown/Bild neu befuellen
+}
+
 void Sidebar::update_presets(Preset::Type preset_type)
 {
     PresetBundle &preset_bundle = *wxGetApp().preset_bundle;

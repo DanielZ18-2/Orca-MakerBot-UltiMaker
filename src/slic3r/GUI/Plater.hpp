@@ -164,6 +164,13 @@ public:
     void update_all_preset_comboboxes();
     //void update_partplate(PartPlateList& list);
     void update_presets(Slic3r::Preset::Type preset_type);
+    // MakerBot/UltiMaker Fork: vom Device-Tab aufgerufen, wenn per
+    // Telemetrie ein Smart-Extruder-Typ erkannt wurde. Schreibt
+    // smart_extruder_type in die editierte Drucker-Config (nur bei
+    // Aenderung) und aktualisiert das Sidebar-Dropdown. Reine Vorauswahl -
+    // sperrt NICHTS (anders als historisch im MakerBot Desktop).
+    // value="" -> kein bekannter Typ, bewusst keine Aenderung statt Raten.
+    void set_detected_smart_extruder_type(int slot, const std::string& value);
     //BBS
     const std::vector<BedType>& get_cur_combox_bed_types() { return m_cur_combox_bed_types; }
     void update_presets_from_to(Slic3r::Preset::Type preset_type, std::string from, std::string to);
