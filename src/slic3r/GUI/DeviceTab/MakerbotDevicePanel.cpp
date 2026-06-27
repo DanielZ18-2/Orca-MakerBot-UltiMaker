@@ -2,6 +2,7 @@
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/GUI.hpp"
 #include "slic3r/GUI/format.hpp"
 #include "slic3r/GUI/DeviceCore/DevFirmware.h"
@@ -177,6 +178,20 @@ static const std::map<int, std::string>& smart_extruder_names()
     return table;
 }
 
+// tool_id -> Wert fuer das Sidebar-Smart-Extruder-Dropdown (siehe
+// smart_extruder_sidebar_items_for_config() in Plater.cpp). Birdwing kennt
+// nur diese drei Werte; alles andere (z.B. aeltere mk12-Varianten) liefert
+// "" - bewusst KEINE Aenderung statt falschem Fallback.
+static std::string birdwing_smart_extruder_config_value(int tool_id)
+{
+    switch (tool_id) {
+        case 99: return "mk13_experimental";
+        case 14: case 16: case 18: case 20: case 22: return "mk13_impla";
+        case 8:  case 15: case 17: case 19: case 21:  return "mk13";
+        default: return "";
+    }
+}
+
 class KaitenTelemetryJob : public Job {
 public:
     KaitenTelemetryJob(MakerbotDevicePanel* panel,
@@ -292,7 +307,15 @@ public:
 
         if (m_has_extruder_label) {
             m_panel->set_extruder_label(m_extruder_label);
-            m_panel->m_current_toolhead_id = m_tool_id; // noch nicht an Prepare-Tab gekoppelt
+            m_panel->m_current_toolhead_id = m_tool_id;
+            // Prepare-Tab-Vorauswahl: nur Vorauswahl, sperrt nichts. Schreibt
+            // nur bei tatsaechlicher Aenderung (siehe
+            // Sidebar::set_detected_smart_extruder_type()).
+            const std::string se_value = birdwing_smart_extruder_config_value(m_tool_id);
+            if (!se_value.empty()) {
+                if (Plater* plater = wxGetApp().plater())
+                    plater->sidebar().set_detected_smart_extruder_type(0, se_value);
+            }
         }
         m_panel->set_z_offset_controls_enabled(m_status == "Idle");
         m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress);
