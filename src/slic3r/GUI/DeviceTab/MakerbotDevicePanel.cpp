@@ -16,6 +16,7 @@
 #include "libslic3r/PresetBundle.hpp"
 
 #include <wx/msgdlg.h>
+#include <wx/textdlg.h>
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 #include <wx/choicdlg.h>
@@ -547,6 +548,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_z_offset_text = nullptr;
     m_btn_pause = m_btn_resume = m_btn_cancel = nullptr;
     m_btn_preheat = nullptr;
+    m_btn_rename = nullptr;
     m_btn_z_calib = m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
@@ -737,6 +739,17 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     material_sizer->Add(m_btn_unload_fil, 1, 0);
     control_box->Add(material_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
+    // Geraet: Verwaltungsfunktionen, seltener genutzt als Material/Steuerung,
+    // aber nicht so selten wie die Kalibrierung - daher knapp darueber.
+    wxStaticText* device_heading = new wxStaticText(this, wxID_ANY, _L("DEVICE"));
+    wxFont device_heading_font = device_heading->GetFont();
+    device_heading_font.MakeBold();
+    device_heading->SetFont(device_heading_font);
+    control_box->Add(device_heading, 0, wxLEFT | wxTOP, FromDIP(5));
+
+    m_btn_rename = new wxButton(this, wxID_ANY, _L("Rename"));
+    control_box->Add(m_btn_rename, 0, wxEXPAND | wxALL, FromDIP(5));
+
     // Kalibrierung: bewusst isoliert, volle Breite, ganz unten - am
     // seltensten genutzt von allem in dieser Karte.
     m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
@@ -754,6 +767,17 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     m_btn_pause->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("pause"); });
     m_btn_resume->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("resume"); });
     m_btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("cancel"); });
+    m_btn_rename->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        wxTextEntryDialog dlg(this, _L("New printer name:"), _L("Rename Printer"), wxEmptyString);
+        if (dlg.ShowModal() == wxID_OK) {
+            wxString new_name = dlg.GetValue();
+            new_name.Trim(true).Trim(false);
+            if (!new_name.IsEmpty()) {
+                m_pending_rename_name = new_name.ToStdString();
+                execute_printer_action("rename");
+            }
+        }
+    });
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_preheat->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("preheat"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
@@ -930,6 +954,9 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         params["params"] = nlohmann::json::object();
     } else if (action_id == "cancel") {
         method = "cancel_process";
+    } else if (action_id == "rename") {
+        method = "change_machine_name";
+        params["machine_name"] = m_pending_rename_name;
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
     } else if (action_id == "preheat") {
