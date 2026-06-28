@@ -60,6 +60,9 @@ private:
     wxPanel*      m_progress_donut       = nullptr; // ProgressDonut* (Cast in .cpp)
 
     // --- Hardware Controls (nur Birdwing/Lava/UltiMaker) ---
+    wxButton* m_btn_pause       = nullptr;
+    wxButton* m_btn_resume      = nullptr;
+    wxButton* m_btn_cancel      = nullptr;
     wxButton* m_btn_z_calib     = nullptr;
     wxButton* m_btn_unload_fil  = nullptr;
     wxButton* m_btn_start_print = nullptr;

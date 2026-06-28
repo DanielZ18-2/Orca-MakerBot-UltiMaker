@@ -529,6 +529,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_zoom_slider = nullptr;
     m_z_offset_slider = nullptr;
     m_z_offset_text = nullptr;
+    m_btn_pause = m_btn_resume = m_btn_cancel = nullptr;
     m_btn_z_calib = m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
@@ -688,21 +689,46 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
 //    als nur Telemetrie falsch anzuzeigen, daher hier bewusst zurückhaltend.
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_hardware_controls_section() {
-    wxBoxSizer* controls_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
+    // Gerahmte "Steuerung"-Karte (Mockup-Vorgabe). Reihenfolge nach
+    // Nutzungshaeufigkeit (Daniel, 2026-06-28): Druck-Steuerung oben,
+    // Material darunter, Kalibrierung isoliert ganz unten.
+    wxStaticBoxSizer* control_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Steuerung"));
+
+    // Druck-Steuerung: haeufigste Aktionen. RPC bestaetigt (process_method
+    // "suspend"/"resume", cancel_process) - keine Capability-Vorprüfung wie
+    // in der Referenz, wir senden direkt und zeigen den Firmware-Fehler,
+    // falls gerade nicht unterstuetzt. Ungetestet auf echter Hardware.
+    wxBoxSizer* primary_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_btn_pause  = new wxButton(this, wxID_ANY, _L("Pause"));
+    m_btn_resume = new wxButton(this, wxID_ANY, _L("Resume"));
+    m_btn_cancel = new wxButton(this, wxID_ANY, _L("Cancel"));
+    primary_sizer->Add(m_btn_pause, 1, wxRIGHT, FromDIP(5));
+    primary_sizer->Add(m_btn_resume, 1, wxRIGHT, FromDIP(5));
+    primary_sizer->Add(m_btn_cancel, 1, 0);
+    control_box->Add(primary_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
+
+    // Material: nur "entladen" - "laden" macht nur am Drucker selbst Sinn
+    // (Daniels Entscheidung). "Vorheizen" folgt in einem Folge-Patch.
     m_btn_unload_fil = new wxButton(this, wxID_ANY, _L("Unload Filament"));
+    control_box->Add(m_btn_unload_fil, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    controls_sizer->Add(m_btn_z_calib, 1, wxRIGHT, FromDIP(5));
-    controls_sizer->Add(m_btn_unload_fil, 1, 0);
+    // Kalibrierung: bewusst isoliert, volle Breite, ganz unten - am
+    // seltensten genutzt von allem in dieser Karte.
+    m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
+    control_box->Add(m_btn_z_calib, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    (m_col_right ? m_col_right : m_main_sizer)->Add(controls_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(control_box, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // "Druck starten" in eigener Zeile, optisch hervorgehoben (voller Breite).
+    // "Druck starten" bleibt bewusst ausserhalb der Steuerung-Karte -
+    // eigene Zeile, optisch hervorgehoben (voller Breite, Akzentfarbe).
     m_btn_start_print = new wxButton(this, wxID_ANY, _L("Start Print"));
     m_btn_start_print->SetBackgroundColour(wxColour(0, 179, 134)); // #00b386, P5c-Akzent (wie Donut)
     m_btn_start_print->SetForegroundColour(*wxWHITE);
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
+    m_btn_pause->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("pause"); });
+    m_btn_resume->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("resume"); });
+    m_btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("cancel"); });
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
@@ -868,6 +894,16 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         params["transfer_wait"] = true; // neue Firmware (newPrintFlow)
         timeout_s = 30;
         success_message = _L("Print started.");
+    } else if (action_id == "pause") {
+        method = "process_method";
+        params["method"] = "suspend";
+        params["params"] = nlohmann::json::object();
+    } else if (action_id == "resume") {
+        method = "process_method";
+        params["method"] = "resume";
+        params["params"] = nlohmann::json::object();
+    } else if (action_id == "cancel") {
+        method = "cancel_process";
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
     } else if (action_id == "unload_filament") {
