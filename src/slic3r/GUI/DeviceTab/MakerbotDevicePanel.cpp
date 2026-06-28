@@ -13,6 +13,7 @@
 #include "slic3r/GUI/Jobs/PlaterWorker.hpp"
 #include "slic3r/GUI/Jobs/BoostThreadWorker.hpp"
 #include <map>
+#include "libslic3r/PresetBundle.hpp"
 
 #include <wx/msgdlg.h>
 #include <wx/graphics.h>
@@ -190,6 +191,21 @@ static std::string birdwing_smart_extruder_config_value(int tool_id)
         case 8:  case 15: case 17: case 19: case 21:  return "mk13";
         default: return "";
     }
+}
+
+// Liest eine Integer-Option (z.B. Filament-Temperatur) aus der vollen,
+// gemergten Config (Drucker+Druck+Filament) - 0, falls nicht gesetzt
+// oder der Schluessel nicht existiert (kein Heizen statt Raten).
+static int filament_int_option_or_zero(const char* key)
+{
+    PresetBundle* bundle = wxGetApp().preset_bundle;
+    if (!bundle) return 0;
+    const DynamicPrintConfig& cfg = bundle->full_config();
+    if (const auto* opt = cfg.option<ConfigOptionInts>(key)) {
+        if (!opt->values.empty())
+            return opt->values[0];
+    }
+    return 0;
 }
 
 class KaitenTelemetryJob : public Job {
@@ -713,6 +729,10 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     wxBoxSizer* material_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_preheat = new wxButton(this, wxID_ANY, _L("Preheat"));
     m_btn_unload_fil = new wxButton(this, wxID_ANY, _L("Unload Filament"));
+    m_btn_preheat->SetToolTip(_L("Uses nozzle and chamber/bed temperature from "
+        "the active filament profile (Filament Settings). Heats the chamber "
+        "(Z18) or bed (other Birdwing models) too, so it doesn't need to "
+        "heat up later at print start."));
     material_sizer->Add(m_btn_preheat, 1, wxRIGHT, FromDIP(5));
     material_sizer->Add(m_btn_unload_fil, 1, 0);
     control_box->Add(material_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
@@ -914,10 +934,19 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         method = "calibrate_z_offset";
     } else if (action_id == "preheat") {
         // temperature_settings: [Extruder0, Extruder1, Kammer/Plattform, unbelegt].
-        // Nur Extruder0 gesetzt (Single-Extruder-Z18), Kammer bewusst NICHT
-        // mitgeheizt (215 °C PLA-Default, keine Material-/Temperaturauswahl-UI).
+        // Temperatur kommt aus dem aktiven Filament-Profil (Daniels Wunsch).
+        // Index 2 ist im Kaiten-Protokoll EIN gemeinsamer Slot fuer Kammer
+        // ODER Bett, je nach Hardware (Z18: Kammer; andere Birdwing-Modelle
+        // ohne Kammerheizung: teils beheiztes Bett statt Kammer). Erst
+        // chamber_temperature versuchen (Z18-Fall), bei 0 auf
+        // bed_temperature zurueckfallen (anderes Modell). 0, wenn im Profil
+        // nichts gesetzt ist (kein Heizen).
+        int nozzle_temp = filament_int_option_or_zero("temperature");
+        int platform_temp = filament_int_option_or_zero("chamber_temperature");
+        if (platform_temp == 0)
+            platform_temp = filament_int_option_or_zero("bed_temperature");
         method = "preheat";
-        params["temperature_settings"] = {215, 0, 0, 0};
+        params["temperature_settings"] = {nozzle_temp, 0, platform_temp, 0};
         params["wait_till_heated"] = false;
     } else if (action_id == "unload_filament") {
         // RPC bestaetigt per Quellcode-Analyse (conveyor 3.10.1,
