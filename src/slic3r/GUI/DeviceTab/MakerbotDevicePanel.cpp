@@ -261,21 +261,20 @@ public:
                     int tool_id = ex.value("tool_id", -1);
                     int tgt = ex.value("target_temperature", 0);
 
-                    wxString s;
                     const auto& names = smart_extruder_names();
                     auto it = names.find(tool_id);
                     if (it != names.end())
-                        s = it->second; // echter Firmware-Name (tool_mappings.py)
+                        m_extruder_type_text = it->second; // echter Firmware-Name (tool_mappings.py)
                     else {
-                        s = _L("Smart Extruder");
+                        m_extruder_type_text = _L("Unknown");
                         if (tool_id >= 0)
-                            s += wxString::Format(" (Tool %d)", tool_id);
+                            m_extruder_type_text += wxString::Format(" (Tool %d)", tool_id);
                     }
-                    s += ": ";
-                    s += fil ? _L("Filament loaded") : _L("no filament");
+
+                    wxString st = fil ? _L("Filament loaded") : _L("no filament");
                     if (preheating)
-                        s += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
-                    m_extruder_label = s;
+                        st += wxString::Format(_L(", heating to %d \u00b0C"), tgt);
+                    m_extruder_status_text = st;
                     m_has_extruder_label = true;
                     m_tool_id = tool_id;
                 }
@@ -306,7 +305,7 @@ public:
         }
 
         if (m_has_extruder_label) {
-            m_panel->set_extruder_label(m_extruder_label);
+            m_panel->set_extruder_info(m_extruder_type_text, m_extruder_status_text);
             m_panel->m_current_toolhead_id = m_tool_id;
             // Prepare-Tab-Vorauswahl: nur Vorauswahl, sperrt nichts. Schreibt
             // nur bei tatsaechlicher Aenderung (siehe
@@ -335,7 +334,8 @@ private:
     int  m_temp_chamber             = -1;
     int  m_progress                 = -1;
     bool m_has_extruder_label       = false;
-    wxString m_extruder_label;
+    wxString m_extruder_type_text;
+    wxString m_extruder_status_text;
     int  m_tool_id                  = -1;
 };
 
@@ -630,30 +630,51 @@ void MakerbotDevicePanel::build_z_offset_section() {
 void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
     m_extruder_info_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _L("Printer Status & Hardware"));
 
+    // Parameter/Wert-Tabelle statt zusammengesetzter Saetze (Daniel,
+    // 2026-06-27): feste Parameter-Beschriftung links, NUR der Wert rechts
+    // aendert sich - leichter zu erfassen als ein Label, dessen kompletter
+    // Text bei jedem Update neu zusammengesetzt wird.
+    wxFlexGridSizer* grid = new wxFlexGridSizer(2, FromDIP(2), FromDIP(10));
+    grid->AddGrowableCol(1);
+
+    auto add_row = [this, grid](const wxString& param_label, wxStaticText** value_out, const wxString& initial_value) {
+        wxStaticText* param = new wxStaticText(this, wxID_ANY, param_label);
+        wxFont f = param->GetFont(); f.MakeBold(); param->SetFont(f);
+        wxStaticText* value = new wxStaticText(this, wxID_ANY, initial_value);
+        grid->Add(param, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
+        grid->Add(value, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
+        *value_out = value;
+    };
+
     // Dual-Extrusion (Lava/Method, UltiMaker S-Serie) vs. Single Smart
-    // Extruder (Birdwing/Z18). Beide Familien sind reine Netzwerkdrucker mit
-    // Smart-Extruder-Generation - "Smart Extruder" ist hier korrekt, im
-    // Gegensatz zur Legacy-Baureihe (siehe unten).
+    // Extruder (Birdwing/Z18). Dual-Zweig bewusst NICHT auf die Tabelle
+    // umgestellt - das Protokoll dafuer ist noch nicht bestaetigt.
     if (m_category == MBDeviceCategory::Lava || m_category == MBDeviceCategory::UltiMaker) {
         m_lbl_extruder_1 = new wxStaticText(this, wxID_ANY, _L("Extruder 1 (Model): Syncing..."));
         m_lbl_extruder_2 = new wxStaticText(this, wxID_ANY, _L("Extruder 2 (Support): Syncing..."));
         m_extruder_info_sizer->Add(m_lbl_extruder_1, 0, wxALL, FromDIP(2));
         m_extruder_info_sizer->Add(m_lbl_extruder_2, 0, wxALL, FromDIP(2));
     } else {
-        m_lbl_extruder_1 = new wxStaticText(this, wxID_ANY, _L("Smart Extruder: Syncing..."));
-        m_extruder_info_sizer->Add(m_lbl_extruder_1, 0, wxALL, FromDIP(2));
+        add_row(_L("Smart Extruder Type installed:"), &m_lbl_extruder_type, _L("Syncing..."));
+        add_row(_L("Smart Extruder status:"), &m_lbl_extruder_1, _L("Syncing..."));
     }
 
-    m_lbl_telemetry_temp = new wxStaticText(this, wxID_ANY, _L("Temperatures (Extruder / Chamber): -- °C / -- °C"));
-    m_lbl_telemetry_status = new wxStaticText(this, wxID_ANY, _L("Status: Connecting..."));
+    add_row(_L("Current Nozzle temperature:"), &m_lbl_telemetry_temp, _L("-- \u00b0C"));
+    add_row(_L("Current Printer Chamber temperature:"), &m_lbl_telemetry_temp_chamber, _L("-- \u00b0C"));
+    add_row(_L("Current printer operation status:"), &m_lbl_telemetry_status, _L("Connecting..."));
+
+    m_extruder_info_sizer->Add(grid, 0, wxEXPAND | wxALL, FromDIP(2));
+
+    m_lbl_telemetry_progress = nullptr; // wird nicht mehr als Text gezeigt
+
+    wxStaticText* donut_heading = new wxStaticText(this, wxID_ANY, _L("Current progress"));
+    wxFont hf = donut_heading->GetFont(); hf.MakeBold(); donut_heading->SetFont(hf);
+    m_extruder_info_sizer->Add(donut_heading, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, FromDIP(8));
+
     // Fortschritt als Doughnut-Ring (ersetzt die fruehere Progress-Textzeile).
     ProgressDonut* donut = new ProgressDonut(this, wxSize(FromDIP(110), FromDIP(110)));
     m_progress_donut = donut;
-    m_lbl_telemetry_progress = nullptr; // wird nicht mehr als Text gezeigt
-
-    m_extruder_info_sizer->Add(m_lbl_telemetry_temp, 0, wxTOP | wxBOTTOM, FromDIP(5));
-    m_extruder_info_sizer->Add(m_lbl_telemetry_status, 0, wxBOTTOM, FromDIP(2));
-    m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxBOTTOM, FromDIP(8));
+    m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL | wxBOTTOM, FromDIP(8));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_extruder_info_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 }
@@ -988,9 +1009,13 @@ void MakerbotDevicePanel::set_telemetry_error(const std::string& error) {
         m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), error.c_str()));
 }
 
-void MakerbotDevicePanel::set_extruder_label(const wxString& text) {
+void MakerbotDevicePanel::set_extruder_info(const wxString& type_text, const wxString& status_text) {
+    if (m_lbl_extruder_type) {
+        m_lbl_extruder_type->SetLabel(type_text);
+        m_lbl_extruder_type->Refresh();
+    }
     if (m_lbl_extruder_1) {
-        m_lbl_extruder_1->SetLabel(text);
+        m_lbl_extruder_1->SetLabel(status_text);
         m_lbl_extruder_1->Refresh();
     }
 }
