@@ -529,7 +529,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_zoom_slider = nullptr;
     m_z_offset_slider = nullptr;
     m_z_offset_text = nullptr;
-    m_btn_z_calib = m_btn_load_fil = m_btn_unload_fil = m_btn_firmware_update = nullptr;
+    m_btn_z_calib = m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
 
@@ -690,11 +690,9 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
 void MakerbotDevicePanel::build_hardware_controls_section() {
     wxBoxSizer* controls_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
-    m_btn_load_fil = new wxButton(this, wxID_ANY, _L("Load Filament"));
     m_btn_unload_fil = new wxButton(this, wxID_ANY, _L("Unload Filament"));
 
     controls_sizer->Add(m_btn_z_calib, 1, wxRIGHT, FromDIP(5));
-    controls_sizer->Add(m_btn_load_fil, 1, wxRIGHT, FromDIP(5));
     controls_sizer->Add(m_btn_unload_fil, 1, 0);
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(controls_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
@@ -706,7 +704,6 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
-    m_btn_load_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("load_filament"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
 }
@@ -827,20 +824,6 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         return;
     }
 
-    if (action_id == "unload_filament") {
-        // KEIN bestätigter Methodenname (siehe MakerbotLink.hpp/.cpp Kommentar).
-        // process_method/"stop_filament" ist ein Kandidat aus dem Capture,
-        // aber seine genaue Wirkung ist nicht eindeutig belegt - daher
-        // bewusst nicht verdrahtet.
-        wxMessageDialog(this,
-            _L("Unload Filament has no confirmed command yet - the capture "
-               "didn't show this action being triggered. No command was sent. "
-               "If you can capture clicking this on the printer's own screen, "
-               "send it over and this gets wired up."),
-            _L("Not yet implemented"), wxOK | wxICON_INFORMATION).ShowModal();
-        return;
-    }
-
     std::string method;
     nlohmann::json params = nlohmann::json::object();
     int timeout_s = 5;
@@ -887,15 +870,13 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         success_message = _L("Print started.");
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
-    } else if (action_id == "load_filament") {
-        // tool_index 0: einziger bestätigter Fall im Capture (Single-
-        // Extruder-Z18). Für Dual-Extrusion (Lava/UltiMaker) ohnehin oben
-        // schon ausgeschlossen - kommt erst mit eigener Bestätigung dazu.
-        // temperature_settings ist laut Referenz-Quellcode (conveyor
-        // 3.10.1, birdwing.py) ein Pflichtparameter - fehlte bisher
-        // komplett. 215 °C = PLA-Default aus dem echten Z18-Profil
-        // (z18_6.json), keine Materialauswahl vorhanden (Folgeschritt).
-        method = "load_filament";
+    } else if (action_id == "unload_filament") {
+        // RPC bestaetigt per Quellcode-Analyse (conveyor 3.10.1,
+        // birdwing.py:2084-2096) - keine Vermutung mehr. tool_index 0:
+        // einziger Fall fuer Single-Extruder-Z18 (Dual-Extrusion oben
+        // schon ausgeschlossen). 215 °C PLA-Default, da keine
+        // Material-/Temperaturauswahl-UI existiert.
+        method = "unload_filament";
         params["tool_index"] = 0;
         params["temperature_settings"] = 215;
     } else {

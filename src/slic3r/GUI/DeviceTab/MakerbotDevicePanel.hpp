@@ -50,16 +50,17 @@ private:
     wxTextCtrl* m_z_offset_text   = nullptr;
 
     // --- Telemetry & Extruder Information (alle Familien, Inhalt variiert) ---
-    wxStaticText* m_lbl_extruder_1        = nullptr;
+    wxStaticText* m_lbl_extruder_1        = nullptr; // Wert-Feld: "Smart Extruder status"
+    wxStaticText* m_lbl_extruder_type     = nullptr; // Wert-Feld: "Smart Extruder Type installed"
     wxStaticText* m_lbl_extruder_2        = nullptr;
-    wxStaticText* m_lbl_telemetry_temp    = nullptr;
-    wxStaticText* m_lbl_telemetry_status  = nullptr;
+    wxStaticText* m_lbl_telemetry_temp    = nullptr; // Wert-Feld: "Current Nozzle temperature"
+    wxStaticText* m_lbl_telemetry_temp_chamber = nullptr; // Wert-Feld: "Current Printer Chamber temperature"
+    wxStaticText* m_lbl_telemetry_status  = nullptr; // Wert-Feld: "Current printer operation status" (kein Praefix mehr)
     wxStaticText* m_lbl_telemetry_progress= nullptr;
     wxPanel*      m_progress_donut       = nullptr; // ProgressDonut* (Cast in .cpp)
 
     // --- Hardware Controls (nur Birdwing/Lava/UltiMaker) ---
     wxButton* m_btn_z_calib     = nullptr;
-    wxButton* m_btn_load_fil    = nullptr;
     wxButton* m_btn_unload_fil  = nullptr;
     wxButton* m_btn_start_print = nullptr;
 
@@ -121,7 +122,7 @@ private:
     void set_kaiten_session(std::shared_ptr<KaitenSession> session);
     void apply_capability_check(bool supported);
     void set_telemetry_error(const std::string& error);
-    void set_extruder_label(const wxString& text);
+    void set_extruder_info(const wxString& type_text, const wxString& status_text);
     void set_z_offset_controls_enabled(bool enabled);
     void apply_camera_frame(const wxImage& img); // fuer KaitenCameraJob::finalize()
 
