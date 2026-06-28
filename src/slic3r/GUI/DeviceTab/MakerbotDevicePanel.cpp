@@ -891,8 +891,13 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         // tool_index 0: einziger bestätigter Fall im Capture (Single-
         // Extruder-Z18). Für Dual-Extrusion (Lava/UltiMaker) ohnehin oben
         // schon ausgeschlossen - kommt erst mit eigener Bestätigung dazu.
+        // temperature_settings ist laut Referenz-Quellcode (conveyor
+        // 3.10.1, birdwing.py) ein Pflichtparameter - fehlte bisher
+        // komplett. 215 °C = PLA-Default aus dem echten Z18-Profil
+        // (z18_6.json), keine Materialauswahl vorhanden (Folgeschritt).
         method = "load_filament";
         params["tool_index"] = 0;
+        params["temperature_settings"] = 215;
     } else {
         BOOST_LOG_TRIVIAL(warning) << "MakerbotDevicePanel: unknown action_id '" << action_id << "'";
         return;
