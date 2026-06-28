@@ -530,6 +530,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_z_offset_slider = nullptr;
     m_z_offset_text = nullptr;
     m_btn_pause = m_btn_resume = m_btn_cancel = nullptr;
+    m_btn_preheat = nullptr;
     m_btn_z_calib = m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
@@ -707,10 +708,14 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     primary_sizer->Add(m_btn_cancel, 1, 0);
     control_box->Add(primary_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Material: nur "entladen" - "laden" macht nur am Drucker selbst Sinn
-    // (Daniels Entscheidung). "Vorheizen" folgt in einem Folge-Patch.
+    // Material: Vorheizen + Filament entladen in einer Reihe. "Laden"
+    // macht nur am Drucker selbst Sinn (Daniels Entscheidung).
+    wxBoxSizer* material_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_btn_preheat = new wxButton(this, wxID_ANY, _L("Preheat"));
     m_btn_unload_fil = new wxButton(this, wxID_ANY, _L("Unload Filament"));
-    control_box->Add(m_btn_unload_fil, 0, wxEXPAND | wxALL, FromDIP(5));
+    material_sizer->Add(m_btn_preheat, 1, wxRIGHT, FromDIP(5));
+    material_sizer->Add(m_btn_unload_fil, 1, 0);
+    control_box->Add(material_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     // Kalibrierung: bewusst isoliert, volle Breite, ganz unten - am
     // seltensten genutzt von allem in dieser Karte.
@@ -730,6 +735,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     m_btn_resume->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("resume"); });
     m_btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("cancel"); });
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
+    m_btn_preheat->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("preheat"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
 }
@@ -906,6 +912,13 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         method = "cancel_process";
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
+    } else if (action_id == "preheat") {
+        // temperature_settings: [Extruder0, Extruder1, Kammer/Plattform, unbelegt].
+        // Nur Extruder0 gesetzt (Single-Extruder-Z18), Kammer bewusst NICHT
+        // mitgeheizt (215 °C PLA-Default, keine Material-/Temperaturauswahl-UI).
+        method = "preheat";
+        params["temperature_settings"] = {215, 0, 0, 0};
+        params["wait_till_heated"] = false;
     } else if (action_id == "unload_filament") {
         // RPC bestaetigt per Quellcode-Analyse (conveyor 3.10.1,
         // birdwing.py:2084-2096) - keine Vermutung mehr. tool_index 0:
