@@ -17,6 +17,7 @@
 
 #include <wx/msgdlg.h>
 #include <wx/textdlg.h>
+#include <functional>
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 #include <wx/choicdlg.h>
@@ -420,10 +421,12 @@ public:
                      std::string method,
                      nlohmann::json params,
                      int timeout_s,
-                     wxString success_message)
+                     wxString success_message,
+                     std::function<void(const nlohmann::json&)> on_result = nullptr)
         : m_panel(panel), m_host(std::move(host)), m_session(std::move(session)),
           m_method(std::move(method)), m_params(std::move(params)),
-          m_timeout_s(timeout_s), m_success_message(std::move(success_message))
+          m_timeout_s(timeout_s), m_success_message(std::move(success_message)),
+          m_on_result(std::move(on_result))
     {}
 
     void process(Ctl& /*ctl*/) override {
@@ -436,8 +439,7 @@ public:
             if (!m_session) { m_error = err; return; }
         }
 
-        nlohmann::json resp;
-        m_ok = m_session->call(m_method, m_params, resp, m_error, m_timeout_s);
+        m_ok = m_session->call(m_method, m_params, m_response, m_error, m_timeout_s);
     }
 
     void finalize(bool canceled, std::exception_ptr& eptr) override {
@@ -449,7 +451,9 @@ public:
             << "' -> " << (m_ok ? "OK" : "FAILED: " + m_error);
 
         if (m_ok) {
-            if (!m_success_message.empty())
+            if (m_on_result)
+                m_on_result(m_response);
+            else if (!m_success_message.empty())
                 wxMessageDialog(m_panel, m_success_message, _L("Print"), wxOK | wxICON_INFORMATION).ShowModal();
         } else {
             wxMessageDialog(m_panel, wxString::Format(_L("Command failed: %s"), m_error.c_str()),
@@ -465,8 +469,10 @@ private:
     nlohmann::json m_params;
     int m_timeout_s;
     wxString m_success_message;
+    std::function<void(const nlohmann::json&)> m_on_result;
     bool m_ok = false;
     std::string m_error;
+    nlohmann::json m_response;
 };
 
 MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
@@ -747,8 +753,12 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     device_heading->SetFont(device_heading_font);
     control_box->Add(device_heading, 0, wxLEFT | wxTOP, FromDIP(5));
 
+    wxBoxSizer* device_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_rename = new wxButton(this, wxID_ANY, _L("Rename"));
-    control_box->Add(m_btn_rename, 0, wxEXPAND | wxALL, FromDIP(5));
+    m_btn_files = new wxButton(this, wxID_ANY, _L("Files"));
+    device_sizer->Add(m_btn_rename, 1, wxRIGHT, FromDIP(5));
+    device_sizer->Add(m_btn_files, 1, 0);
+    control_box->Add(device_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     // Kalibrierung: bewusst isoliert, volle Breite, ganz unten - am
     // seltensten genutzt von allem in dieser Karte.
@@ -778,6 +788,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
             }
         }
     });
+    m_btn_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("files"); });
     m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_preheat->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("preheat"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
@@ -904,6 +915,7 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     nlohmann::json params = nlohmann::json::object();
     int timeout_s = 5;
     wxString success_message; // leer = keine Erfolgsmeldung
+    std::function<void(const nlohmann::json&)> on_result; // gesetzt = zeigt Ergebnis statt fester Meldung
 
     if (action_id == "start_print") {
         // remote_path aus der pending-Datei lesen (von upload() geschrieben).
@@ -957,6 +969,20 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     } else if (action_id == "rename") {
         method = "change_machine_name";
         params["machine_name"] = m_pending_rename_name;
+    } else if (action_id == "files") {
+        // Format der Antwort nicht bestaetigt - rohe JSON-Antwort anzeigen
+        // statt ein Format zu erraten und falsch zu parsen.
+        method = "birdwing_list";
+        params["path"] = "/";
+        on_result = [this](const nlohmann::json& resp) {
+            std::string text = resp.contains("result") ? resp.at("result").dump(2) : resp.dump(2);
+            wxTextEntryDialog dlg(this,
+                _L("Raw response (list format not yet confirmed):"),
+                _L("Files"), wxString::FromUTF8(text),
+                wxTextEntryDialogStyle | wxTE_MULTILINE);
+            dlg.SetSize(FromDIP(wxSize(500, 400)));
+            dlg.ShowModal();
+        };
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
     } else if (action_id == "preheat") {
@@ -998,7 +1024,7 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     if (!dynamic_cast<MakerbotLink*>(host.get())) return;
 
     auto job = std::make_shared<KaitenActionJob>(this, std::move(host), m_kaiten_session,
-                                                  method, params, timeout_s, success_message);
+                                                  method, params, timeout_s, success_message, on_result);
     m_kaiten_worker->push(job);
 }
 
