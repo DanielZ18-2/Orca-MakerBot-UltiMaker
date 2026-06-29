@@ -109,6 +109,7 @@ private:
     friend class KaitenTelemetryJob;
     friend class KaitenCameraJob;
     friend class KaitenActionJob;
+    friend class KaitenPrintJob;
 
     // --- Event Handlers ---
     void on_zoom_changed(wxCommandEvent& event);
@@ -122,6 +123,7 @@ private:
     bool ensure_kaiten_session(std::string& error); // lazily opens m_kaiten_session
     void sync_z_offset_to_hardware(double offset_mm);
     void execute_printer_action(const std::string& action_id);
+    void start_print_with_confirmation(); // print->put nach Bauplatten-Bestaetigung
     void update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress);
 
     // Schreibzugriffe fuer KaitenTelemetryJob::finalize() (laeuft auf dem

@@ -475,6 +475,60 @@ private:
     nlohmann::json m_response;
 };
 
+// Eigener Job fuer den kompletten Druckstart (print -> put). Anders als
+// KaitenActionJob (ein einzelner RPC) ruft dieser den mehrstufigen
+// kaiten_print_and_upload-Ablauf mit Upload-Progress auf.
+class KaitenPrintJob : public Job {
+public:
+    KaitenPrintJob(MakerbotDevicePanel* panel,
+                   std::unique_ptr<PrintHost> host,
+                   std::shared_ptr<KaitenSession> session,
+                   std::string local_path)
+        : m_panel(panel), m_host(std::move(host)), m_session(std::move(session)),
+          m_local_path(std::move(local_path))
+    {}
+
+    void process(Ctl& /*ctl*/) override {
+        auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
+        if (!mb) { m_error = "Active printer is not a MakerbotLink host."; return; }
+        if (!m_session || !m_session->is_open()) {
+            std::string err;
+            m_session = mb->open_kaiten_session(err);
+            if (!m_session) { m_error = err; return; }
+        }
+        // Upload-Progress wird hier bewusst NICHT in die GUI gespiegelt
+        // (Worker-Thread). Eine Progress-Anzeige koennte spaeter ueber
+        // ein Event nachgeruestet werden; fuer den ersten funktionierenden
+        // Stand genuegt der Donut/Status aus der Telemetrie.
+        PrintHost::ProgressFn noop = [](Http::Progress, bool&) {};
+        m_ok = mb->kaiten_print_and_upload(*m_session, m_local_path, noop, m_error);
+    }
+
+    void finalize(bool canceled, std::exception_ptr& eptr) override {
+        eptr = nullptr;
+        if (canceled || !m_panel) return;
+        m_panel->set_kaiten_session(m_session);
+        BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: print+upload -> "
+            << (m_ok ? "OK" : "FAILED: " + m_error);
+        if (m_ok) {
+            wxMessageDialog(m_panel, _L("Print started."), _L("Print"),
+                wxOK | wxICON_INFORMATION).ShowModal();
+        } else {
+            wxMessageDialog(m_panel,
+                wxString::Format(_L("Could not start print: %s"), m_error.c_str()),
+                _L("Error"), wxOK | wxICON_ERROR).ShowModal();
+        }
+    }
+
+private:
+    MakerbotDevicePanel*           m_panel;
+    std::unique_ptr<PrintHost>     m_host;
+    std::shared_ptr<KaitenSession> m_session;
+    std::string                    m_local_path;
+    bool                           m_ok = false;
+    std::string                    m_error;
+};
+
 MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY), m_active_config(nullptr)
 {
@@ -902,6 +956,81 @@ void MakerbotDevicePanel::sync_z_offset_to_hardware(double offset_mm) {
     BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset set to " << offset_mm << "mm";
 }
 
+// Liest den lokalen .makerbot-Pfad aus der pending-Datei, zeigt einen
+// Bauplatten-Bestaetigungsdialog MIT Live-Kamerabild und startet bei
+// Bestaetigung den korrekten print->put-Ablauf (KaitenPrintJob).
+void MakerbotDevicePanel::start_print_with_confirmation() {
+    if (m_category != MBDeviceCategory::Birdwing) return;
+
+    // pending-Datei lesen (enthaelt jetzt den LOKALEN Pfad).
+    std::string host;
+    if (const auto* opt = m_active_config->option<ConfigOptionString>("print_host"))
+        host = opt->value;
+    const char* home = std::getenv("HOME");
+    std::string base = home ? std::string(home) : std::string("/tmp");
+    std::string safe = host;
+    for (char& c : safe) if (c == '/' || c == ':' || c == '\\') c = '_';
+    const std::string pending = base + "/.config/OrcaSlicer/makerbot_pending/" + safe + ".txt";
+
+    std::string local_path;
+    { std::ifstream pf(pending); if (pf) std::getline(pf, local_path); }
+    if (local_path.empty()) {
+        wxMessageDialog(this,
+            _L("No sliced file found for this printer yet.\n\n"
+               "Slice a model and use \"Print\" first, then start the print here."),
+            _L("Nothing to print"), wxOK | wxICON_INFORMATION).ShowModal();
+        return;
+    }
+
+    // Bestaetigungsdialog MIT Live-Kamerabild (Daniels Wunsch). Zeigt das
+    // zuletzt empfangene Kamerabild gross an, damit der Nutzer die freie
+    // Bauplatte direkt im Dialog sieht.
+    wxDialog dlg(this, wxID_ANY, _L("Check Build Plate"),
+                 wxDefaultPosition, wxDefaultSize,
+                 wxDEFAULT_DIALOG_STYLE);
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+
+    if (m_raw_camera_frame.IsOk()) {
+        // Auf vernuenftige Dialoggroesse skalieren (max. 480 breit).
+        wxImage img = m_raw_camera_frame.Copy();
+        int w = img.GetWidth(), h = img.GetHeight();
+        const int max_w = FromDIP(480);
+        if (w > max_w && w > 0) {
+            int new_h = (int)((double)h * max_w / w);
+            img = img.Scale(max_w, new_h, wxIMAGE_QUALITY_HIGH);
+        }
+        wxStaticBitmap* cam = new wxStaticBitmap(&dlg, wxID_ANY, wxBitmap(img));
+        sizer->Add(cam, 0, wxALIGN_CENTER | wxALL, FromDIP(10));
+    }
+
+    wxStaticText* warn = new wxStaticText(&dlg, wxID_ANY,
+        _L("Make sure the build plate is completely empty.\n\n"
+           "WARNING: If any object or residual material is still on the plate, "
+           "the print head can be damaged or the print will fail."));
+    warn->Wrap(FromDIP(460));
+    sizer->Add(warn, 0, wxALL, FromDIP(10));
+
+    wxBoxSizer* btns = new wxBoxSizer(wxHORIZONTAL);
+    wxButton* ok = new wxButton(&dlg, wxID_OK, _L("Build plate is clear - Start Print"));
+    wxButton* cancel = new wxButton(&dlg, wxID_CANCEL, _L("Cancel"));
+    btns->Add(ok, 0, wxRIGHT, FromDIP(5));
+    btns->Add(cancel, 0, 0);
+    sizer->Add(btns, 0, wxALIGN_CENTER | wxALL, FromDIP(10));
+
+    dlg.SetSizerAndFit(sizer);
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+
+    // Korrekten print->put-Ablauf auf dem Worker starten.
+    if (!m_kaiten_worker)
+        m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
+    std::unique_ptr<PrintHost> host_obj(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+    if (!dynamic_cast<MakerbotLink*>(host_obj.get())) return;
+    auto job = std::make_shared<KaitenPrintJob>(this, std::move(host_obj),
+                                                m_kaiten_session, local_path);
+    m_kaiten_worker->push(std::move(job));
+}
+
 void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     if (m_category != MBDeviceCategory::Birdwing) {
         wxMessageDialog(this,
@@ -918,44 +1047,10 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     std::function<void(const nlohmann::json&)> on_result; // gesetzt = zeigt Ergebnis statt fester Meldung
 
     if (action_id == "start_print") {
-        // remote_path aus der pending-Datei lesen (von upload() geschrieben).
-        std::string host;
-        if (const auto* opt = m_active_config->option<ConfigOptionString>("print_host"))
-            host = opt->value;
-        const char* home = std::getenv("HOME");
-        std::string base = home ? std::string(home) : std::string("/tmp");
-        std::string safe = host;
-        for (char& c : safe) if (c == '/' || c == ':' || c == '\\') c = '_';
-        const std::string pending = base + "/.config/OrcaSlicer/makerbot_pending/" + safe + ".txt";
-
-        std::string remote_path;
-        { std::ifstream pf(pending); if (pf) std::getline(pf, remote_path); }
-        if (remote_path.empty()) {
-            wxMessageDialog(this,
-                _L("No uploaded file found for this printer yet.\n\n"
-                   "Slice a model and use \"Print\" first to upload it, "
-                   "then start the print here."),
-                _L("Nothing to print"), wxOK | wxICON_INFORMATION).ShowModal();
-            return;
-        }
-
-        // Kamera-Sichtpruefung durch den Nutzer + Warnhinweis.
-        wxMessageDialog confirm(this,
-            _L("Please check the live camera image and make sure the build "
-               "plate is completely empty.\n\n"
-               "WARNING: If any object or residual material is still on the "
-               "plate, the print head can be damaged or the print will fail.\n\n"
-               "Is the build plate clear?"),
-            _L("Check Build Plate"), wxYES_NO | wxICON_WARNING);
-        confirm.SetYesNoLabels(_L("Build plate is clear - Start Print"), _L("Cancel"));
-        if (confirm.ShowModal() != wxID_YES)
-            return;
-
-        method = "print";
-        params["filepath"] = remote_path;
-        params["transfer_wait"] = true; // neue Firmware (newPrintFlow)
-        timeout_s = 30;
-        success_message = _L("Print started.");
+        // Eigener, mehrstufiger Ablauf (Kamera-Dialog + print->put) - nicht
+        // ueber den generischen KaitenActionJob abbildbar.
+        start_print_with_confirmation();
+        return;
     } else if (action_id == "pause") {
         method = "process_method";
         params["method"] = "suspend";

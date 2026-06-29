@@ -364,7 +364,11 @@ static nlohmann::json build_birdwing_meta(
         ps["extruder_temperatures"]= nlohmann::json::array({h.first_layer_temp, h.temperature});
         ps["first_layer_height"]   = h.first_layer_height;
         ps["chamber_temperature"]  = h.chamber_temp;
-        ps["slicer"]               = "OrcaSlicer MakerBot native export";
+        // DIAGNOSE-Test (2026-06-28): testet, ob die Firmware den slicer-String
+        // gegen eine Liste prueft (Erklaerung fuer "Press the dial"), oder ob es
+        // am Transportweg (Netzwerk vs. USB) liegt. NICHT der finale Wert -
+        // siehe patch_slicer_string_diagnostic_test.py fuer Details.
+        ps["slicer"]               = "SIMPLIFY3D";
         meta["printer_settings"]   = ps;
     }
 

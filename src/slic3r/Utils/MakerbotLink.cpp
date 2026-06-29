@@ -675,11 +675,12 @@ bool MakerbotLink::kaiten_print(KaitenSession& session,
                                 bool new_flow, std::string& error) const
 {
     nlohmann::json params;
+    // Offizielle Software (print_job_helper.js) uebergibt an "print" IMMER nur
+    // den Basename (path.basename(localPath)), nie den vollen Pfad - auch im
+    // new_flow. Fix von Fehler (4).
+    params["filepath"] = boost::filesystem::path(remote_path).filename().string();
     if (new_flow) {
-        params["filepath"] = remote_path;
         params["transfer_wait"] = true;
-    } else {
-        params["filepath"] = boost::filesystem::path(remote_path).filename().string();
     }
     nlohmann::json resp;
     if (!session.call("print", params, resp, error, 30)) {
@@ -687,6 +688,46 @@ bool MakerbotLink::kaiten_print(KaitenSession& session,
         return false;
     }
     BOOST_LOG_TRIVIAL(info) << "MakerbotLink: print started for " << remote_path;
+    return true;
+}
+
+// Kompletter Druckstart in korrekter Reihenfolge (print -> put), 1:1 nach
+// dem belegten Ablauf der offiziellen MakerBot Print Software.
+bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
+                                           const std::string& local_path,
+                                           ProgressFn prg_fn,
+                                           std::string& error) const
+{
+    namespace fs = boost::filesystem;
+    const std::string basename = fs::path(local_path).filename().string();
+    // Fix Fehler (2): "/current_thing/" OHNE fuehrendes "/home/"
+    // (makerbot-printer.js:677).
+    const std::string remote_path = "/current_thing/" + basename;
+
+    // Schritt 1: print ZUERST, mit transfer_wait=true und NUR dem Basename.
+    // Der Drucker geht danach in "warte auf Datei" (+ ggf. Homing) und
+    // erwartet aktiv den folgenden Upload - das vermeidet die "Press the
+    // dial"-Sicherheitsabfrage fuer unerwartete Dateien (Fehler 1+3+4).
+    {
+        nlohmann::json params;
+        params["filepath"] = basename;
+        params["transfer_wait"] = true;
+        nlohmann::json resp;
+        if (!session.call("print", params, resp, error, 30)) {
+            error = "print (transfer_wait) failed: " + error;
+            return false;
+        }
+        BOOST_LOG_TRIVIAL(info) << "MakerbotLink: print(transfer_wait) ok, awaiting file "
+                                << remote_path;
+    }
+
+    // Schritt 2: jetzt erst die Datei hochladen, an den /current_thing/-Pfad.
+    if (!kaiten_upload_file(session, local_path, remote_path, prg_fn, error)) {
+        error = "file upload after print failed: " + error;
+        return false;
+    }
+
+    BOOST_LOG_TRIVIAL(info) << "MakerbotLink: print+upload complete for " << remote_path;
     return true;
 }
 
@@ -1005,31 +1046,19 @@ bool MakerbotLink::upload(PrintHostUpload upload_data,
     std::string err;
 
     if (m_is_birdwing) {
-        // Birdwing-Upload ueber Kaiten (port 9999): Token-Refresh ->
-        // authenticate -> put_init/raw/term -> print. Verifiziert gegen Z18.
-        info_fn("", "Connecting to MakerBot Birdwing...");
-        std::shared_ptr<KaitenSession> session = open_kaiten_session(err);
-        if (!session) { err_fn("MakerBot Birdwing connection failed: " + err); return false; }
-
+        // GEAENDERT (Daniel 2026-06-28): KEIN Vorab-Upload mehr. Der Upload
+        // soll erst NACH der Bauplatten-Bestaetigung im Device-Tab laufen,
+        // zusammen mit dem print-Aufruf in korrekter Reihenfolge
+        // (kaiten_print_and_upload). Hier wird daher nur noch der LOKALE
+        // Pfad der fertigen .makerbot-Datei als "pending" gemerkt, damit das
+        // Device-Tab beim Start-Knopf weiss, welche Datei zu drucken ist.
+        // Wir testen NICHT die Verbindung hier - das passiert ohnehin beim
+        // Druckstart im Device-Tab.
         const boost::filesystem::path src(upload_data.source_path.string());
-        const std::string name = src.filename().string();
-        // Firmware-Flow: neuere Firmware nutzt /home/current_thing/
-        const std::string remote_path = "/home/current_thing/" + name;
+        write_pending_print(m_host, src.string());
 
-        info_fn("", "Uploading .makerbot to printer...");
-        if (!kaiten_upload_file(*session, src.string(), remote_path, prg_fn, err)) {
-            err_fn("Upload failed: " + err);
-            return false;
-        }
-
-        // KEIN print hier! Der echte MakerBot-Flow (newPrintFlow) trennt Upload
-        // und Druckstart: erst put (oben), dann spaeter print ueber dieselbe
-        // (Device-Tab-)Session. Wir merken den remote_path in einer pending-
-        // Datei pro Drucker; das Device-Tab loest den Druck per "Druck starten"
-        // aus, nachdem der Nutzer die freie Bauplatte im Kamerabild bestaetigt.
-        write_pending_print(m_host, remote_path);
-
-        info_fn("", "Upload complete. Open the Device tab to start the print.");
+        info_fn("", "Ready. Open the Device tab, confirm the build plate is "
+                    "clear, then start the print.");
         bool cancel = false;
         prg_fn(Http::Progress(0, 0, 100, 100, ""), cancel);
         return true;

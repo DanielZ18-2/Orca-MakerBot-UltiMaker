@@ -113,6 +113,16 @@ public:
     bool get_camera_frame(KaitenSession& session, int& width, int& height,
                           std::string& yuyv_out, std::string& error) const;
 
+    // KOMPLETTER korrekter Druckstart-Ablauf in EINEM Schritt, exakt wie die
+    // offizielle MakerBot Print Software (print_job_helper.js):
+    //   1. print  {filepath: <basename>, transfer_wait: true}
+    //   2. put    local_path -> "/current_thing/<basename>"
+    // Genau in dieser Reihenfolge. Das Device-Tab ruft dies nach der
+    // Bauplatten-Bestaetigung auf. local_path ist die fertige .makerbot-Datei.
+    bool kaiten_print_and_upload(KaitenSession& session,
+                                 const std::string& local_path,
+                                 ProgressFn prg_fn, std::string& error) const;
+
     // Query connected Smart Extruder type via kaiten get_system_information
     // Returns: "mk13", "mk13_impla", "mk13_experimental", "mk12" or ""
     // KNOWN ISSUE (found 2026-06 via packet capture, not yet fixed): real
@@ -152,6 +162,7 @@ private:
     bool kaiten_print(KaitenSession& session,
                       const std::string& remote_path,
                       bool new_flow, std::string& error) const;
+
 
     // HTTP RPC for Lava/Method
     bool lava_rpc(const std::string&    method,
