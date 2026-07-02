@@ -47,6 +47,7 @@ private:
 
     // --- Global Z-Offset Calibration (nur Birdwing/Lava/UltiMaker) ---
     wxSlider*   m_z_offset_slider = nullptr;
+    double      m_z_offset_max_mm = 2.0; // aus get_available_z_offset_adjustment
     wxTextCtrl* m_z_offset_text   = nullptr;
 
     // --- Telemetry & Extruder Information (alle Familien, Inhalt variiert) ---
@@ -130,6 +131,7 @@ private:
     // GUI-Thread) - der Job selbst fasst nie ein wx-Widget direkt an.
     void set_kaiten_session(std::shared_ptr<KaitenSession> session);
     void apply_capability_check(bool supported);
+    void apply_z_offset_range(double max_mm); // Slider-Grenze je Modell (B1)
     void set_telemetry_error(const std::string& error);
     void set_extruder_info(const wxString& type_text, const wxString& status_text);
     void set_z_offset_controls_enabled(bool enabled);

@@ -223,7 +223,12 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                     if (std::chrono::steady_clock::now() - t_start
                             > std::chrono::seconds(timeout_s)) {
                         error = "Timeout reading from MakerBot (port 9999)";
-                        close(); return false;
+                        // Breath-1: Session NICHT schliessen. Ein langsamer/
+                        // beschaeftigter Drucker soll keinen Token+authenticate-
+                        // Sturm ausloesen, der den kaiten-Server verklemmt.
+                        // Verspaetete Antworten fangen wir per req_id-Abgleich ab;
+                        // echte Abbrueche (RST/EOF) schliessen ueber den ec-Zweig.
+                        return false;
                     }
                     if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
                     size_t got = m_impl->socket.read_some(asio::buffer(&c, 1), ec);
@@ -610,7 +615,16 @@ bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
                                       ProgressFn prg_fn, std::string& error) const
 {
     namespace fs = boost::filesystem;
-    const uint64_t total = (uint64_t)fs::file_size(local_path);
+    boost::system::error_code fsec;
+    if (!fs::exists(local_path, fsec)) {
+        error = "local file missing: " + local_path;
+        return false;
+    }
+    const uint64_t total = (uint64_t)fs::file_size(local_path, fsec);
+    if (fsec) {
+        error = "cannot stat " + local_path + ": " + fsec.message();
+        return false;
+    }
     const int block_size = 32768;
     // file_id: 3 Bytes base64, hier konstant 0 -> "AAAA" (eine Datei pro Session)
     const std::string file_id = "AAAA";
@@ -725,6 +739,67 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
     if (!kaiten_upload_file(session, local_path, remote_path, prg_fn, error)) {
         error = "file upload after print failed: " + error;
         return false;
+    }
+
+    // Schritt 3: Bauplatten-Bestaetigung wie die Originalsoftware.
+    // Der Host-Dialog war die Bestaetigung des Nutzers; jetzt teilen wir dem
+    // Drucker mit, dass die Platte frei ist, damit er OHNE Raddruck startet.
+    // Hardware-belegter Ablauf: nach dem Upload geht der Prozess in
+    // step=="clear_build_plate" und bietet die Methode "build_plate_cleared"
+    // an. Wir warten gezielt auf diesen Zustand (max 15s) und senden sie dann
+    // ueber DIESELBE session (der Druckprozess haengt an dieser Verbindung).
+    {
+        const auto deadline = std::chrono::steady_clock::now()
+                            + std::chrono::seconds(15);
+        bool ready = false;
+        while (std::chrono::steady_clock::now() < deadline) {
+            nlohmann::json si;
+            std::string e2;
+            if (session.call("get_system_information",
+                             nlohmann::json::object(), si, e2, 10)) {
+                try {
+                    if (si.contains("current_process")
+                        && si["current_process"].is_object()) {
+                        const auto& cp = si["current_process"];
+                        const std::string step = cp.value("step", "");
+                        bool has_method = false;
+                        if (cp.contains("methods") && cp["methods"].is_array()) {
+                            for (const auto& m : cp["methods"]) {
+                                if (m.is_string()
+                                    && m.get<std::string>() == "build_plate_cleared") {
+                                    has_method = true;
+                                }
+                            }
+                        }
+                        if (step == "clear_build_plate" || has_method) {
+                            ready = true;
+                            break;
+                        }
+                    }
+                } catch (...) {
+                    // unerwartete Struktur -> weiter pollen
+                }
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+        if (ready) {
+            nlohmann::json bpc = {{"method", "build_plate_cleared"},
+                                  {"params", nlohmann::json::object()}};
+            nlohmann::json r3;
+            std::string e3;
+            if (session.call("process_method", bpc, r3, e3, 10)) {
+                BOOST_LOG_TRIVIAL(info) << "MakerbotLink: build_plate_cleared ok"
+                    " -> Druck startet ohne Raddruck";
+            } else {
+                BOOST_LOG_TRIVIAL(warning) << "MakerbotLink: build_plate_cleared"
+                    " abgelehnt: " << e3
+                    << " (Drucker erwartet evtl. manuelle Bestaetigung am Rad)";
+            }
+        } else {
+            BOOST_LOG_TRIVIAL(warning) << "MakerbotLink: clear_build_plate-Zustand"
+                " nicht erreicht (Timeout) - Drucker erwartet evtl. manuelle"
+                " Bestaetigung am Rad";
+        }
     }
 
     BOOST_LOG_TRIVIAL(info) << "MakerbotLink: print+upload complete for " << remote_path;
@@ -1054,8 +1129,35 @@ bool MakerbotLink::upload(PrintHostUpload upload_data,
         // Device-Tab beim Start-Knopf weiss, welche Datei zu drucken ist.
         // Wir testen NICHT die Verbindung hier - das passiert ohnehin beim
         // Druckstart im Device-Tab.
-        const boost::filesystem::path src(upload_data.source_path.string());
-        write_pending_print(m_host, src.string());
+        namespace fs = boost::filesystem;
+        const fs::path src(upload_data.source_path);
+        // Persistente Ablage: PrintHost loescht source_path (transiente
+        // Temp-Datei) nach upload(). Wir kopieren sie daher an einen
+        // bleibenden .makerbot-Pfad und merken DIESEN als pending. Der
+        // Name kommt aus upload_path (echter Projektname), nicht der
+        // versteckte Temp-Name. Fallback, falls leer/versteckt.
+        std::string fname = upload_data.upload_path.filename().string();
+        if (fname.empty() || fname[0] == '.')
+            fname = "current_print.makerbot";
+        const fs::path dst =
+            fs::path(makerbot_pending_path(m_host)).parent_path() / fname;
+        {
+            boost::system::error_code ec;
+            fs::create_directories(dst.parent_path(), ec);
+            std::ifstream in(src.string(), std::ios::binary);
+            std::ofstream out(dst.string(), std::ios::binary | std::ios::trunc);
+            if (!in || !out) {
+                err_fn("Could not stage .makerbot file at " + dst.string());
+                return false;
+            }
+            out << in.rdbuf();
+            out.flush();
+            if (!out) {
+                err_fn("Could not write .makerbot file at " + dst.string());
+                return false;
+            }
+        }
+        write_pending_print(m_host, dst.string());
 
         info_fn("", "Ready. Open the Device tab, confirm the build plate is "
                     "clear, then start the print.");

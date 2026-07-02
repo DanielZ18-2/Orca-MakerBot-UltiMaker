@@ -237,6 +237,13 @@ public:
                 try { m_z_calibration_supported = cap_resp.at("result").get<bool>(); }
                 catch (...) { m_z_calibration_supported = true; }
             }
+            nlohmann::json zr_resp; std::string zr_err;
+            if (m_session->call("get_available_z_offset_adjustment",
+                                nlohmann::json::object(), zr_resp, zr_err)) {
+                try { m_z_offset_max = zr_resp.at("result").get<double>(); }
+                catch (...) { /* Default behalten */ }
+            }
+            m_capability_checked_in = true;  // Fix: Capability nur 1x je Sitzung
             m_capability_checked_out = true;
         }
 
@@ -314,8 +321,10 @@ public:
         // geht eine frisch geoeffnete Sitzung beim naechsten Tick wieder
         // verloren und wir verbinden bei jedem Tick neu.
         m_panel->set_kaiten_session(m_session);
-        if (m_capability_checked_out)
+        if (m_capability_checked_out) {
             m_panel->apply_capability_check(m_z_calibration_supported);
+            m_panel->apply_z_offset_range(m_z_offset_max);
+        }
 
         if (!m_ok) {
             m_panel->set_telemetry_error(m_error);
@@ -345,6 +354,7 @@ private:
     bool m_capability_checked_in;
     bool m_capability_checked_out   = false;
     bool m_z_calibration_supported  = true;
+    double m_z_offset_max           = 2.0;
     bool m_ok                       = false;
     std::string m_error;
     std::string m_status            = "Connected";
@@ -378,11 +388,12 @@ public:
         auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
         if (!mb) return;
 
-        if (!m_session || !m_session->is_open()) {
-            std::string err;
-            m_session = mb->open_kaiten_session(err);
-            if (!m_session) return; // kein Bild diesen Tick - Telemetrie zeigt den Fehler
-        }
+        // Breath-1b: Kamera oeffnet KEINE eigene Session (Passagier). Sonst
+        // eine zweite authenticate -> Drucker resettet -> Reconnect-Sturm.
+        // Ist keine Session offen, wird dieser Frame uebersprungen; die
+        // Telemetrie oeffnet/haelt die eine Session.
+        if (!m_session || !m_session->is_open())
+            return;
 
         int cw = 0, ch = 0; std::string yuyv, cam_err;
         if (mb->get_camera_frame(*m_session, cw, ch, yuyv, cam_err)) {
@@ -942,18 +953,19 @@ void MakerbotDevicePanel::sync_z_offset_to_hardware(double offset_mm) {
         BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset control not confirmed for this printer family, not sent.";
         return;
     }
-    std::string error;
-    if (!ensure_kaiten_session(error)) {
-        BOOST_LOG_TRIVIAL(warning) << "MakerbotDevicePanel: Z-Offset not sent, no session: " << error;
-        return;
-    }
-    nlohmann::json resp;
+    // Ueber DENSELBEN Worker wie Telemetrie/Kamera/Aktionen serialisieren.
+    // Direktaufruf auf der geteilten m_kaiten_session vom UI-Thread erzeugte
+    // eine Datenrace mit dem laufenden Poll-/Kamera-Job -> Verbindungs-Reset.
+    if (!m_kaiten_worker)
+        m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
+    std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
+    if (!dynamic_cast<MakerbotLink*>(host.get())) return;
     const nlohmann::json params = {{"offset", offset_mm}};
-    if (!m_kaiten_session->call("set_z_adjusted_offset", params, resp, error)) {
-        BOOST_LOG_TRIVIAL(warning) << "MakerbotDevicePanel: set_z_adjusted_offset failed: " << error;
-        return;
-    }
-    BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset set to " << offset_mm << "mm";
+    auto job = std::make_shared<KaitenActionJob>(this, std::move(host), m_kaiten_session,
+                                                  "set_z_adjusted_offset", params, 10,
+                                                  std::string(), nullptr);
+    m_kaiten_worker->push(job);
+    BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset " << offset_mm << "mm ueber Worker eingereiht";
 }
 
 // Liest den lokalen .makerbot-Pfad aus der pending-Datei, zeigt einen
@@ -1214,6 +1226,20 @@ void MakerbotDevicePanel::apply_capability_check(bool supported) {
     m_capability_checked = true;
     if (m_btn_z_calib)
         m_btn_z_calib->Enable(m_z_calibration_supported);
+}
+
+void MakerbotDevicePanel::apply_z_offset_range(double max_mm) {
+    // Grenze plausibilisieren (Modelle: 0.4 / 0.8 / 4.0). Fallback 2.0.
+    m_z_offset_max_mm = (max_mm > 0.0 && max_mm < 50.0) ? max_mm : 2.0;
+    const int lim = (int)(m_z_offset_max_mm * 100.0 + 0.5);
+    if (m_z_offset_slider) {
+        m_z_offset_slider->SetRange(-lim, lim);
+        if (m_z_offset_slider->GetValue() >  lim) m_z_offset_slider->SetValue(lim);
+        if (m_z_offset_slider->GetValue() < -lim) m_z_offset_slider->SetValue(-lim);
+    }
+    if (m_z_offset_text)
+        m_z_offset_text->ChangeValue(wxString::Format("%.2f",
+            m_z_offset_slider ? m_z_offset_slider->GetValue() / 100.0 : 0.0));
 }
 
 void MakerbotDevicePanel::set_telemetry_error(const std::string& error) {
