@@ -758,9 +758,13 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
             if (session.call("get_system_information",
                              nlohmann::json::object(), si, e2, 10)) {
                 try {
-                    if (si.contains("current_process")
-                        && si["current_process"].is_object()) {
-                        const auto& cp = si["current_process"];
+                    // Fix: session.call liefert die RPC-Huelle {"result": {...}} -
+                    // current_process liegt UNTER result (wie ueberall sonst im Code).
+                    const nlohmann::json& si_r =
+                        (si.contains("result") && si["result"].is_object()) ? si["result"] : si;
+                    if (si_r.contains("current_process")
+                        && si_r["current_process"].is_object()) {
+                        const auto& cp = si_r["current_process"];
                         const std::string step = cp.value("step", "");
                         bool has_method = false;
                         if (cp.contains("methods") && cp["methods"].is_array()) {

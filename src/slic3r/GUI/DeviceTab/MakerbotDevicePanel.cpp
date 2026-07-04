@@ -1,4 +1,5 @@
 #include "MakerbotDevicePanel.hpp"
+#include <cmath>
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
@@ -243,6 +244,12 @@ public:
                 try { m_z_offset_max = zr_resp.at("result").get<double>(); }
                 catch (...) { /* Default behalten */ }
             }
+            nlohmann::json zc_resp; std::string zc_err;
+            if (m_session->call("get_z_adjusted_offset",
+                                nlohmann::json::object(), zc_resp, zc_err)) {
+                try { m_z_offset_value = zc_resp.at("result").get<double>(); }
+                catch (...) { }
+            }
             m_capability_checked_in = true;  // Fix: Capability nur 1x je Sitzung
             m_capability_checked_out = true;
         }
@@ -324,6 +331,7 @@ public:
         if (m_capability_checked_out) {
             m_panel->apply_capability_check(m_z_calibration_supported);
             m_panel->apply_z_offset_range(m_z_offset_max);
+            m_panel->apply_z_offset_value(m_z_offset_value);
         }
 
         if (!m_ok) {
@@ -344,6 +352,7 @@ public:
             }
         }
         m_panel->set_z_offset_controls_enabled(m_status == "Idle");
+        m_panel->apply_control_button_states(m_status);
         m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress);
     }
 
@@ -355,6 +364,7 @@ private:
     bool m_capability_checked_out   = false;
     bool m_z_calibration_supported  = true;
     double m_z_offset_max           = 2.0;
+    double m_z_offset_value         = 0.0;
     bool m_ok                       = false;
     std::string m_error;
     std::string m_status            = "Connected";
@@ -706,11 +716,41 @@ void MakerbotDevicePanel::build_z_offset_section() {
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    m_z_offset_text->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent& e){
-        wxCommandEvent dummy; on_z_offset_slider_changed(dummy);
+    // --- Z-Offset-Eingabe (Neuverdrahtung) -------------------------------
+    m_z_offset_send_timer = new wxTimer(this);
+    this->Bind(wxEVT_TIMER, [this](wxTimerEvent&){
+        if (!m_z_offset_slider) return;
+        sync_z_offset_to_hardware(m_z_offset_slider->GetValue() / 100.0);
+    }, m_z_offset_send_timer->GetId());
+    m_z_offset_slider->Bind(wxEVT_SLIDER, [this](wxCommandEvent&){
+        if (!m_z_offset_slider || !m_z_offset_text) return;
+        m_z_offset_text->ChangeValue(wxString::Format("%.2f",
+            m_z_offset_slider->GetValue() / 100.0));
+        if (m_z_offset_send_timer) m_z_offset_send_timer->StartOnce(600);
+    });
+    m_z_offset_text->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&){
+        if (!m_z_offset_slider || !m_z_offset_text) return;
+        wxString s = m_z_offset_text->GetValue();
+        s.Replace(",", ".");
+        double v = 0.0;
+        if (!s.ToCDouble(&v)) {
+            m_z_offset_text->ChangeValue(wxString::Format("%.2f",
+                m_z_offset_slider->GetValue() / 100.0));
+            return;
+        }
+        if (v >  m_z_offset_max_mm) v =  m_z_offset_max_mm;
+        if (v < -m_z_offset_max_mm) v = -m_z_offset_max_mm;
+        const int ticks = (int)std::lround(v * 100.0);
+        m_z_offset_slider->SetValue(ticks);
+        m_z_offset_text->ChangeValue(wxString::Format("%.2f", ticks / 100.0));
+        if (m_z_offset_send_timer) m_z_offset_send_timer->Stop();
+        sync_z_offset_to_hardware(ticks / 100.0);
     });
     m_z_offset_text->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& e){
-        wxCommandEvent dummy; on_z_offset_slider_changed(dummy); e.Skip();
+        if (m_z_offset_slider && m_z_offset_text)
+            m_z_offset_text->ChangeValue(wxString::Format("%.2f",
+                m_z_offset_slider->GetValue() / 100.0));
+        e.Skip();
     });
 }
 
@@ -1242,6 +1282,19 @@ void MakerbotDevicePanel::apply_z_offset_range(double max_mm) {
             m_z_offset_slider ? m_z_offset_slider->GetValue() / 100.0 : 0.0));
 }
 
+void MakerbotDevicePanel::apply_z_offset_value(double value_mm) {
+    const int ticks = (int)std::lround(value_mm * 100.0);
+    if (m_z_offset_slider) {
+        int t = ticks;
+        const int lim = (int)std::lround(m_z_offset_max_mm * 100.0);
+        if (t >  lim) t =  lim;
+        if (t < -lim) t = -lim;
+        m_z_offset_slider->SetValue(t);
+    }
+    if (m_z_offset_text)
+        m_z_offset_text->ChangeValue(wxString::Format("%.2f", ticks / 100.0));
+}
+
 void MakerbotDevicePanel::set_telemetry_error(const std::string& error) {
     if (m_lbl_telemetry_status)
         m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), error.c_str()));
@@ -1256,6 +1309,22 @@ void MakerbotDevicePanel::set_extruder_info(const wxString& type_text, const wxS
         m_lbl_extruder_1->SetLabel(status_text);
         m_lbl_extruder_1->Refresh();
     }
+}
+
+void MakerbotDevicePanel::apply_control_button_states(const std::string& status) {
+    // A: Steuerungs-Knoepfe am Prozess-Step freigeben (Firmware-Zustandsmodell).
+    // suspend nur im Step "printing", resume in "suspending"/"suspended";
+    // cancel nur bei aktivem Prozess; preheat/unload/start nur im Idle.
+    const bool idle      = (status == "Idle");
+    const bool printing  = (status == "printing");
+    const bool suspended = (status == "suspended" || status == "suspending");
+    const bool active    = !idle && (status != "Connected");
+    if (m_btn_pause)       m_btn_pause->Enable(printing);
+    if (m_btn_resume)      m_btn_resume->Enable(suspended);
+    if (m_btn_cancel)      m_btn_cancel->Enable(active);
+    if (m_btn_preheat)     m_btn_preheat->Enable(idle);
+    if (m_btn_unload_fil)  m_btn_unload_fil->Enable(idle);
+    if (m_btn_start_print) m_btn_start_print->Enable(idle);
 }
 
 void MakerbotDevicePanel::set_z_offset_controls_enabled(bool enabled) {
