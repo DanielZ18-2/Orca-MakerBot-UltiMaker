@@ -69,3 +69,4 @@ resources/profiles/MakerBot/handy_models/*.gcode
 # === MakerBot/UltiMaker Fork - lokale Tooling-Skripte (nicht im PR) ===
 scripts/fork/
 *.bak_*
+machine_config_*.json
