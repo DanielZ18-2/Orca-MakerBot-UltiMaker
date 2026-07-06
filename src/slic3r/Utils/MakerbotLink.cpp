@@ -625,6 +625,17 @@ bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
         error = "cannot stat " + local_path + ": " + fsec.message();
         return false;
     }
+    // 6a-Guard: nur gueltige ZIP-Archive (Magic "PK") an den Drucker transferieren.
+    // Verhindert, dass roher G-Code beim Drucker als "Print File Corrupt" (1021) endet.
+    {
+        char _magic[2] = {0, 0};
+        std::ifstream _mf(local_path, std::ios::binary);
+        _mf.read(_magic, 2);
+        if (!_mf || _magic[0] != 'P' || _magic[1] != 'K') {
+            error = "refusing to upload non-archive (no PK/ZIP header): " + local_path;
+            return false;
+        }
+    }
     const int block_size = 32768;
     // file_id: 3 Bytes base64, hier konstant 0 -> "AAAA" (eine Datei pro Session)
     const std::string file_id = "AAAA";

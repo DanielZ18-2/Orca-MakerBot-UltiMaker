@@ -27,6 +27,7 @@
 #include <map>
 #include <regex>
 #include <sstream>
+#include <locale>
 #include <string>
 #include <vector>
 
@@ -133,9 +134,14 @@ struct ThumbnailBlob { int width = 0, height = 0; std::string bytes; };
 
 static double parse_double_safe(const std::string& s, double fb)
 {
-    try { size_t p; double v = std::stod(s, &p);
-          return std::isfinite(v) ? v : fb; }
-    catch (...) { return fb; }
+    // Locale-unabhaengig: G-Code nutzt '.' als Dezimaltrenner. std::stod folgt
+    // LC_NUMERIC (z.B. de_DE-Komma) und wuerde "1.75" als 1.0 lesen -> falsche
+    // Filament-Masse/-Distanz und layer_height=0 (6b). Klassisches ("C") Locale erzwingen.
+    std::istringstream iss(s);
+    iss.imbue(std::locale::classic());
+    double v = fb;
+    iss >> v;
+    return (!iss.fail() && std::isfinite(v)) ? v : fb;
 }
 
 static int parse_int_safe(const std::string& s, int fb)
@@ -196,8 +202,10 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
                 const size_t semi = line.find(';');
                 if (semi == std::string::npos || semi > e_pos) {
                     try {
-                        const double e = std::stod(line.substr(e_pos + 1));
-                        if (e > 0.0) h.total_filament_mm += e;
+                        const double e = parse_double_safe(line.substr(e_pos + 1), 0.0);
+                        // signiert summieren: Retraction(-) und Restart(+) heben sich
+                        // auf -> netto = echter Verbrauch (deckt sich mit Orca-GUI).
+                        h.total_filament_mm += e;
                     } catch (...) {}
                 }
             }

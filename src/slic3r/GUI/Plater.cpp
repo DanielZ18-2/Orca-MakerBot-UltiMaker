@@ -63,6 +63,7 @@
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Format/MakerBotExport.hpp"
+#include "libslic3r/Format/UltimakerUFPExport.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/Utils.hpp"
 #include "libslic3r/PresetBundle.hpp"
@@ -16528,7 +16529,12 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
 
     // Orca: the use_3mf printer option makes us send a .gcode.3mf to the printer
     const auto* use_3mf_opt = physical_printer_config->option<ConfigOptionBool>("use_3mf");
-    const bool  use_3mf     = use_3mf_opt != nullptr && use_3mf_opt->value;
+    // MakerBot/UltiMaker (Birdwing/Lava/UFP) MUSS ueber den 3mf/send_gcode-Pfad laufen,
+    // damit der Standalone-G-Code erzeugt und danach in das native Archiv gepackt wird.
+    const auto* _gcf0 = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
+    const GCodeFlavor _flavor0 = _gcf0 ? _gcf0->value : gcfMarlinLegacy;
+    const bool _is_native_archive = (_flavor0 == gcfMakerBotBirdwing || _flavor0 == gcfMakerBotLava || _flavor0 == gcfUltiGCode);
+    const bool  use_3mf     = (use_3mf_opt != nullptr && use_3mf_opt->value) || _is_native_archive;
 
     upload_job.upload_data.use_3mf = use_3mf;
 
@@ -16735,17 +16741,24 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         {
             const auto* _gcf = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
             const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
-            std::string _ext;
+            // Sende-Pfad erzeugt KEINE native Archivdatei (pack_to_archive laeuft nur beim
+            // Export auf Platte). Wir packen daher hier den Standalone-G-Code aus dem Slicing
+            // selbst und laden DIESES Archiv hoch (nicht den rohen G-Code -> vermeidet 1021).
+            const std::string _gcode = get_partplate_list().get_curr_plate()->get_tmp_gcode_path();
+            const PrintConfig& _cfg  = get_partplate_list().get_current_fff_print().config();
+            std::string _archive;
             if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
-                _ext = ".makerbot";
+                _archive = MakerBotExport::pack_to_archive(_gcode, _cfg);
             else if (_flavor == gcfUltiGCode)
-                _ext = ".ufp";
-            if (!_ext.empty()) {
-                fs::path _archive = fs::path(p->m_print_job_data._3mf_path);
-                _archive.replace_extension(_ext);
+                _archive = UltimakerUFPExport::pack_to_archive(_gcode, _cfg);
+            if (!_archive.empty()) {
                 upload_job.upload_data.source_path = _archive;
-                BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker upload: source_path -> "
-                                        << _archive.string();
+                BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker upload: packed native archive -> "
+                                        << _archive;
+            } else if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava
+                       || _flavor == gcfUltiGCode) {
+                show_error(this, _L("Failed to build the native printer archive. Please slice again."), false);
+                return;
             }
         }
     }
