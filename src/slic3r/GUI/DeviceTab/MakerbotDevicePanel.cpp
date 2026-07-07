@@ -716,6 +716,13 @@ void MakerbotDevicePanel::build_z_offset_section() {
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
+    // Warnhinweis (MakerBot-Konvention): ein zu negativer Z-Offset kann Bett/Extruder beschaedigen.
+    wxStaticText* z_offset_warn = new wxStaticText(this, wxID_ANY,
+        _L("Caution: a too-negative Z-offset can damage the build plate and/or the Smart Extruder."));
+    z_offset_warn->SetForegroundColour(wxColour(200, 60, 60));
+    z_offset_warn->Wrap(FromDIP(340));
+    (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_warn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(5));
+
     // --- Z-Offset-Eingabe (Neuverdrahtung) -------------------------------
     m_z_offset_send_timer = new wxTimer(this);
     this->Bind(wxEVT_TIMER, [this](wxTimerEvent&){
@@ -1270,7 +1277,7 @@ void MakerbotDevicePanel::apply_capability_check(bool supported) {
 
 void MakerbotDevicePanel::apply_z_offset_range(double max_mm) {
     // Grenze plausibilisieren (Modelle: 0.4 / 0.8 / 4.0). Fallback 2.0.
-    m_z_offset_max_mm = (max_mm > 0.0 && max_mm < 50.0) ? max_mm : 2.0;
+    m_z_offset_max_mm = std::max(2.0, (max_mm > 0.0 && max_mm < 50.0) ? max_mm : 2.0);
     const int lim = (int)(m_z_offset_max_mm * 100.0 + 0.5);
     if (m_z_offset_slider) {
         m_z_offset_slider->SetRange(-lim, lim);
