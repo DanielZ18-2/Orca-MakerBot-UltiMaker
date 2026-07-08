@@ -93,6 +93,8 @@ private:
     // closed in stop_telemetry_polling()/destructor.
     std::shared_ptr<KaitenSession> m_kaiten_session;
     bool m_z_calibration_supported = false; // gated via has_z_calibration_routine
+    std::string m_firmware_version;          // zuletzt gemeldete Firmware-Version
+    bool m_firmware_is_custom = false;       // >= Custom-Schwelle -> Hinweise unterdruecken
     bool m_capability_checked = false;      // reset whenever a new session opens
 
     // tool_id aus der letzten Telemetrie (toolheads.extruder[0].tool_id),
@@ -134,6 +136,8 @@ private:
     void apply_capability_check(bool supported);
     void apply_z_offset_range(double max_mm); // Slider-Grenze je Modell (B1)
     void apply_z_offset_value(double value_mm); // Firmware-Wert in UI spiegeln
+    void apply_firmware_version(const std::string& version); // Version cachen + Aenderung melden
+    bool firmware_is_custom() const { return m_firmware_is_custom; }
     void set_telemetry_error(const std::string& error);
     void set_extruder_info(const wxString& type_text, const wxString& status_text);
     void set_z_offset_controls_enabled(bool enabled);
