@@ -2,6 +2,9 @@
 #include <cmath>
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Utils.hpp"
+#include "libslic3r/AppConfig.hpp"
+#include "slic3r/GUI/NotificationManager.hpp"
+#include <cstdio>
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Plater.hpp"
 #include "slic3r/GUI/GUI.hpp"
@@ -270,6 +273,22 @@ public:
                 throw std::runtime_error("no params.info or result in response");
             const auto& result = *infop;
 
+            // Firmware-Version: kaiten liefert ein OBJEKT {major,minor,bugfix,build}
+            // (server.py::get_server_info). Der String "2.6.3.736" existiert nur im
+            // mDNS-Record. Beide Formen defensiv behandeln.
+            if (result.contains("firmware_version")) {
+                const auto& fv = result["firmware_version"];
+                if (fv.is_object()) {
+                    char buf[64];
+                    std::snprintf(buf, sizeof(buf), "%d.%d.%d.%d",
+                                  fv.value("major", 0), fv.value("minor", 0),
+                                  fv.value("bugfix", 0), fv.value("build", 0));
+                    m_firmware_version = buf;
+                } else if (fv.is_string()) {
+                    m_firmware_version = fv.get<std::string>();
+                }
+            }
+
             m_status = "Connected";
             if (result.contains("current_process") && result["current_process"].is_object()) {
                 const auto& proc = result["current_process"];
@@ -334,6 +353,9 @@ public:
             m_panel->apply_z_offset_value(m_z_offset_value);
         }
 
+        if (!m_firmware_version.empty())
+            m_panel->apply_firmware_version(m_firmware_version);
+
         if (!m_ok) {
             m_panel->set_telemetry_error(m_error);
             return;
@@ -367,6 +389,7 @@ private:
     double m_z_offset_value         = 0.0;
     bool m_ok                       = false;
     std::string m_error;
+    std::string m_firmware_version;
     std::string m_status            = "Connected";
     int  m_temp_ext                 = -1;
     int  m_temp_chamber             = -1;
@@ -1300,6 +1323,57 @@ void MakerbotDevicePanel::apply_z_offset_value(double value_mm) {
     }
     if (m_z_offset_text)
         m_z_offset_text->ChangeValue(wxString::Format("%.2f", ticks / 100.0));
+}
+
+// ---------------------------------------------------------------------------
+// Firmware-Version pro GERAET (print_host) in AppConfig cachen - nicht im Preset:
+// PhysicalPrinter hat eine Key-Whitelist, und ein Preset kann von mehreren
+// Geraeten geteilt werden. Bei Aenderung einmal benachrichtigen. Ab der
+// Custom-Schwelle gilt die Firmware als Custom -> Material-Hinweise entfallen.
+// ---------------------------------------------------------------------------
+static const int MAKERBOT_CUSTOM_FW_MIN_MAJOR = 2;   // <== Custom-Schwelle anpassen
+static const int MAKERBOT_CUSTOM_FW_MIN_MINOR = 7;   // <== (hier: ab 2.7.x)
+
+static bool makerbot_fw_is_custom(const std::string& v)
+{
+    int major = 0, minor = 0;
+    if (std::sscanf(v.c_str(), "%d.%d", &major, &minor) != 2)
+        return false;
+    if (major != MAKERBOT_CUSTOM_FW_MIN_MAJOR)
+        return major > MAKERBOT_CUSTOM_FW_MIN_MAJOR;
+    return minor >= MAKERBOT_CUSTOM_FW_MIN_MINOR;
+}
+
+void MakerbotDevicePanel::apply_firmware_version(const std::string& version)
+{
+    if (version.empty())
+        return;
+    m_firmware_is_custom = makerbot_fw_is_custom(version);
+    if (version == m_firmware_version)
+        return;                       // in dieser Sitzung bereits verarbeitet
+    m_firmware_version = version;
+
+    std::string host;
+    if (m_active_config) {
+        if (const auto* opt = m_active_config->option<ConfigOptionString>("print_host"))
+            host = opt->value;
+    }
+    if (host.empty())
+        return;
+
+    AppConfig* cfg = wxGetApp().app_config;
+    if (!cfg)
+        return;
+    const std::string previous = cfg->get("makerbot_firmware", host);
+    if (!previous.empty() && previous != version) {
+        const std::string msg = "MakerBot " + host + ": firmware changed from "
+                              + previous + " to " + version + ".";
+        if (auto* pl = wxGetApp().plater())
+            if (auto* nm = pl->get_notification_manager())
+                nm->push_notification(msg);
+    }
+    if (previous != version)
+        cfg->set("makerbot_firmware", host, version);
 }
 
 void MakerbotDevicePanel::set_telemetry_error(const std::string& error) {
