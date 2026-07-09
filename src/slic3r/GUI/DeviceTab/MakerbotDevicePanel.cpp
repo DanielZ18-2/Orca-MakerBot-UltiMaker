@@ -711,6 +711,8 @@ void MakerbotDevicePanel::build_camera_section() {
     wxBoxSizer* zoom_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxStaticText* zoom_lbl = new wxStaticText(this, wxID_ANY, _L("Digital Zoom:"));
     m_zoom_slider = new wxSlider(this, wxID_ANY, 100, 100, 300, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    wxStaticBitmap* zoom_icon = new wxStaticBitmap(this, wxID_ANY, create_scaled_bitmap("settings", this, 16)); // (3)
+    zoom_sizer->Add(zoom_icon, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
     zoom_sizer->Add(zoom_lbl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(5));
     zoom_sizer->Add(m_zoom_slider, 1, wxEXPAND | wxALL, FromDIP(5));
     camera_sizer->Add(zoom_sizer, 0, wxEXPAND | wxALL, FromDIP(2));
@@ -726,22 +728,48 @@ void MakerbotDevicePanel::build_camera_section() {
 // 2. GLOBAL Z-OFFSET (Birdwing/Lava/UltiMaker)
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_z_offset_section() {
-    wxStaticBoxSizer* z_offset_sizer = new wxStaticBoxSizer(wxHORIZONTAL, this, _L("Global Z-Offset Calibration"));
+    wxStaticBoxSizer* z_offset_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _L("Global Z-Offset Calibration"));
 
+    // (5a) Icon + Slider + Wertfeld in einer Zeile
+    wxBoxSizer* z_row = new wxBoxSizer(wxHORIZONTAL);
+    wxStaticBitmap* z_icon = new wxStaticBitmap(this, wxID_ANY, create_scaled_bitmap("param_extruder_clearance", this, 20));
     // Slider values range from -200 to 200, representing -2.00 mm to +2.00 mm
     m_z_offset_slider = new wxSlider(this, wxID_ANY, 0, -200, 200, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
     m_z_offset_text = new wxTextCtrl(this, wxID_ANY, "0.00", wxDefaultPosition, wxSize(FromDIP(60), -1), wxTE_PROCESS_ENTER | wxTE_RIGHT);
+    m_z_offset_text->SetToolTip(_L("You can also type the Z-offset value directly here.")); // (5d)
     wxStaticText* z_unit = new wxStaticText(this, wxID_ANY, "mm");
+    z_row->Add(z_icon, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(6));
+    z_row->Add(m_z_offset_slider, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(10));
+    z_row->Add(m_z_offset_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(2));
+    z_row->Add(z_unit, 0, wxALIGN_CENTER_VERTICAL, FromDIP(5));
+    z_offset_sizer->Add(z_row, 0, wxEXPAND | wxALL, FromDIP(2));
 
-    z_offset_sizer->Add(m_z_offset_slider, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(10));
-    z_offset_sizer->Add(m_z_offset_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(2));
-    z_offset_sizer->Add(z_unit, 0, wxALIGN_CENTER_VERTICAL, FromDIP(5));
+    // (5b) Endwert-Labels + Null-Markierung, RESPONSIV: gleiche Spalten-Struktur wie
+    // z_row (Icon-Spacer | Slider-Bereich prop 1 | Wertfeld+Einheit-Spacer). Die drei
+    // Labels teilen den Slider-Bereich zu je 1/3 -> "0" sitzt immer ueber der Mitte,
+    // unabhaengig von Aufloesung/DPI.
+    wxBoxSizer* z_scale = new wxBoxSizer(wxHORIZONTAL);
+    z_scale->AddSpacer(FromDIP(20) + FromDIP(6));                 // Icon-Breite + Abstand (wie z_row)
+    wxBoxSizer* z_ticks = new wxBoxSizer(wxHORIZONTAL);
+    z_ticks->Add(new wxStaticText(this, wxID_ANY, "-2.0"), 1, wxALIGN_LEFT);
+    z_ticks->Add(new wxStaticText(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL), 1, wxALIGN_CENTRE_HORIZONTAL);
+    z_ticks->Add(new wxStaticText(this, wxID_ANY, "+2.0", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT), 1, wxALIGN_RIGHT);
+    z_scale->Add(z_ticks, 1, wxEXPAND | wxRIGHT, FromDIP(10));    // prop 1, deckungsgleich mit dem Slider
+    z_scale->AddSpacer(FromDIP(60) + FromDIP(2) + FromDIP(24) + FromDIP(5)); // Wertfeld + Einheit + Raender
+    z_offset_sizer->Add(z_scale, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(2));
+
+    // (5c) Richtungs-Hinweis direkt unter dem Slider
+    wxStaticText* z_dir = new wxStaticText(this, wxID_ANY,
+        _L("Negative = less distance between nozzle and build plate; positive = more distance."));
+    z_dir->Wrap(FromDIP(340));
+    z_offset_sizer->Add(z_dir, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(2));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     // Warnhinweis (MakerBot-Konvention): ein zu negativer Z-Offset kann Bett/Extruder beschaedigen.
     wxStaticText* z_offset_warn = new wxStaticText(this, wxID_ANY,
-        _L("Caution: a too-negative Z-offset can damage the build plate and/or the Smart Extruder."));
+        _L("Caution: a too-negative Z-offset can damage the build plate and/or the Smart Extruder.\n"
+           "The Z-offset can be adjusted live during a print; incorrect values may cause hardware damage."));
     z_offset_warn->SetForegroundColour(wxColour(200, 60, 60));
     z_offset_warn->Wrap(FromDIP(340));
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_warn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(5));
@@ -1076,7 +1104,7 @@ void MakerbotDevicePanel::start_print_with_confirmation() {
         // Auf vernuenftige Dialoggroesse skalieren (max. 480 breit).
         wxImage img = m_raw_camera_frame.Copy();
         int w = img.GetWidth(), h = img.GetHeight();
-        const int max_w = FromDIP(480);
+        const int max_w = FromDIP(640); // (2) doppelte Groesse im Clearance-Dialog
         if (w > max_w && w > 0) {
             int new_h = (int)((double)h * max_w / w);
             img = img.Scale(max_w, new_h, wxIMAGE_QUALITY_HIGH);
@@ -1451,7 +1479,15 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
 
 void MakerbotDevicePanel::apply_camera_frame(const wxImage& img) {
     if (!img.IsOk()) return;
-    m_raw_camera_frame = img;
+    // (1)/(2) Live-Bild auf doppelte Groesse skalieren (eine Stelle -> gilt fuer
+    // Live- und Zoom-Pfad, da beide m_raw_camera_frame nutzen).
+    if (img.GetWidth() > 0 && img.GetHeight() > 0) {
+        wxImage scaled = img.Copy();
+        scaled.Rescale(img.GetWidth() * 2, img.GetHeight() * 2, wxIMAGE_QUALITY_HIGH);
+        m_raw_camera_frame = scaled;
+    } else {
+        m_raw_camera_frame = img;
+    }
     // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen. Zoom-Status
     // wird hier (GUI-Thread, zum Anwendungszeitpunkt) frisch gelesen statt
     // beim Job-Start mitgegeben - vermeidet einen 1s alten Zoom-Stand.
@@ -1489,11 +1525,18 @@ void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
 
 void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress) {
     if (m_lbl_telemetry_temp) {
-        if (temp_ext >= 0 && temp_bed >= 0)
-            m_lbl_telemetry_temp->SetLabel(wxString::Format(_L("Temperatures (Extruder / Chamber): %d °C / %d °C"), temp_ext, temp_bed));
+        if (temp_ext >= 0)
+            m_lbl_telemetry_temp->SetLabel(wxString::Format(_L("%d \u00b0C"), temp_ext));
         else
-            m_lbl_telemetry_temp->SetLabel(_L("Temperatures (Extruder / Chamber): -- °C / -- °C"));
+            m_lbl_telemetry_temp->SetLabel(_L("-- \u00b0C"));
         m_lbl_telemetry_temp->Refresh();
+    }
+    if (m_lbl_telemetry_temp_chamber) {
+        if (temp_bed >= 0)
+            m_lbl_telemetry_temp_chamber->SetLabel(wxString::Format(_L("%d \u00b0C"), temp_bed));
+        else
+            m_lbl_telemetry_temp_chamber->SetLabel(_L("-- \u00b0C"));
+        m_lbl_telemetry_temp_chamber->Refresh();
     }
     if (m_lbl_telemetry_status) {
         m_lbl_telemetry_status->SetLabel(wxString::Format(_L("Status: %s"), status.c_str()));
