@@ -89,8 +89,8 @@ static std::string orca_type_to_birdwing_tag(const std::string& orca_type)
     if (orca_type == "Internal solid infill")  return "Infill";
     if (orca_type == "Top surface")            return "Infill";
     if (orca_type == "Bottom surface")         return "Infill";
-    if (orca_type == "Bridge infill")          return "Infill";
-    if (orca_type == "Internal Bridge infill") return "Infill";
+    if (orca_type == "Bridge infill")          return "Bridge";
+    if (orca_type == "Internal Bridge infill") return "Bridge";
     if (orca_type == "Support")                return "Support";
     if (orca_type == "Support interface")      return "Support";
     if (orca_type == "Overhang wall")          return "Outline";
@@ -214,6 +214,12 @@ std::string gcode_to_birdwing_jsontoolpath(
     std::string current_tag = "Outline";
     double      layer_w     = bv.layer_width;
 
+    // Luefter- und Temperaturzustand: nur bei Aenderung emittieren, sonst
+    // blaeht sich der Toolpath unnoetig auf.
+    double last_fan_value   = -1.0;   // 0.0-1.0, -1 = noch nicht gesetzt
+    bool   fan_is_on        = false;
+    double last_tool_temp   = -1.0;
+
     std::string line;
     while (std::getline(f, line)) {
         if (!line.empty() && line.back() == '\r')
@@ -265,6 +271,67 @@ std::string gcode_to_birdwing_jsontoolpath(
         if (cmd == "G91") { absolute_pos = false; continue; }
         if (cmd == "M82") { /* absolute_ext = true  – bei Birdwing ignoriert */ continue; }
         if (cmd == "M83") { /* absolute_ext = false – bei Birdwing Standard  */ continue; }
+
+        // ── M106 / M107 – Bauteilluefter ──────────────────────────────────────
+        // Die Firmware (libparser.so) kennt fan_duty und toggle_fan; miracle_grue
+        // nutzt beide und taggt sie mit "Fan Speed Change" / "Enable Fan" /
+        // "Disable Fan". Ohne diese Befehle laeuft der Luefter konstant mit dem
+        // einen Wert aus der meta.json.
+        if (cmd == "M106" || cmd == "M107") {
+            double duty = (cmd == "M107") ? 0.0 : 1.0;   // M106 ohne S = volle Kraft
+            bool   has_s = false;
+            if (cmd == "M106") {
+                for (size_t i = 1; i < tokens.size(); ++i) {
+                    double v = 0;
+                    if (parse_gcode_param(tokens[i], 'S', v)) {
+                        duty  = std::max(0.0, std::min(1.0, v / 255.0));
+                        has_s = true;
+                        break;
+                    }
+                }
+            }
+            (void) has_s;
+            const bool want_on = duty > 0.0005;
+
+            // An-/Ausschalten nur bei echtem Zustandswechsel
+            if (want_on != fan_is_on) {
+                commands.push_back(make_command("toggle_fan",
+                    {{"index", 0}, {"value", want_on}},
+                    { want_on ? std::string("Enable Fan") : std::string("Disable Fan") },
+                    false));
+                fan_is_on = want_on;
+            }
+            // Drehzahl nur setzen, wenn der Luefter laeuft und sich der Wert aendert
+            if (want_on && std::abs(duty - last_fan_value) > 0.0005) {
+                commands.push_back(make_command("fan_duty",
+                    {{"index", 0}, {"value", duty}},
+                    { std::string("Fan Speed Change") },
+                    false));
+                last_fan_value = duty;
+            }
+            if (!want_on) last_fan_value = 0.0;
+            continue;
+        }
+
+        // ── M104 / M109 – Duesentemperatur ────────────────────────────────────
+        // M109 wartet in Marlin auf die Temperatur; die Birdwing-Firmware kennt
+        // kein wait_for_temperature (erst Method/Lava), daher werden beide auf
+        // set_toolhead_temperature abgebildet.
+        if (cmd == "M104" || cmd == "M109") {
+            double t = -1.0;
+            for (size_t i = 1; i < tokens.size(); ++i) {
+                double v = 0;
+                if (parse_gcode_param(tokens[i], 'S', v)) { t = v; break; }
+            }
+            if (t >= 0.0 && std::abs(t - last_tool_temp) > 0.5) {
+                commands.push_back(make_command("set_toolhead_temperature",
+                    {{"index", 0}, {"temperature", static_cast<int>(t + 0.5)}},
+                    nlohmann::json::array(),
+                    false));
+                last_tool_temp = t;
+            }
+            continue;
+        }
 
         // ── G28 – Alle Achsen homen ───────────────────────────────────────────
         if (cmd == "G28") {

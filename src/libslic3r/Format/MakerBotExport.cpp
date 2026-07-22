@@ -103,6 +103,15 @@ struct HeaderData
     double      retract_restart_extra        = 0.1;   // retract_restart_extra (-> ooze_feedstock_distance)
     int         bed_temperature              = 0;     // bed_temperature / platform_temperature
     double      travel_speed_z               = 3.0;   // travel_speed_z
+    // Plattentemperaturen einzeln, Auswahl spaeter ueber curr_bed_type
+    int         cool_plate_temp              = -1;
+    int         eng_plate_temp               = -1;
+    int         hot_plate_temp               = -1;
+    int         textured_plate_temp          = -1;
+    int         textured_cool_plate_temp     = -1;
+    int         supertack_plate_temp         = -1;
+    std::string curr_bed_type;
+    bool        saw_filament_retraction_speed = false;
 };
 
 struct BBox
@@ -276,7 +285,10 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key == "z_offset")            h.z_offset                      = parse_double_safe(val, h.z_offset);
         else if (key == "retraction_length")   h.retraction_length             = parse_double_safe(val, h.retraction_length);
         else if (key == "retraction_speed")    h.retraction_speed              = parse_double_safe(val, h.retraction_speed);
-        else if (key == "filament_retraction_speed") h.filament_retraction_speed = parse_double_safe(val, h.filament_retraction_speed);
+        else if (key == "filament_retraction_speed") {
+            h.filament_retraction_speed = parse_double_safe(val, h.filament_retraction_speed);
+            h.saw_filament_retraction_speed = true;
+        }
         else if (key == "deretraction_speed")  h.deretraction_speed            = parse_double_safe(val, h.deretraction_speed);
         else if (key == "z_hop")               h.z_hop                         = parse_double_safe(val, h.z_hop);
         else if (key == "travel_speed")        h.travel_speed                  = parse_double_safe(val, h.travel_speed);
@@ -294,16 +306,44 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key == "default_acceleration") h.default_acceleration         = parse_double_safe(val, h.default_acceleration);
         else if (key == "travel_acceleration")  h.travel_acceleration          = parse_double_safe(val, h.travel_acceleration);
         else if (key == "retract_restart_extra") h.retract_restart_extra       = parse_double_safe(val, h.retract_restart_extra);
-        else if (key == "bed_temperature" || key == "hot_plate_temp" || key == "bed_temperature_initial_layer")
+        else if (key == "bed_temperature" || key == "bed_temperature_initial_layer")
                                                 h.bed_temperature               = parse_int_safe(val, h.bed_temperature);
+        else if (key == "cool_plate_temp")     h.cool_plate_temp                = parse_int_safe(val, 0);
+        else if (key == "eng_plate_temp")      h.eng_plate_temp                 = parse_int_safe(val, 0);
+        else if (key == "hot_plate_temp")      h.hot_plate_temp                 = parse_int_safe(val, 0);
+        else if (key == "textured_plate_temp") h.textured_plate_temp            = parse_int_safe(val, 0);
+        else if (key == "textured_cool_plate_temp") h.textured_cool_plate_temp  = parse_int_safe(val, 0);
+        else if (key == "supertack_plate_temp") h.supertack_plate_temp          = parse_int_safe(val, 0);
+        else if (key == "curr_bed_type")       h.curr_bed_type                  = val;
         else if (key == "travel_speed_z")      h.travel_speed_z                = parse_double_safe(val, h.travel_speed_z);
         else if (key.find("estimated printing time") != std::string::npos)
                                                h.duration_s                    = std::max(h.duration_s, hms_to_seconds(val));
     }
 
+    // Plattentemperatur passend zur gewaehlten Druckplatte auswaehlen.
+    // Ohne das landet immer hot_plate_temp in der meta.json, auch wenn der
+    // Nutzer die unbeheizte "Cool Plate" gewaehlt hat.
+    {
+        std::string bt = boost::algorithm::to_lower_copy(h.curr_bed_type);
+        int sel = -1;
+        if      (bt.find("supertack")  != std::string::npos) sel = h.supertack_plate_temp;
+        else if (bt.find("textured")   != std::string::npos &&
+                 bt.find("cool")       != std::string::npos) sel = h.textured_cool_plate_temp;
+        else if (bt.find("textured")   != std::string::npos) sel = h.textured_plate_temp;
+        else if (bt.find("engineering")!= std::string::npos) sel = h.eng_plate_temp;
+        else if (bt.find("high temp")  != std::string::npos) sel = h.hot_plate_temp;
+        else if (bt.find("cool")       != std::string::npos) sel = h.cool_plate_temp;
+        if (sel < 0) sel = h.hot_plate_temp;          // Rueckfall wie bisher
+        if (sel >= 0) h.bed_temperature = sel;
+    }
+
     // Effective retract rate = min(process, filament_limit)
-    // (filament_retraction_speed is the actual G-code F value / 60)
-    h.filament_retraction_speed = std::min(h.retraction_speed, h.filament_retraction_speed);
+    // Die Deckelung darf nur greifen, wenn das Filamentprofil tatsaechlich
+    // eine eigene Grenze gesetzt hat. Sonst wuerde der Vorgabewert (40) die
+    // korrekte Maschinen-Geschwindigkeit ausbremsen.
+    h.filament_retraction_speed = h.saw_filament_retraction_speed
+        ? std::min(h.retraction_speed, h.filament_retraction_speed)
+        : h.retraction_speed;
 
     return h;
 }
