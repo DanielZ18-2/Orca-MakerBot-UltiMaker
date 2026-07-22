@@ -59,6 +59,7 @@ private:
     wxStaticText* m_lbl_telemetry_temp_chamber = nullptr; // Wert-Feld: "Current Printer Chamber temperature"
     wxStaticText* m_lbl_telemetry_status  = nullptr; // Wert-Feld: "Current printer operation status" (kein Praefix mehr)
     wxStaticText* m_lbl_telemetry_progress= nullptr;
+    wxStaticText* m_lbl_time_remaining    = nullptr; // Restzeit unter dem Donut
     wxPanel*      m_progress_donut       = nullptr; // ProgressDonut* (Cast in .cpp)
 
     // --- Hardware Controls (nur Birdwing/Lava/UltiMaker) ---
@@ -128,7 +129,7 @@ private:
     void sync_z_offset_to_hardware(double offset_mm);
     void execute_printer_action(const std::string& action_id);
     void start_print_with_confirmation(); // print->put nach Bauplatten-Bestaetigung
-    void update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress);
+    void update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress, int elapsed_s, int remaining_s);
 
     // Schreibzugriffe fuer KaitenTelemetryJob::finalize() (laeuft auf dem
     // GUI-Thread) - der Job selbst fasst nie ein wx-Widget direkt an.

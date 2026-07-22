@@ -311,6 +311,44 @@ static bool smart_extruder_is_birdwing(const DynamicPrintConfig& cfg)
     return (gcf && gcf->value == gcfMakerBotBirdwing) || printer_model_looks_like_birdwing(id);
 }
 
+// Modellabhaengiger Material-Hinweis (reiner Hinweis, KEIN Sperren).
+enum class MbMaterialHint { None, BirdwingPla, LegacyRep2Pla, LegacyRep2xAbs };
+
+static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
+                                       const std::string& filament_type,
+                                       const std::string& host)
+{
+    const std::string ft  = boost::algorithm::to_lower_copy(filament_type);
+    const bool is_pla_like = ft.find("pla") != std::string::npos;
+    const bool is_abs_like = ft.find("abs") != std::string::npos || ft.find("asa") != std::string::npos;
+    const std::string id   = smart_extruder_identity_from_config(printer_cfg);
+
+    // Legacy Rep2X (ABS) VOR Rep2 pruefen ("replicator 2" ist Teilstring von "replicator 2x").
+    if (id.find("replicator 2x") != std::string::npos)
+        return is_abs_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2xAbs;
+    if (id.find("replicator 2") != std::string::npos)
+        return is_pla_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2Pla;
+
+    // Birdwing (alle): PLA; unterdruecken, wenn gecachte FW fuer diesen Host >= 2.7 (Custom-FW).
+    if (smart_extruder_is_birdwing(printer_cfg)) {
+        if (is_pla_like) return MbMaterialHint::None;
+        if (!host.empty()) {
+            if (AppConfig* cfg = wxGetApp().app_config) {
+                const std::string ver = cfg->get("makerbot_firmware", host);
+                const size_t dot = ver.find('.');
+                if (dot != std::string::npos) {
+                    const int mj = atoi(ver.substr(0, dot).c_str());
+                    const int mn = atoi(ver.substr(dot + 1).c_str());
+                    if (mj > 2 || (mj == 2 && mn >= 7))
+                        return MbMaterialHint::None;   // Custom-FW -> Hinweis unterdruecken
+                }
+            }
+        }
+        return MbMaterialHint::BirdwingPla;
+    }
+    return MbMaterialHint::None;   // Method/Lava, UltiMaker, Sketch, sonstige Legacy
+}
+
 static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg)
 {
     const auto* gcf = cfg.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
@@ -9892,6 +9930,32 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         auto select_flag = combo->GetFlag(selection);
         combo->ShowBadge(select_flag == (int)PresetComboBox::FilamentAMSType::FROM_AMS);
         q->on_filament_change(idx);
+
+        // MakerBot/Legacy Material-Hinweis (nicht-blockierend).
+        {
+            const DynamicPrintConfig& pcfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
+            std::string fila_type;
+            if (const Preset* fp = wxGetApp().preset_bundle->filaments.find_preset(preset_name))
+                fila_type = fp->config.opt_string("filament_type", 0);
+            std::string host;
+            if (const DynamicPrintConfig* ppc = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config())
+                host = ppc->opt_string("print_host");
+            wxString hint;
+            switch (mb_material_hint(pcfg, fila_type, host)) {
+            case MbMaterialHint::BirdwingPla:
+                hint = _L("MakerBot Birdwing printers (Replicator Z18/+/5th Gen/Mini/Mini+) are officially PLA-only on stock firmware. Other materials are unofficial and may need the Experimental Extruder and/or custom firmware."); break;
+            case MbMaterialHint::LegacyRep2Pla:
+                hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
+            case MbMaterialHint::LegacyRep2xAbs:
+                hint = _L("The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."); break;
+            default: break;
+            }
+            if (!hint.empty())
+                if (auto* nm = wxGetApp().plater()->get_notification_manager())
+                    nm->push_notification(NotificationType::CustomNotification,
+                                          NotificationManager::NotificationLevel::RegularNotificationLevel,
+                                          std::string(hint.ToUTF8().data()));
+        }
     }
     bool select_preset = !combo->selection_is_changed_according_to_physical_printers();
     // TODO: ?

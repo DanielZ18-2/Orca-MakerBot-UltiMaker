@@ -25,6 +25,7 @@
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 #include <wx/choicdlg.h>
+#include <wx/utils.h>          // wxLaunchDefaultBrowser (Available-Firmware-Button)
 #include <wx/log.h>
 #include <boost/log/trivial.hpp>
 #include <algorithm>
@@ -294,8 +295,23 @@ public:
                 const auto& proc = result["current_process"];
                 if (proc.contains("step") && proc["step"].is_string())
                     m_status = proc["step"].get<std::string>();
-                if (proc.contains("progress") && proc["progress"].is_number())
+                // 6a: proc["progress"] ist in Heiz-Steps (initial_heating/final_heating)
+                // der AUFHEIZ-Prozent (printprocess.py:951,1044-1051), NICHT der
+                // Druckfortschritt. m_status haelt hier bereits den step-String (oben
+                // gesetzt). Nur im echten Druck-Step fuellen, sonst -1 -> Donut zeigt "-".
+                if (m_status == "printing" && proc.contains("progress") && proc["progress"].is_number())
                     m_progress = proc["progress"].get<int>();
+                else
+                    m_progress = -1;
+                if (proc.contains("elapsed_time") && proc["elapsed_time"].is_number())
+                    m_elapsed_s = proc["elapsed_time"].get<int>();
+                int total_s = -1;
+                if (proc.contains("time_estimation") && proc["time_estimation"].is_number())
+                    total_s = (int)proc["time_estimation"].get<double>();
+                else if (proc.contains("duration_s") && proc["duration_s"].is_number())
+                    total_s = (int)proc["duration_s"].get<double>();
+                if (total_s >= 0 && m_elapsed_s >= 0)
+                    m_remaining_s = (total_s > m_elapsed_s) ? (total_s - m_elapsed_s) : 0;
             } else {
                 m_status = "Idle";
             }
@@ -375,7 +391,7 @@ public:
         }
         m_panel->set_z_offset_controls_enabled(m_status == "Idle");
         m_panel->apply_control_button_states(m_status);
-        m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress);
+        m_panel->update_telemetry_ui(m_status, m_temp_ext, m_temp_chamber, m_progress, m_elapsed_s, m_remaining_s);
     }
 
 private:
@@ -394,6 +410,8 @@ private:
     int  m_temp_ext                 = -1;
     int  m_temp_chamber             = -1;
     int  m_progress                 = -1;
+    int  m_elapsed_s                = -1;
+    int  m_remaining_s              = -1;
     bool m_has_extruder_label       = false;
     wxString m_extruder_type_text;
     wxString m_extruder_status_text;
@@ -863,7 +881,9 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
     // Fortschritt als Doughnut-Ring (ersetzt die fruehere Progress-Textzeile).
     ProgressDonut* donut = new ProgressDonut(this, wxSize(FromDIP(110), FromDIP(110)));
     m_progress_donut = donut;
-    m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL | wxBOTTOM, FromDIP(8));
+    m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL);
+    m_lbl_time_remaining = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
+    m_extruder_info_sizer->Add(m_lbl_time_remaining, 0, wxALIGN_CENTER_HORIZONTAL | wxBOTTOM, FromDIP(8));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_extruder_info_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 }
@@ -936,6 +956,23 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     m_btn_start_print->SetBackgroundColour(wxColour(0, 179, 134)); // #00b386, P5c-Akzent (wie Donut)
     m_btn_start_print->SetForegroundColour(*wxWHITE);
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
+
+    // Firmware: Verweis auf die Firmware-Sammlung (Platzhalter-URL, spaeter GitHub-
+    // Quellen). Bewusst KEIN Flashen aus Orca heraus (Haftung/Upstream) - Birdwing/
+    // Lava/UltiMaker aktualisieren ueber Netzwerk bzw. USB-Stick am Drucker. Button
+    // braucht kein Member (nie dynamisch getoggelt) -> keine .hpp-Aenderung noetig.
+    {
+        wxStaticBoxSizer* fw_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Firmware"));
+        wxButton* btn_available_fw = new wxButton(this, wxID_ANY, _L("Available Firmware"));
+        btn_available_fw->SetToolTip(_L("Opens the firmware collection in your browser. "
+            "Flashing is done via USB stick on the printer, not from OrcaSlicer."));
+        fw_box->Add(btn_available_fw, 0, wxEXPAND | wxALL, FromDIP(5));
+        (m_col_right ? m_col_right : m_main_sizer)->Add(fw_box, 0, wxEXPAND | wxALL, FromDIP(5));
+        btn_available_fw->Bind(wxEVT_BUTTON, [](wxCommandEvent&) {
+            // PLATZHALTER-URL: spaeter gegen die GitHub-Firmware-Sammlung tauschen.
+            wxLaunchDefaultBrowser("https://github.com/DanielZ18-2/Unofficial-OrcaSlicer_for_MakerBot_UltiMaker");
+        });
+    }
 
     m_btn_pause->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("pause"); });
     m_btn_resume->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("resume"); });
@@ -1165,12 +1202,19 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         method = "process_method";
         params["method"] = "suspend";
         params["params"] = nlohmann::json::object();
+        success_message = _L("Pause command sent to the printer.");
     } else if (action_id == "resume") {
         method = "process_method";
         params["method"] = "resume";
         params["params"] = nlohmann::json::object();
+        success_message = _L("Resume command sent to the printer.");
     } else if (action_id == "cancel") {
+        // Destruktiv -> Rueckfrage vor dem Senden.
+        if (wxMessageDialog(this, _L("Cancel the current print? This cannot be undone."),
+                _L("Cancel Print"), wxYES_NO | wxICON_WARNING).ShowModal() != wxID_YES)
+            return;
         method = "cancel_process";
+        success_message = _L("Cancel command sent to the printer.");
     } else if (action_id == "rename") {
         method = "change_machine_name";
         params["machine_name"] = m_pending_rename_name;
@@ -1523,7 +1567,14 @@ void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
     m_kaiten_worker->push(job);
 }
 
-void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress) {
+static wxString mb_fmt_hms(int s) {
+    if (s < 0) return wxString();
+    int h = s / 3600, m = (s % 3600) / 60, sec = s % 60;
+    if (h > 0) return wxString::Format("%d:%02d:%02d", h, m, sec);
+    return wxString::Format("%02d:%02d", m, sec);
+}
+
+void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress, int elapsed_s, int remaining_s) {
     if (m_lbl_telemetry_temp) {
         if (temp_ext >= 0)
             m_lbl_telemetry_temp->SetLabel(wxString::Format(_L("%d \u00b0C"), temp_ext));
@@ -1551,6 +1602,13 @@ void MakerbotDevicePanel::update_telemetry_ui(const std::string& status, int tem
         else
             m_lbl_telemetry_progress->SetLabel(_L("Progress: --"));
         m_lbl_telemetry_progress->Refresh();
+    }
+    if (m_lbl_time_remaining) {
+        wxString t;
+        if (remaining_s >= 0)      t = wxString::Format(_L("Remaining: %s"), mb_fmt_hms(remaining_s));
+        else if (elapsed_s >= 0)   t = wxString::Format(_L("Elapsed: %s"), mb_fmt_hms(elapsed_s));
+        m_lbl_time_remaining->SetLabel(t);
+        m_lbl_time_remaining->Refresh();
     }
 }
 
