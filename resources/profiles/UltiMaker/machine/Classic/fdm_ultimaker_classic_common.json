@@ -4,5 +4,6 @@
     "inherits": "fdm_ultimaker_common",
     "from": "system",
     "instantiation": "false",
-    "gcode_flavor": "ultigcode"
+    "gcode_flavor": "ultigcode",
+    "default_bed_type": "1"
 }

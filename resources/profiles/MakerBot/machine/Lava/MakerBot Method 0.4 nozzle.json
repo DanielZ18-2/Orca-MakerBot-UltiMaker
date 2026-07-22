@@ -94,5 +94,18 @@
     "smart_extruder_type": [
         "mk14",
         "mk14_s"
+    ],
+    "default_bed_type": "3",
+    "retraction_length": [
+        "0.75"
+    ],
+    "deretraction_speed": [
+        "30"
+    ],
+    "retract_restart_extra": [
+        "0.1"
+    ],
+    "retraction_speed": [
+        "50"
     ]
 }

@@ -68,5 +68,6 @@
     "printer_variant": "0.4",
     "retraction_minimum_travel": [
         "2"
-    ]
+    ],
+    "default_bed_type": "1"
 }

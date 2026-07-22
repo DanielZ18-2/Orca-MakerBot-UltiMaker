@@ -9,5 +9,5 @@
     "bed_model": "makerbot_replicator_original_dual.stl",
     "bed_texture": "makerbot_replicator_original_dual_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Replicator Original Dual;Generic PETG @MakerBot Replicator Original Dual"
+    "default_materials": "Generic PLA @MakerBot Replicator Original Dual;Generic PETG @MakerBot Replicator Original Dual;Generic ABS @MakerBot Replicator Original Dual;Generic HIPS @MakerBot Replicator Original Dual"
 }

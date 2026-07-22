@@ -9,5 +9,5 @@
     "bed_model": "ultimaker_factor_4.stl",
     "bed_texture": "ultimaker_factor_4_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @UltiMaker Factor 4;Generic PETG @UltiMaker Factor 4"
+    "default_materials": "Generic PLA @UltiMaker Factor 4;Generic PETG @UltiMaker Factor 4;Generic ABS @UltiMaker Factor 4;Generic ASA @UltiMaker Factor 4;Generic Silk PLA @UltiMaker Factor 4"
 }

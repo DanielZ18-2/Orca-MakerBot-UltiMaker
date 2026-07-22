@@ -78,8 +78,26 @@
     "machine_start_gcode": "; makerbot_tool_type=[smart_extruder_type]\n; generated_by=Orca Slicer\n; --- MAKERBOT BIRDWING START (MakerBot Replicator Mini+) ---\nM104 S[nozzle_temperature_initial_layer] T0\nM109 S[nozzle_temperature_initial_layer] T0\nG90 ; Absolute Koordinaten\nG1 X30 Y-55 Z5 F9000 ; Fahrt zum Prime-Start (vorne)\nG1 Z0.24 F600 ; Absenken auf Prime-Line-Hoehe\nM83 ; Relative Extrusion fuer Prime Line\nG1 E5 F200 ; Anker setzen\nG1 X-30 Y-55 E18 F1000 ; Prime Line quer ueber die Front\nG1 E-0.5 F1500 ; kurzer Retract\nG1 Z2 F600 ; Duese anheben\nG1 X0 Y0 F9000 ; ins Zentrum\nG1 Z[first_layer_height] F600 ; auf erste Schichthoehe\nG1 E0.5 F1200 ; Unretract",
     "machine_end_gcode": "; ===== MB BIRDWING END (MakerBot Replicator Mini+) =====\nM400 ; alle Bewegungen abwarten\nG92 E0 ; Reset E\nG1 E-5.0 F2400 ; Retract\nG1 X0 Y55 F7200 ; Warteposition Mitte-Hinten (NICHT Parkposition)\nM132 Z ; Koordinaten zuruecksetzen\nG1 Z119 F180 ; Bett absenken, Extruder noch nicht geparkt\nG1 X42 Y55 F6000 ; finale Parkposition (Ecke)\nM104 S0 T0 ; Heizung aus\nM141 S0 ; Kammer aus\nM107 ; Luefter aus\nM73 P100 ; Fortschritt 100%\nM84 ; Motoren aus\n; ===== END =====",
     "thumbnails": "320x200/PNG,110x80/PNG,55x40/PNG,640x640/PNG,320x320/PNG,120x120/PNG",
-    "smart_extruder_count": "1",
+    "smart_extruder_count": 1,
     "smart_extruder_type": [
+        "mk13",
+        "mk13_impla",
         "mk13_experimental"
+    ],
+    "machine_max_speed_z": [
+        "8.0"
+    ],
+    "default_bed_type": "1",
+    "retraction_length": [
+        "0.5"
+    ],
+    "deretraction_speed": [
+        "30"
+    ],
+    "retract_restart_extra": [
+        "0.1"
+    ],
+    "retraction_speed": [
+        "50"
     ]
 }

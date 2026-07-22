@@ -9,5 +9,5 @@
     "bed_model": "makerbot_replicator_mini_plus.stl",
     "bed_texture": "makerbot_replicator_mini_plus_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Replicator Mini+;Generic PETG @MakerBot Replicator Mini+"
+    "default_materials": "Generic PLA @MakerBot Replicator Mini+;Generic PETG @MakerBot Replicator Mini+;Generic ABS @MakerBot Replicator Mini+;Generic ASA @MakerBot Replicator Mini+;Generic Silk PLA @MakerBot Replicator Mini+"
 }

@@ -23,8 +23,7 @@
         "brass"
     ],
     "extruder_type": [
-        "Direct Drive",
-        "Direct Drive"
+        "Bowden"
     ],
     "printer_extruder_id": [
         "1",
@@ -84,5 +83,18 @@
         "150"
     ],
     "machine_start_gcode": "G28 ; Home all axes\nG1 Z15.0 F6000 ; Move the platform down 15mm\nG92 E0\nG1 F200 E3\nG92 E0",
-    "machine_end_gcode": "M104 S0 ; extruder off\nM140 S0 ; heated bed off\nG91 ; relative positioning\nG1 E-1 F300\nG1 Z+0.5 E-5 X-20 Y-20 F9000\nG28 X0 Y0\nM84\nG90"
+    "machine_end_gcode": "M104 S0 ; extruder off\nM140 S0 ; heated bed off\nG91 ; relative positioning\nG1 E-1 F300\nG1 Z+0.5 E-5 X-20 Y-20 F9000\nG28 X0 Y0\nM84\nG90",
+    "default_bed_type": "3",
+    "retraction_length": [
+        "6.5"
+    ],
+    "deretraction_speed": [
+        "45"
+    ],
+    "retract_restart_extra": [
+        "0.1"
+    ],
+    "retraction_speed": [
+        "45"
+    ]
 }

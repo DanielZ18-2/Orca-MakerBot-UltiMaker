@@ -1,30 +1,63 @@
 {
-	"type": "filament",
-	"setting_id": "Generic ABS @MakerBot Replicator Mini",
-	"name": "Generic ABS @MakerBot Replicator Mini",
-	"inherits": "fdm_filament_abs",
-	"from": "system",
-	"instantiation": "true",
-	"filament_id": "OGFB99",
-	"filament_type": [
-		"ABS"
-	],
-	"pressure_advance": [
-		"0.024"
-	],
-	"compatible_printers": [
-		"MakerBot Replicator Mini 0.4 nozzle"
-	],
-	"nozzle_temperature": [
-		"245"
-	],
-	"nozzle_temperature_initial_layer": [
-		"245"
-	],
-	"bed_temperature": [
-		"100"
-	],
-	"bed_temperature_initial_layer": [
-		"100"
-	]
+    "type": "filament",
+    "setting_id": "Generic ABS @MakerBot Replicator Mini",
+    "name": "Generic ABS @MakerBot Replicator Mini",
+    "inherits": "fdm_filament_abs",
+    "from": "system",
+    "instantiation": "true",
+    "filament_id": "OGFB99",
+    "filament_type": [
+        "ABS"
+    ],
+    "pressure_advance": [
+        "0.024"
+    ],
+    "compatible_printers": [
+        "MakerBot Replicator Mini 0.4 nozzle"
+    ],
+    "nozzle_temperature": [
+        "245"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "245"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "105"
+    ],
+    "textured_plate_temp": [
+        "100"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "105"
+    ],
+    "filament_diameter": [
+        "1.77"
+    ],
+    "filament_max_volumetric_speed": [
+        "7.5"
+    ],
+    "fan_min_speed": [
+        "50"
+    ],
+    "fan_max_speed": [
+        "95"
+    ],
+    "overhang_fan_speed": [
+        "95"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "slow_down_min_speed": [
+        "6"
+    ]
 }

@@ -9,5 +9,5 @@
     "bed_model": "ultimaker_method.stl",
     "bed_texture": "ultimaker_method_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @UltiMaker Method;Generic PETG @UltiMaker Method"
+    "default_materials": "Generic PLA @UltiMaker Method;Generic PETG @UltiMaker Method;Generic ABS @UltiMaker Method;Generic ASA @UltiMaker Method;Generic Silk PLA @UltiMaker Method"
 }

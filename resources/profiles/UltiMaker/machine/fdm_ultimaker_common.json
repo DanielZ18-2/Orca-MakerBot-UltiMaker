@@ -16,5 +16,6 @@
     ],
     "min_layer_height": [
         "0.08"
-    ]
+    ],
+    "default_bed_type": "1"
 }

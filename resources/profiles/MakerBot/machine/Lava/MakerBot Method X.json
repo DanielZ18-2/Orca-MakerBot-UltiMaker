@@ -9,5 +9,5 @@
     "bed_model": "makerbot_method_x.stl",
     "bed_texture": "makerbot_method_x_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Method X;Generic PETG @MakerBot Method X"
+    "default_materials": "Generic PLA @MakerBot Method X;Generic PETG @MakerBot Method X;Generic ABS @MakerBot Method X;Generic ASA @MakerBot Method X;Generic PA-CF @MakerBot Method X;Generic Silk PLA @MakerBot Method X"
 }

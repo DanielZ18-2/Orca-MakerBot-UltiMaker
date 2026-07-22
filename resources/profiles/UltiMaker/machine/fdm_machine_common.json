@@ -71,5 +71,6 @@
     "printable_height": "250",
     "extruder_clearance_radius": "65",
     "extruder_clearance_height_to_rod": "34",
-    "extruder_clearance_height_to_lid": "34"
+    "extruder_clearance_height_to_lid": "34",
+    "default_bed_type": "1"
 }

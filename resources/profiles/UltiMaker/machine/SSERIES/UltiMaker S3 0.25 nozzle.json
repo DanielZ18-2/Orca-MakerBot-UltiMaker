@@ -23,8 +23,7 @@
         "brass"
     ],
     "extruder_type": [
-        "Direct Drive",
-        "Direct Drive"
+        "Bowden"
     ],
     "printer_extruder_id": [
         "1",
@@ -84,5 +83,18 @@
         "150"
     ],
     "machine_start_gcode": "; UltiMaker S-Series / Factor Start\nG28\nG1 Z15.0 F6000\nG92 E0\nG1 F200 E5\nG92 E0",
-    "machine_end_gcode": "; UltiMaker S-Series / Factor End\nM104 S0\nM140 S0\nG28 X0 Y0\nM84"
+    "machine_end_gcode": "; UltiMaker S-Series / Factor End\nM104 S0\nM140 S0\nG28 X0 Y0\nM84",
+    "default_bed_type": "3",
+    "retraction_length": [
+        "6.5"
+    ],
+    "deretraction_speed": [
+        "45"
+    ],
+    "retract_restart_extra": [
+        "0.1"
+    ],
+    "retraction_speed": [
+        "45"
+    ]
 }

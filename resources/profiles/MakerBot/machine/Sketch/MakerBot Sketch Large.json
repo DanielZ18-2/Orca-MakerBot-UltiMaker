@@ -6,8 +6,8 @@
     "machine_tech": "FFF",
     "family": "Sketch",
     "vendor": "MakerBot",
-    "bed_model": "makerbot_sketch_standard.stl",
+    "bed_model": "makerbot_sketch_large.stl",
     "bed_texture": "makerbot_sketch_large_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Sketch Large;Generic PETG @MakerBot Sketch Large"
+    "default_materials": "Generic PLA @MakerBot Sketch Large;Generic PETG @MakerBot Sketch Large;Generic ABS @MakerBot Sketch Large;Generic ASA @MakerBot Sketch Large;Generic Silk PLA @MakerBot Sketch Large"
 }

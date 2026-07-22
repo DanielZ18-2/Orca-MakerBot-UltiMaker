@@ -4,5 +4,6 @@
     "inherits": "fdm_makerbot_common",
     "from": "system",
     "instantiation": "false",
-    "gcode_flavor": "makerbot_lava"
+    "gcode_flavor": "makerbot_lava",
+    "default_bed_type": "1"
 }
