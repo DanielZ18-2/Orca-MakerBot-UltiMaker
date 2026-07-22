@@ -1,0 +1,13 @@
+{
+    "type": "machine_model",
+    "name": "UltiMaker 3",
+    "model_id": "UltiMaker 3",
+    "nozzle_diameter": "0.25;0.4;0.8",
+    "machine_tech": "FFF",
+    "family": "Classic",
+    "vendor": "UltiMaker",
+    "bed_model": "ultimaker_3.stl",
+    "bed_texture": "ultimaker_3_texture.png",
+    "hotend_model": "",
+    "default_materials": "Generic PLA @UltiMaker 3;Generic PETG @UltiMaker 3;Generic ABS @UltiMaker 3;Generic ASA @UltiMaker 3;Generic Silk PLA @UltiMaker 3"
+}

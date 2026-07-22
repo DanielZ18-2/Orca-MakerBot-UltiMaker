@@ -46,6 +46,7 @@ test.js
 internal_docs/
 *.flatpak
 /flatpak-repo/
+<<<<<<< HEAD
 # === MakerBot/UltiMaker Fork - Junk-Ausschluss ===
 # Backups
 *.bak
@@ -85,3 +86,8 @@ machine_config_*.json
 *.removed4
 *.orig
 *.rej
+=======
+# Python bytecode
+__pycache__/
+*.pyc
+>>>>>>> v2.4.2

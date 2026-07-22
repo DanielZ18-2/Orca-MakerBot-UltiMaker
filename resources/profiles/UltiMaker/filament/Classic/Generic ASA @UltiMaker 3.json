@@ -1,0 +1,65 @@
+{
+    "type": "filament",
+    "setting_id": "Generic ASA @UltiMaker 3",
+    "name": "Generic ASA @UltiMaker 3",
+    "inherits": "fdm_filament_asa",
+    "from": "system",
+    "instantiation": "true",
+    "filament_id": "OGFB98",
+    "filament_type": [
+        "ASA"
+    ],
+    "pressure_advance": [
+        "0.024"
+    ],
+    "compatible_printers": [
+        "UltiMaker 3 0.25 nozzle",
+        "UltiMaker 3 0.4 nozzle",
+        "UltiMaker 3 0.8 nozzle"
+    ],
+    "nozzle_temperature": [
+        "260"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "260"
+    ],
+    "filament_diameter": [
+        "2.85"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "hot_plate_temp": [
+        "100"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "105"
+    ],
+    "textured_plate_temp": [
+        "100"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "105"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "fan_min_speed": [
+        "50"
+    ],
+    "fan_max_speed": [
+        "95"
+    ],
+    "overhang_fan_speed": [
+        "95"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "slow_down_min_speed": [
+        "6"
+    ]
+}

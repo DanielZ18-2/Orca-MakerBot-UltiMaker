@@ -1,0 +1,66 @@
+{
+    "type": "filament",
+    "setting_id": "Generic PLA @UltiMaker 2 Extended+",
+    "name": "Generic PLA @UltiMaker 2 Extended+",
+    "inherits": "fdm_filament_pla",
+    "from": "system",
+    "instantiation": "true",
+    "filament_id": "OGFL99",
+    "filament_type": [
+        "PLA"
+    ],
+    "pressure_advance": [
+        "0.02"
+    ],
+    "compatible_printers": [
+        "UltiMaker 2 Extended+ 0.25 nozzle",
+        "UltiMaker 2 Extended+ 0.4 nozzle",
+        "UltiMaker 2 Extended+ 0.6 nozzle",
+        "UltiMaker 2 Extended+ 0.8 nozzle"
+    ],
+    "nozzle_temperature": [
+        "215"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "215"
+    ],
+    "filament_diameter": [
+        "2.85"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
+    "textured_plate_temp": [
+        "60"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
+    ],
+    "filament_max_volumetric_speed": [
+        "8.0"
+    ],
+    "fan_min_speed": [
+        "50"
+    ],
+    "fan_max_speed": [
+        "95"
+    ],
+    "overhang_fan_speed": [
+        "95"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "slow_down_min_speed": [
+        "9"
+    ]
+}
