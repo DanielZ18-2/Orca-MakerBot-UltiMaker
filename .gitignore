@@ -70,3 +70,18 @@ resources/profiles/MakerBot/handy_models/*.gcode
 scripts/fork/
 *.bak_*
 machine_config_*.json
+
+# Sicherungsdateien der Profil- und Patch-Skripte
+*.bak2
+*.bak3
+*.bak4
+*.bak5
+*.bak_mbkeys
+*.bak_bedretract
+*.bak_mh
+*.bak_mhfix
+*.bak_fw
+*.bak_prc
+*.removed4
+*.orig
+*.rej
