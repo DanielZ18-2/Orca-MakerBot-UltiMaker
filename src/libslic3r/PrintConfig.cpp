@@ -7336,11 +7336,14 @@ void PrintConfigDef::init_fff_params()
     // --- MakerBot / UltiMaker Fork: Smart Extruder profile keys ---
     // Ohne diese Registrierung entfernt Orca beide Keys beim Laden
     // von MakerBot/UltiMaker-Maschinenprofilen als "incorrect keys".
-    // readonly = true: these reflect the PHYSICALLY installed toolhead and
-    // must only ever be written by BirdwingHandshakeDialog / MakerbotDiscoveryDialog
-    // after actually querying the connected printer - never hand-edited here,
-    // since a mismatch between this value and the real hardware silently
-    // produces a wrong meta.json (wrong extruder family / retract profile).
+    // Die Nutzerauswahl hat Vorrang. Bei verbundenem Drucker fuellt
+    // BirdwingHandshakeDialog / MakerbotDiscoveryDialog den erkannten Typ vor;
+    // weicht die Auswahl vom real eingesetzten Toolhead ab, wird unten links
+    // gewarnt (der Drucker bricht den Druck sonst mit
+    // print_extruder_mismatch ab).
+    // Hinweis: mk12 ist ein rein virtueller Extruder, mit dem MakerBot die
+    // Extruder-Pruefung umgeht (Demo-/Beispieldateien). Er wird bewusst nicht
+    // angeboten.
     def = this->add("smart_extruder_count", coInt);
     def->label   = L("Smart Extruder Count");
     def->tooltip = L("Number of active Smart Extruders: "
@@ -7348,7 +7351,6 @@ void PrintConfigDef::init_fff_params()
                      "Set automatically by the printer discovery / handshake dialog.");
     def->category = L("Extruder");
     def->mode    = comAdvanced;
-    def->readonly = true;
     def->set_default_value(new ConfigOptionInt(0));
 
     def = this->add("smart_extruder_type", coStrings);
@@ -7357,7 +7359,6 @@ void PrintConfigDef::init_fff_params()
                      "Set automatically by the printer discovery / handshake dialog.");
     def->category = L("Extruder");
     def->mode    = comAdvanced;
-    def->readonly = true;
     def->enum_values = { "none",
                          "mk13", "mk13_impla", "mk13_experimental",
                          "mk14", "mk14_s", "mk14_p",
@@ -7372,6 +7373,30 @@ void PrintConfigDef::init_fff_params()
                          L("Composite Extruder 1C"),
                          L("LABS Gen 2 Extruder") };
     def->set_default_value(new ConfigOptionStrings{ "none" });
+
+    // --- MakerBot / UltiMaker Fork: Export-Kennungen ---
+    // Beide Keys werden im Export gelesen, muessen also registriert sein,
+    // sonst entfernt Orca sie beim Laden der Maschinenprofile.
+    //   makerbot_bot_type -> MakerBotExport.cpp (bot_type in meta.json)
+    //   gpx_machine_type  -> GPXExport.cpp (x3g-Maschinenkennung)
+    def = this->add("makerbot_bot_type", coString);
+    def->label   = L("MakerBot bot type");
+    def->tooltip = L("Internal MakerBot machine identifier written into the "
+                     "meta.json of a .makerbot print file "
+                     "(e.g. z18_6, replicator_plus, method_x). "
+                     "Leave empty to let the exporter derive it.");
+    def->category = L("Machine");
+    def->mode    = comDevelop;
+    def->set_default_value(new ConfigOptionString(""));
+
+    def = this->add("gpx_machine_type", coString);
+    def->label   = L("GPX machine type");
+    def->tooltip = L("Machine identifier used by GPX when converting G-code to "
+                     "x3g for legacy MakerBot printers (e.g. c3, r1, r1d, r2, "
+                     "r2x, t7). Leave empty to fall back to the exporter default.");
+    def->category = L("Machine");
+    def->mode    = comDevelop;
+    def->set_default_value(new ConfigOptionString(""));
 }
 
 void PrintConfigDef::init_extruder_option_keys()

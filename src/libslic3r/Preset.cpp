@@ -1349,7 +1349,12 @@ static std::vector<std::string> s_Preset_printer_options {
     "disable_m73", "preferred_orientation", "emit_machine_limits_to_gcode", "pellet_modded_printer", "support_multi_bed_types", "use_3mf", "default_bed_type", "bed_mesh_min","bed_mesh_max","bed_mesh_probe_distance", "adaptive_bed_mesh_margin", "enable_long_retraction_when_cut","long_retractions_when_cut","retraction_distances_when_cut",
     "bed_temperature_formula", "nozzle_flush_dataset",
     // --- MakerBot / UltiMaker Fork: Smart Extruder profile keys ---
-    "smart_extruder_count", "smart_extruder_type"
+    "smart_extruder_count", "smart_extruder_type",
+    // --- MakerBot / UltiMaker Fork: Export-Kennungen ---
+    // makerbot_bot_type -> MakerBotExport.cpp (bot_type in meta.json)
+    // gpx_machine_type  -> GPXExport.cpp (x3g-Maschinenkennung; ohne diesen
+    //                      Eintrag faellt GPXExport immer auf "r2x" zurueck)
+    "makerbot_bot_type", "gpx_machine_type"
     };
 
 static std::vector<std::string> s_Preset_sla_print_options {
