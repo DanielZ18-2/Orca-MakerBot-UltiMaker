@@ -51,7 +51,7 @@ std::string make_birdwing_meta_json(
     bool               do_raft          = true,
     bool               do_fan           = true,
     bool               do_exp_decel     = true,
-    double             retract_rate     = 30.0,   // aus Orca retraction_speed
-    double             restart_rate     = 18.0);  // aus Orca deretraction_speed
+    double             retract_rate     = 30.0,   // from Orca retraction_speed
+    double             restart_rate     = 18.0);  // from Orca deretraction_speed
 
 } // namespace Slic3r

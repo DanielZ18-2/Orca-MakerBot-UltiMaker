@@ -26,7 +26,8 @@ enum class CalibMode : int {
     Calib_Retraction_tower,
     Calib_Input_shaping_freq,
     Calib_Input_shaping_damp,
-    Calib_Cornering
+    Calib_Cornering,
+    Calib_Z_offset
 };
 
 enum class CalibState { Start = 0, Preset, Calibration, CoarseSave, FineCalibration, Save, Finish };
@@ -184,6 +185,52 @@ struct DrawBoxOptArgs
     double line_width;
     double speed;
 };
+struct ZOffsetPatternParams {
+    double start        = 0.08;   // kleinste Testhoehe (nominal)
+    double end          = 0.32;   // groesste Testhoehe (nominal)
+    double step         = 0.04;
+    double first_layer  = 0.20;   // initial_layer_print_height (Sollhoehe)
+    double z_offset     = 0.0;    // bestehender z_offset des Druckers
+    double nozzle       = 0.4;
+    double line_width   = 0.45;
+    double filament     = 1.75;
+    double flow         = 1.0;
+    double patch        = 20.0;
+    double gap          = 6.0;
+    int    perimeters   = 1;
+    double rib_len      = 4.0;
+    double rib_pitch    = 2.5;
+    double rib_gap      = 2.0;
+    double speed_first  = 15.0;   // mm/s
+    double speed_infill = 25.0;
+    double speed_travel = 100.0;
+    double z_hop        = 0.6;
+    double retract      = 1.0;
+    double bed_x        = 250.0;   // Breite
+    double bed_y        = 210.0;   // Tiefe
+    double bed_min_x    = 0.0;     // Ursprung des Druckbereichs
+    double bed_min_y    = 0.0;
+    double handle_size  = 5.0;     // Kantenlaenge des Traegerwuerfels
+    double margin       = 10.0;
+    double min_z        = 0.02;
+    bool   relative_e   = true;
+};
+
+struct ZOffsetPatternResult {
+    bool        ok = false;
+    std::string error;
+    std::string gcode;
+    double      total_len = 0.0;
+    double      total_e   = 0.0;
+    int         patches   = 0;
+    double      min_emit  = 0.0;
+    double      handle_x  = 0.0;   // vorgeschlagene Traegerposition (Mitte)
+    double      handle_y  = 0.0;
+    std::vector<double> heights;   // nominal
+};
+
+ZOffsetPatternResult generate_z_offset_pattern(const ZOffsetPatternParams &p);
+
 class CalibPressureAdvance
 {
 public:

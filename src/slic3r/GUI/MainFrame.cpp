@@ -1431,23 +1431,23 @@ void MainFrame::show_device(bool bBBLPrinter) {
         }
 
         // === MakerBot/UltiMaker Fork (FIX 2026-06-20) ===
-        // Native Device-Panel statt generischer WebView fuer MakerBot/UltiMaker.
-        // Ohne dies laedt PrinterWebView http://<ip>/ und der Drucker liefert
-        // nur ein Verzeichnis-Listing ("Index of /") statt einer Steuer-UI.
+        // Native device panel instead of the generic WebView for MakerBot/UltiMaker.
+        // Without this, PrinterWebView loads http://<ip>/ and the printer returns
+        // only a directory listing ("Index of /") instead of a control UI.
         {
             const auto& mb_cfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
             const auto* mb_ht_opt = mb_cfg.option<ConfigOptionEnum<PrintHostType>>("host_type");
             const bool is_makerbot_host = mb_ht_opt != nullptr &&
                 (mb_ht_opt->value == htMakerbotLink || mb_ht_opt->value == htUltimakerLink);
             if (is_makerbot_host) {
-                // Falls schon eingehaengt: nur aktualisieren.
+                // If already attached: just refresh.
                 if (m_makerbot_device_panel != nullptr &&
                     m_tabpanel->FindPage(m_makerbot_device_panel) != wxNOT_FOUND) {
                     m_makerbot_device_panel->update_ui_for_printer(mb_cfg);
                     fit_tab_labels();
                     return;
                 }
-                // Eine evtl. vorhandene WebView aus dem Tab nehmen.
+                // Remove any existing WebView from the tab.
                 if ((idx = m_tabpanel->FindPage(m_printer_view)) != wxNOT_FOUND) {
                     m_printer_view->Show(false);
                     m_tabpanel->RemovePage(idx);
@@ -1464,7 +1464,7 @@ void MainFrame::show_device(bool bBBLPrinter) {
                 fit_tab_labels();
                 return;
             }
-            // Kein MakerBot/UltiMaker: evtl. zuvor eingehaengtes Panel entfernen.
+            // Not MakerBot/UltiMaker: remove a previously attached panel if any.
             if (m_makerbot_device_panel != nullptr &&
                 (idx = m_tabpanel->FindPage(m_makerbot_device_panel)) != wxNOT_FOUND) {
                 m_makerbot_device_panel->Show(false);
@@ -3411,6 +3411,15 @@ void MainFrame::init_menubar_as_editor()
             if (!m_retraction_calib_dlg)
                 m_retraction_calib_dlg = new Retraction_Test_Dlg((wxWindow*)this, wxID_ANY, m_plater);
             m_retraction_calib_dlg->ShowModal();
+        }, "", nullptr,
+        [this]() {return m_plater->is_view3D_shown();; }, this);
+
+    // Z offset
+    append_menu_item(m_topbar->GetCalibMenu(), wxID_ANY, _L("Z offset"), _L("Z offset / first layer calibration"),
+        [this](wxCommandEvent&) {
+            auto dlg = new Z_Offset_Test_Dlg((wxWindow*)this, wxID_ANY, m_plater);
+            dlg->ShowModal();
+            dlg->Destroy();
         }, "", nullptr,
         [this]() {return m_plater->is_view3D_shown();; }, this);
 

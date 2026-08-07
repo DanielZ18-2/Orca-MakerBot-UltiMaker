@@ -237,9 +237,9 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
                             if (dlg.ShowModal() == wxID_OK && !dlg.get_token().empty()) {
                                 m_optgroup->set_value("printhost_password",
                                     wxString::FromUTF8("OrcaSlicer:" + dlg.get_token()), true);
-                                // FIX 2026-06-21: Token zusaetzlich in m_config
-                                // persistieren, sonst geht er bei save_preset
-                                // verloren (set_value fuellt nur das UI-Feld).
+                                // FIX 2026-06-21: also persist the token in m_config,
+                                // otherwise it is lost at save_preset
+                                // (set_value only fills the UI field).
                                 m_config->set_key_value("printhost_password",
                                     new ConfigOptionString("OrcaSlicer:" + dlg.get_token()));
                                 show_info(this,
@@ -331,9 +331,9 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
                                 // Store token as API key
                                 m_optgroup->set_value("printhost_password",
                                     wxString::FromUTF8("OrcaSlicer:" + dlg.get_token()), true);
-                                // FIX 2026-06-21: Token zusaetzlich in m_config
-                                // persistieren, sonst geht er bei save_preset
-                                // verloren (set_value fuellt nur das UI-Feld).
+                                // FIX 2026-06-21: also persist the token in m_config,
+                                // otherwise it is lost at save_preset
+                                // (set_value only fills the UI field).
                                 m_config->set_key_value("printhost_password",
                                     new ConfigOptionString("OrcaSlicer:" + dlg.get_token()));
                                 show_info(this,

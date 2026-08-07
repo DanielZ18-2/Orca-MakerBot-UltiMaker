@@ -2,7 +2,7 @@
 #define slic3r_UltimakerLink_hpp_
 
 // MakerBot / UltiMaker Fork – Orca Slicer 2.4
-// REST-API PrintHost für UltiMaker Classic, S/Factor und Method-Drucker.
+// REST-API PrintHost for UltiMaker Classic, S/Factor and Method printers.
 // Protokoll: HTTP (Port 80), Auth via X-Api-ID + X-Api-Key Header.
 
 #include "PrintHost.hpp"
@@ -52,7 +52,7 @@ private:
                    nlohmann::json    &out,
                    std::string       &error) const;
 
-    // Prüft / beantragt Authentifizierung.
+    // Checks / requests authentication.
     bool check_auth(std::string &error) const;
 };
 

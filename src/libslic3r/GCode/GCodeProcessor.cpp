@@ -3117,11 +3117,11 @@ void GCodeProcessor::process_tags(const std::string_view comment, bool producers
         return;
 
     // extrusion role tag
-    // FIX 2026-06-20: Robust gegen s_IsBBLPrinter. reserved_tag(ETags::Role)
-    // liefert je nach s_IsBBLPrinter " FEATURE: " (BBL) oder "TYPE:" (compat).
-    // Fuer MakerBot/UltiMaker bleibt s_IsBBLPrinter=true, der G-Code schreibt
-    // aber ";TYPE:..." -> ohne diesen Fix kein Match, keine Linienfarben.
-    // Wir akzeptieren beide Varianten; die Strings sind kollisionsfrei.
+    // FIX 2026-06-20: robust against s_IsBBLPrinter. reserved_tag(ETags::Role)
+    // returns " FEATURE: " (BBL) or "TYPE:" (compat) depending on s_IsBBLPrinter.
+    // For MakerBot/UltiMaker s_IsBBLPrinter stays true, but the G-code writes
+    // ";TYPE:..." -> without this fix no match, no line colors.
+    // We accept both variants; the strings are collision-free.
     {
         static const std::string role_tag_bbl    = " FEATURE: ";
         static const std::string role_tag_compat = "TYPE:";

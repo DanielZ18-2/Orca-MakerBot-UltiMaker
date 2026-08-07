@@ -12,9 +12,9 @@
 #include <zlib.h>
 #include <fstream>
 #include <cstdlib>
-#include <sys/socket.h> // Folgefix: SO_RCVTIMEO fuer KaitenSession-Reads (wirkungslos, s.u.)
+#include <sys/socket.h> // follow-up fix: SO_RCVTIMEO for KaitenSession reads (ineffective, see below)
 #include <sys/time.h>
-#include <poll.h> // Korrektur-Fix: echtes Timeout via rohes poll() vor jedem read_some()
+#include <poll.h> // corrective fix: real timeout via raw poll() before each read_some()
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -139,19 +139,19 @@ private:
 // repeated calls, all on the SAME connection - unlike BirdwingRpcClient
 // above (SSL/12309), which reconnects per call.
 
-// Korrektur-Fix: SO_RCVTIMEO (siehe open()) wird von Boost.Asios eigenem
-// Reactor nicht beruecksichtigt - read_some() kann trotzdem ewig blockieren.
-// poll() ist ein roher POSIX-Syscall ausserhalb von Asios Verwaltung und
-// liefert daher zuverlaessig einen Timeout. Rueckgabe: true = Daten da,
-// false = Timeout/Fehler (Aufrufer prueft dann seinen eigenen, groesseren
-// Timeout und versucht es ggf. erneut).
+// Corrective fix: SO_RCVTIMEO (see open()) is not honored by Boost.Asio's own
+// reactor - read_some() can still block forever.
+// poll() is a raw POSIX syscall outside Asio's management and
+// therefore reliably provides a timeout. Return: true = data available,
+// false = timeout/error (the caller then checks its own, larger
+// timeout and retries if needed).
 static bool kaiten_wait_readable(int fd, int timeout_ms)
 {
     pollfd pfd{};
     pfd.fd = fd;
     pfd.events = POLLIN;
     int rc = ::poll(&pfd, 1, timeout_ms);
-    if (rc <= 0) return false; // Timeout (0) oder Fehler (<0)
+    if (rc <= 0) return false; // timeout (0) or error (<0)
     return (pfd.revents & POLLIN) != 0;
 }
 
@@ -190,9 +190,9 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
 
     try {
         if (extra_raw != nullptr) {
-            // put_raw: nacktes JSON OHNE \r\n, dann sofort die Rohbytes
+            // put_raw: bare JSON WITHOUT \r\n, then the raw bytes immediately
             // (verifiziert: ein \r\n wuerde als erste 2 Block-Bytes
-            // fehlinterpretiert -> CRC falsch / Timeout).
+            // misinterpreted -> wrong CRC / timeout).
             const std::string head = request.dump();
             asio::write(m_impl->socket, asio::buffer(head));
             asio::write(m_impl->socket, asio::buffer(*extra_raw));
@@ -203,16 +203,16 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
 
         // Kaiten rahmt JSON-Nachrichten per BRACE-COUNTING, NICHT per Newline
         // (verifiziert gegen conveyor/json_reader.py, MakerWare 3.10.1).
-        // Ausserdem sendet der Drucker die Antwort als "system_notification"
-        // (params.info), nicht zwingend als result. Wir lesen ein komplettes
-        // Top-Level-JSON-Objekt (Klammern zaehlen), bis es geschlossen ist.
+        // Also, the printer sends the response as a "system_notification"
+        // (params.info), not necessarily as result. We read a complete
+        // top-level JSON object (counting braces) until it is closed.
         m_impl->socket.non_blocking(false);
         const auto t_start = std::chrono::steady_clock::now();
 
-        // Antwort lesen, dabei unaufgeforderte system_notification-Nachrichten
-        // (Telemetrie-Push des Z18) ueberspringen: nur die Nachricht mit
-        // unserer req_id - oder eine mit result/error und ohne fremde id -
-        // gilt als Antwort. Verifiziert gegen kaiten_upload_probe.py.
+        // response, skipping unsolicited system_notification messages
+        // (telemetry push of the Z18): skip them, only the message with
+        // our req_id - or one with result/error and without a foreign id -
+        // counts as the response. Verified against kaiten_upload_probe.py.
         while (true) {
             std::string raw;
             {
@@ -224,20 +224,20 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                             > std::chrono::seconds(timeout_s)) {
                         error = "Timeout reading from MakerBot (port 9999)";
                         // Breath-1: Session NICHT schliessen. Ein langsamer/
-                        // beschaeftigter Drucker soll keinen Token+authenticate-
-                        // Sturm ausloesen, der den kaiten-Server verklemmt.
-                        // Verspaetete Antworten fangen wir per req_id-Abgleich ab;
-                        // echte Abbrueche (RST/EOF) schliessen ueber den ec-Zweig.
+                        // a busy printer should not trigger a token+authenticate
+                        // storm that jams the kaiten server.
+                        // We catch late responses via req_id matching;
+                        // real aborts (RST/EOF) close via the ec branch.
                         return false;
                     }
-                    if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
+                    if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // nothing there yet
                     size_t got = m_impl->socket.read_some(asio::buffer(&c, 1), ec);
-                    if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
+                    if (ec == asio::error::would_block) continue; // SO_RCVTIMEO expiry, not a real error
                     if (ec) { error = ec.message(); close(); return false; }
                     if (got == 0) continue;
                     if (!started) {
                         if (c == '{' || c == '[') { started = true; depth = 1; raw.push_back(c); }
-                        continue; // Whitespace/Newline vor dem Objekt ignorieren
+                        continue; // ignore whitespace/newline before the object
                     }
                     raw.push_back(c);
                     if (in_str) {
@@ -249,7 +249,7 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                     else if (c == '{' || c == '[') depth++;
                     else if (c == '}' || c == ']') {
                         depth--;
-                        if (depth == 0) break; // komplettes Objekt gelesen
+                        if (depth == 0) break; // complete object read
                     }
                 }
             }
@@ -257,18 +257,18 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
 
             nlohmann::json msg = nlohmann::json::parse(raw);
 
-            // Gehoert diese Nachricht zu unserem Request?
+            // Does this message belong to our request?
             bool is_our_response = false;
             if (msg.contains("id") && !msg["id"].is_null()) {
-                // id-traegt -> nur akzeptieren, wenn sie unserer req_id entspricht
+                // carries an id -> accept only if it matches our req_id
                 try { is_our_response = (msg["id"].get<long long>() == (long long)req_id); }
                 catch (...) { is_our_response = false; }
             } else if (msg.contains("result") || msg.contains("error")) {
-                // Antwort ohne id (manche Firmware) -> als unsere Antwort werten
+                // response without id (some firmware) -> treat as our response
                 is_our_response = true;
             }
             if (!is_our_response) {
-                // unaufgeforderte Notification (z.B. system_notification) -> skip
+                // unsolicited notification (e.g. system_notification) -> skip
                 continue;
             }
 
@@ -299,13 +299,13 @@ bool KaitenSession::open(const std::string& host, const std::string& access_toke
         auto eps = resolver.resolve(host, std::to_string(MakerbotLink::KAITEN_PLAINTEXT_PORT));
         asio::connect(m_impl->socket, eps);
         m_impl->socket.set_option(tcp::no_delay(true));
-        // Folgefix: SO_RCVTIMEO, sonst blockiert ein read_some() OHNE jede
-        // Antwort (z.B. Drucker beschaeftigt/Kalibrierung) den GUI-Thread
-        // fuer immer - der manuelle Timeout-Check in call()/
-        // fetch_camera_frame() greift nur ZWISCHEN abgeschlossenen reads,
-        // nie WAEHREND eines blockierenden read_some() ohne jede Antwort.
-        // 1s, damit die groesseren Timeouts (5s/8s) noch mehrfach pruefen
-        // koennen statt nur einmal.
+        // Follow-up fix: SO_RCVTIMEO, otherwise a read_some() WITHOUT any
+        // response (e.g. printer busy/calibrating) blocks the GUI thread
+        // forever - the manual timeout check in call()/
+        // fetch_camera_frame() acts only BETWEEN completed reads,
+        // never DURING a blocking read_some() without any response.
+        // 1s, so the larger timeouts (5s/8s) can still check multiple times
+        // can, instead of only once.
         {
             struct timeval tv{};
             tv.tv_sec = 1; tv.tv_usec = 0;
@@ -318,12 +318,12 @@ bool KaitenSession::open(const std::string& host, const std::string& access_toke
         return false;
     }
 
-    // KEIN handshake! Verifiziert gegen conveyor/machine/birdwing.py:
-    // authenticate_connection() ruft direkt authenticate, ohne handshake.
-    // Der handshake gehoert nur zum erstmaligen Client-Thread-Aufbau und
-    // wird vom Drucker auf dem Wiederverbindungs-Pfad nicht beantwortet
-    // (fuehrte zum Timeout). Der access_token ist ein ONETIME-Token, der
-    // unmittelbar vorher per HTTPS:443 frisch geholt wurde (siehe
+    // NO handshake! Verified against conveyor/machine/birdwing.py:
+    // authenticate_connection() calls authenticate directly, without handshake.
+    // The handshake belongs only to the initial client-thread setup and
+    // is not answered by the printer on the reconnection path
+    // (this caused the timeout). The access_token is a ONETIME token that
+    // was freshly fetched via HTTPS:443 immediately before (see
     // open_kaiten_session -> refresh_access_token).
     if (access_token.empty()) {
         error = "No fresh access_token - token refresh (HTTPS:443) failed.";
@@ -353,9 +353,9 @@ MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
     if (const auto* opt = config->opt<ConfigOptionString>("printhost_password"))
         stored_auth = opt->value;
 
-    // Format (NEU, fuer Token-Refresh bei Wiederverbindung):
+    // Format (NEW, for token refresh on reconnection):
     //   "OrcaSlicer:<client_secret>:<birdwing_code>"
-    // Alt-Format (nur access_token) wird noch toleriert: "OrcaSlicer:<token>"
+    // Old format (access_token only) is still tolerated: "OrcaSlicer:<token>"
     {
         std::vector<std::string> parts;
         size_t start = 0, pos;
@@ -369,7 +369,7 @@ MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
             m_client_secret = parts[1];                 // orca_xxxxxxxx
             m_birdwing_code = parts[2];                 // 32-stelliger Code
         } else if (parts.size() == 2) {
-            // Alt-Format: nur access_token (kein Refresh moeglich)
+            // old format: access_token only (no refresh possible)
             m_client_id    = parts[0];
             m_access_token = parts[1];
         }
@@ -435,7 +435,7 @@ bool MakerbotLink::birdwing_rpc(const std::string&    method,
 }
 
 
-// ── Kamera-Einzelbild (YUYV) ueber Kaiten ────────────────────────────────────
+// ── Single camera frame (YUYV) over Kaiten ────────────────────────────────────
 // Verifiziert am Z18: request_camera_frame -> camera_frame-Notification ->
 // 16-Byte-Header (total,width,height,format als big-endian uint32) + YUYV.
 bool KaitenSession::fetch_camera_frame(int& width, int& height,
@@ -444,7 +444,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
 {
     if (!m_impl) { error = "session closed"; return false; }
     try {
-        // request_camera_frame senden
+        // send request_camera_frame
         const int req_id = m_impl->next_id++;
         const nlohmann::json req = {
             {"jsonrpc","2.0"},{"method","request_camera_frame"},
@@ -453,25 +453,25 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
         const std::string msg = req.dump() + "\r\n";
         asio::write(m_impl->socket, asio::buffer(msg));
 
-        // Bytes lesen, bis wir die camera_frame-Notification gesehen haben;
+        // read bytes until we have seen the camera_frame notification;
         // danach kommen direkt 16 Byte Header + YUYV-Daten.
-        // Wir nutzen einen kleinen lokalen Lese-Puffer ueber read_some.
+        // We use a small local read buffer over read_some.
         m_impl->socket.non_blocking(false);
         std::string buf;
         const auto t_start = std::chrono::steady_clock::now();
         auto timed_out = [&](){ return std::chrono::steady_clock::now() - t_start
                                        > std::chrono::seconds(timeout_s); };
 
-        // Hilfsfunktion: ein komplettes Top-Level-JSON aus dem Stream lesen.
+        // helper: read one complete top-level JSON from the stream.
         auto read_json = [&](std::string& out_json)->bool {
             int depth=0; bool in_str=false, esc=false, started=false; char c;
             std::string acc;
             while (true) {
                 if (timed_out()) { error="camera timeout (json)"; return false; }
                 boost::system::error_code ec;
-                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
+                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // nothing there yet
                 size_t got = m_impl->socket.read_some(asio::buffer(&c,1), ec);
-                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
+                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO expiry, not a real error
                 if (ec) { error=ec.message(); return false; }
                 if (got==0) continue;
                 if (!started) { if (c=='{'||c=='['){started=true;depth=1;acc.push_back(c);} continue; }
@@ -482,7 +482,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
                 else if (c=='}'||c==']') { if(--depth==0){ out_json=acc; return true; } }
             }
         };
-        // Hilfsfunktion: exakt n Rohbytes lesen.
+        // helper: read exactly n raw bytes.
         auto read_raw = [&](size_t n, std::string& out_raw)->bool {
             out_raw.clear(); out_raw.reserve(n);
             while (out_raw.size() < n) {
@@ -490,17 +490,17 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
                 char tmp[8192];
                 size_t want = std::min(sizeof(tmp), n - out_raw.size());
                 boost::system::error_code ec;
-                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // noch nichts da
+                if (!kaiten_wait_readable(m_impl->socket.native_handle(), 200)) continue; // nothing there yet
                 size_t got = m_impl->socket.read_some(asio::buffer(tmp, want), ec);
-                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO-Ablauf, kein echter Fehler
+                if (ec == asio::error::would_block) continue; // SO_RCVTIMEO expiry, not a real error
                 if (ec) { error=ec.message(); return false; }
                 out_raw.append(tmp, got);
             }
             return true;
         };
 
-        // JSONs lesen, bis camera_frame-Notification kommt (request-Antwort
-        // result:true vorher ueberspringen).
+        // read JSONs until the camera_frame notification arrives (skip the request
+        // result:true response beforehand).
         bool got_frame_notif = false;
         for (int i = 0; i < 20 && !got_frame_notif; ++i) {
             std::string js;
@@ -532,7 +532,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
 
 
 // ── Token-Refresh (HTTPS:443) ────────────────────────────────────────────────
-// Holt einen frischen onetime-access_token aus client_secret + birdwing_code.
+// Fetches a fresh onetime access_token from client_secret + birdwing_code.
 // Verifiziert gegen conveyor get_birdwing_token / do_auth_get('token', ...).
 bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& error) const
 {
@@ -572,8 +572,8 @@ bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& err
 }
 
 
-// ── pending-print-Datei: merkt den remote_path der zuletzt hochgeladenen ─────
-// Datei pro Drucker (Host). Das Device-Tab liest sie beim "Druck starten".
+// ── pending-print file: remembers the remote_path of the last uploaded ─────
+// file per printer (host). The Device tab reads it on "start print".
 // Liegt unter ~/.config/OrcaSlicer/makerbot_pending/<host>.txt
 static std::string makerbot_pending_path(const std::string& host)
 {
@@ -599,9 +599,9 @@ static void write_pending_print(const std::string& host, const std::string& remo
     }
 }
 
-// ── Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) ────────────
-// Verifiziert gegen echten Z18 (kaiten_upload_probe.py): JSON-RPC ueber 9999,
-// put_raw sendet nacktes JSON + direkt 32KB-Rohbytes, put_term mit CRC32.
+// ── Birdwing file upload over Kaiten (put_init/put_raw/put_term) ────────────
+// Verified against a real Z18 (kaiten_upload_probe.py): JSON-RPC over 9999,
+// put_raw sends bare JSON + 32KB raw bytes directly, put_term with CRC32.
 bool MakerbotLink::get_camera_frame(KaitenSession& session, int& width,
                                    int& height, std::string& yuyv_out,
                                    std::string& error) const
@@ -625,8 +625,8 @@ bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
         error = "cannot stat " + local_path + ": " + fsec.message();
         return false;
     }
-    // 6a-Guard: nur gueltige ZIP-Archive (Magic "PK") an den Drucker transferieren.
-    // Verhindert, dass roher G-Code beim Drucker als "Print File Corrupt" (1021) endet.
+    // 6a guard: only transfer valid ZIP archives (magic "PK") to the printer.
+    // Prevents raw G-code from ending up as "Print File Corrupt" (1021) on the printer.
     {
         char _magic[2] = {0, 0};
         std::ifstream _mf(local_path, std::ios::binary);
@@ -637,17 +637,17 @@ bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
         }
     }
     const int block_size = 32768;
-    // file_id: 3 Bytes base64, hier konstant 0 -> "AAAA" (eine Datei pro Session)
+    // file_id: 3 bytes base64, here constant 0 -> "AAAA" (one file per session)
     const std::string file_id = "AAAA";
 
-    // put_init (erst mit length; bei -32602 ohne)
+    // put_init (first with length; without on -32602)
     nlohmann::json resp;
     nlohmann::json p_init = {
         {"file_path", remote_path}, {"file_id", file_id},
         {"block_size", block_size}, {"length", total}
     };
     if (!session.call("put_init", p_init, resp, error, 30)) {
-        // evtl. length nicht akzeptiert -> ohne length erneut
+        // length possibly not accepted -> retry without length
         nlohmann::json p2 = {
             {"file_path", remote_path}, {"file_id", file_id}, {"block_size", block_size}
         };
@@ -668,7 +668,7 @@ bool MakerbotLink::kaiten_upload_file(KaitenSession& session,
         std::streamsize n = f.gcount();
         if (n <= 0) break;
         const std::string block(buf.data(), (size_t)n);
-        // put_raw: params [file_id, len], extra = Rohbytes (ohne \r\n)
+        // put_raw: params [file_id, len], extra = raw bytes (without \r\n)
         nlohmann::json p_raw = nlohmann::json::array({file_id, (int)n});
         if (!session.call("put_raw", p_raw, resp, error, 30, &block)) {
             error = "put_raw failed: " + error;
@@ -700,9 +700,9 @@ bool MakerbotLink::kaiten_print(KaitenSession& session,
                                 bool new_flow, std::string& error) const
 {
     nlohmann::json params;
-    // Offizielle Software (print_job_helper.js) uebergibt an "print" IMMER nur
-    // den Basename (path.basename(localPath)), nie den vollen Pfad - auch im
-    // new_flow. Fix von Fehler (4).
+    // The official software (print_job_helper.js) ALWAYS passes to "print" only
+    // the basename (path.basename(localPath)), never the full path - even in
+    // new_flow. Fix for bug (4).
     params["filepath"] = boost::filesystem::path(remote_path).filename().string();
     if (new_flow) {
         params["transfer_wait"] = true;
@@ -716,8 +716,8 @@ bool MakerbotLink::kaiten_print(KaitenSession& session,
     return true;
 }
 
-// Kompletter Druckstart in korrekter Reihenfolge (print -> put), 1:1 nach
-// dem belegten Ablauf der offiziellen MakerBot Print Software.
+// Complete print start in the correct order (print -> put), 1:1 following
+// the documented flow of the official MakerBot Print software.
 bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
                                            const std::string& local_path,
                                            ProgressFn prg_fn,
@@ -729,10 +729,10 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
     // (makerbot-printer.js:677).
     const std::string remote_path = "/current_thing/" + basename;
 
-    // Schritt 1: print ZUERST, mit transfer_wait=true und NUR dem Basename.
-    // Der Drucker geht danach in "warte auf Datei" (+ ggf. Homing) und
-    // erwartet aktiv den folgenden Upload - das vermeidet die "Press the
-    // dial"-Sicherheitsabfrage fuer unerwartete Dateien (Fehler 1+3+4).
+    // Step 1: print FIRST, with transfer_wait=true and ONLY the basename.
+    // The printer then enters "waiting for file" (+ homing if needed) and
+    // actively expects the following upload - this avoids the "Press the
+    // dial" safety prompt for unexpected files (bugs 1+3+4).
     {
         nlohmann::json params;
         params["filepath"] = basename;
@@ -746,19 +746,19 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
                                 << remote_path;
     }
 
-    // Schritt 2: jetzt erst die Datei hochladen, an den /current_thing/-Pfad.
+    // Step 2: only now upload the file, to the /current_thing/ path.
     if (!kaiten_upload_file(session, local_path, remote_path, prg_fn, error)) {
         error = "file upload after print failed: " + error;
         return false;
     }
 
-    // Schritt 3: Bauplatten-Bestaetigung wie die Originalsoftware.
-    // Der Host-Dialog war die Bestaetigung des Nutzers; jetzt teilen wir dem
-    // Drucker mit, dass die Platte frei ist, damit er OHNE Raddruck startet.
-    // Hardware-belegter Ablauf: nach dem Upload geht der Prozess in
-    // step=="clear_build_plate" und bietet die Methode "build_plate_cleared"
-    // an. Wir warten gezielt auf diesen Zustand (max 15s) und senden sie dann
-    // ueber DIESELBE session (der Druckprozess haengt an dieser Verbindung).
+    // Step 3: build-plate confirmation like the original software.
+    // The host dialog was the user's confirmation; now we tell the
+    // the printer that the plate is clear, so it starts WITHOUT a wheel press.
+    // hardware-documented flow: after the upload the process enters
+    // step=="clear_build_plate" and offers the method "build_plate_cleared"
+    // state. We wait specifically for this state (max 15s) and then send it
+    // over the SAME session (the print process is tied to this connection).
     {
         const auto deadline = std::chrono::steady_clock::now()
                             + std::chrono::seconds(15);
@@ -769,8 +769,8 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
             if (session.call("get_system_information",
                              nlohmann::json::object(), si, e2, 10)) {
                 try {
-                    // Fix: session.call liefert die RPC-Huelle {"result": {...}} -
-                    // current_process liegt UNTER result (wie ueberall sonst im Code).
+                    // Fix: session.call returns the RPC envelope {"result": {...}} -
+                    // current_process is UNDER result (as everywhere else in the code).
                     const nlohmann::json& si_r =
                         (si.contains("result") && si["result"].is_object()) ? si["result"] : si;
                     if (si_r.contains("current_process")
@@ -828,17 +828,17 @@ std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& er
 {
     if (m_host.empty()) { error = "No IP address configured."; return nullptr; }
 
-    // Wiederverbindung: PRO Verbindung einen frischen onetime-access_token
-    // ueber HTTPS:443 aus client_secret + birdwing_code holen (verifiziert
-    // gegen conveyor get_birdwing_token). Der beim Pairing erhaltene Token
-    // ist bereits verbraucht und NICHT wiederverwendbar.
+    // Reconnection: fetch a fresh onetime access_token PER connection
+    // via HTTPS:443 from client_secret + birdwing_code (verified
+    // against conveyor get_birdwing_token). The token obtained at pairing
+    // is already used up and NOT reusable.
     std::string fresh_token;
     if (!m_client_secret.empty() && !m_birdwing_code.empty()) {
         if (!refresh_access_token(fresh_token, error))
             return nullptr;
     } else if (!m_access_token.empty()) {
-        // Alt-Format ohne Refresh-Zutaten: einmaliger Versuch mit altem Token
-        // (schlaegt i.d.R. fehl -> Hinweis zum Neu-Pairen).
+        // old format without refresh ingredients: single attempt with the old token
+        // (usually fails -> hint to re-pair).
         fresh_token = m_access_token;
     } else {
         error = "Printer not paired yet. Pair it first in Printer Settings "
@@ -1024,11 +1024,11 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
         return BirdwingAuthResult::ConnectionFailed;
     }
     if (j3.value("status", "") == "success" && j3.contains("access_token")) {
-        // NEU: statt des (verbrauchten) access_token geben wir die dauerhaft
-        // wiederverwendbaren Zutaten zurueck: client_secret + birdwing_code.
-        // Format wird vom Dialog als printhost_password gespeichert:
+        // NEW: instead of the (used-up) access_token we return the permanently
+        // reusable ingredients: client_secret + birdwing_code.
+        // format is stored by the dialog as printhost_password:
         //   "<client_secret>:<birdwing_code>"
-        // (Das "OrcaSlicer:"-Praefix setzt der Dialog davor.)
+        // (The dialog adds the "OrcaSlicer:" prefix in front.)
         error_or_token = client_secret + ":" + birdwing_code;
         BOOST_LOG_TRIVIAL(info) << "MakerbotLink birdwing_authorize: paired successfully (secret+code stored for reconnect).";
         return BirdwingAuthResult::Success;
@@ -1137,20 +1137,20 @@ bool MakerbotLink::upload(PrintHostUpload upload_data,
 
     if (m_is_birdwing) {
         // GEAENDERT (Daniel 2026-06-28): KEIN Vorab-Upload mehr. Der Upload
-        // soll erst NACH der Bauplatten-Bestaetigung im Device-Tab laufen,
-        // zusammen mit dem print-Aufruf in korrekter Reihenfolge
-        // (kaiten_print_and_upload). Hier wird daher nur noch der LOKALE
-        // Pfad der fertigen .makerbot-Datei als "pending" gemerkt, damit das
-        // Device-Tab beim Start-Knopf weiss, welche Datei zu drucken ist.
-        // Wir testen NICHT die Verbindung hier - das passiert ohnehin beim
+        // should run only AFTER the build-plate confirmation in the Device tab,
+        // together with the print call in the correct order
+        // (kaiten_print_and_upload). So here only the LOCAL
+        // path of the finished .makerbot file is remembered as "pending", so the
+        // Device tab knows at the start button which file to print.
+        // We do NOT test the connection here - that happens anyway during
         // Druckstart im Device-Tab.
         namespace fs = boost::filesystem;
         const fs::path src(upload_data.source_path);
         // Persistente Ablage: PrintHost loescht source_path (transiente
-        // Temp-Datei) nach upload(). Wir kopieren sie daher an einen
-        // bleibenden .makerbot-Pfad und merken DIESEN als pending. Der
-        // Name kommt aus upload_path (echter Projektname), nicht der
-        // versteckte Temp-Name. Fallback, falls leer/versteckt.
+        // temp file) after upload(). So we copy it to a
+        // remaining .makerbot path and remember THIS as pending. The
+        // name comes from upload_path (the real project name), not the
+        // hidden temp name. Fallback if empty/hidden.
         std::string fname = upload_data.upload_path.filename().string();
         if (fname.empty() || fname[0] == '.')
             fname = "current_print.makerbot";

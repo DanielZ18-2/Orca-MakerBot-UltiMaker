@@ -41,9 +41,9 @@ public:
               nlohmann::json& out, std::string& error, int timeout_s = 5,
               const std::string* extra_raw = nullptr);
 
-    // Ruft ein Kamera-Einzelbild ab: sendet request_camera_frame, liest die
-    // camera_frame-Notification + 16-Byte-Header + YUYV-Pixeldaten.
-    // yuyv_out erhaelt die rohen YUYV(YUV422)-Bytes (width*height*2).
+    // Fetches a single camera frame: sends request_camera_frame, reads the
+    // camera_frame notification + 16-byte header + YUYV pixel data.
+    // yuyv_out receives the raw YUYV(YUV422) bytes (width*height*2).
     bool fetch_camera_frame(int& width, int& height, std::string& yuyv_out,
                             std::string& error, int timeout_s = 8);
 
@@ -109,16 +109,16 @@ public:
     // Returns nullptr with `error` set on failure.
     std::shared_ptr<KaitenSession> open_kaiten_session(std::string& error) const;
 
-    // Ruft ein Kamera-Einzelbild (YUYV) ueber eine offene Session ab.
+    // Fetches a single camera frame (YUYV) over an open session.
     bool get_camera_frame(KaitenSession& session, int& width, int& height,
                           std::string& yuyv_out, std::string& error) const;
 
-    // KOMPLETTER korrekter Druckstart-Ablauf in EINEM Schritt, exakt wie die
-    // offizielle MakerBot Print Software (print_job_helper.js):
+    // COMPLETE correct print-start flow in ONE step, exactly like the
+    // official MakerBot Print software (print_job_helper.js):
     //   1. print  {filepath: <basename>, transfer_wait: true}
     //   2. put    local_path -> "/current_thing/<basename>"
-    // Genau in dieser Reihenfolge. Das Device-Tab ruft dies nach der
-    // Bauplatten-Bestaetigung auf. local_path ist die fertige .makerbot-Datei.
+    // Exactly in this order. The Device tab calls this after the
+    // build-plate confirmation. local_path is the finished .makerbot file.
     bool kaiten_print_and_upload(KaitenSession& session,
                                  const std::string& local_path,
                                  ProgressFn prg_fn, std::string& error) const;
@@ -141,24 +141,24 @@ public:
 
 private:
     std::string m_host;
-    std::string m_access_token;   // Alt-Format (nur falls kein Refresh moeglich)
+    std::string m_access_token;   // old format (only if no refresh possible)
     std::string m_client_id;
-    std::string m_client_secret;  // fuer Token-Refresh bei Wiederverbindung
-    std::string m_birdwing_code;  // fuer Token-Refresh bei Wiederverbindung
+    std::string m_client_secret;  // for token refresh on reconnection
+    std::string m_birdwing_code;  // for token refresh on reconnection
     bool        m_is_birdwing { false };
     int         m_port        { LAVA_PORT };
 
     // Holt frischen onetime-access_token via HTTPS:443 (Wiederverbindung)
     bool refresh_access_token(std::string& token_out, std::string& error) const;
 
-    // Birdwing-Dateiupload ueber Kaiten (put_init/put_raw/put_term) auf einer
-    // bereits offenen + authentifizierten Session. remote_path z.B.
-    // "/home/current_thing/<name>.makerbot". Verifiziert gegen echten Z18.
+    // Birdwing file upload over Kaiten (put_init/put_raw/put_term) on an
+    // already open + authenticated session. remote_path e.g.
+    // "/home/current_thing/<name>.makerbot". Verified against a real Z18.
     bool kaiten_upload_file(KaitenSession& session,
                             const std::string& local_path,
                             const std::string& remote_path,
                             ProgressFn prg_fn, std::string& error) const;
-    // Startet den Druck der bereits hochgeladenen Datei.
+    // Starts printing the already uploaded file.
     bool kaiten_print(KaitenSession& session,
                       const std::string& remote_path,
                       bool new_flow, std::string& error) const;

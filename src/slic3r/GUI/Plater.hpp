@@ -164,12 +164,12 @@ public:
     void update_all_preset_comboboxes();
     //void update_partplate(PartPlateList& list);
     void update_presets(Slic3r::Preset::Type preset_type);
-    // MakerBot/UltiMaker Fork: vom Device-Tab aufgerufen, wenn per
-    // Telemetrie ein Smart-Extruder-Typ erkannt wurde. Schreibt
-    // smart_extruder_type in die editierte Drucker-Config (nur bei
-    // Aenderung) und aktualisiert das Sidebar-Dropdown. Reine Vorauswahl -
-    // sperrt NICHTS (anders als historisch im MakerBot Desktop).
-    // value="" -> kein bekannter Typ, bewusst keine Aenderung statt Raten.
+    // MakerBot/UltiMaker fork: called from the Device tab when a
+    // smart-extruder type was detected via telemetry. Writes
+    // smart_extruder_type into the edited printer config (only on
+    // change) and updates the sidebar dropdown. Pure preselection -
+    // blocks NOTHING (unlike historically in MakerBot Desktop).
+    // value="" -> no known type; deliberately no change instead of guessing.
     void set_detected_smart_extruder_type(int slot, const std::string& value);
     //BBS
     const std::vector<BedType>& get_cur_combox_bed_types() { return m_cur_combox_bed_types; }
@@ -344,6 +344,7 @@ public:
     void calib_temp(const Calib_Params& params);
     void calib_max_vol_speed(const Calib_Params& params);
     void calib_retraction(const Calib_Params& params);
+    void calib_z_offset(const Calib_Params& params);
     void calib_VFA(const Calib_Params& params);
     void calib_input_shaping_freq(const Calib_Params& params);
     void calib_input_shaping_damp(const Calib_Params& params);

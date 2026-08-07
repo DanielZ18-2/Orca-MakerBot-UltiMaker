@@ -851,6 +851,108 @@ void Retraction_Test_Dlg::on_dpi_changed(const wxRect& suggested_rect) {
 
 }
 
+// Z_Offset_Test_Dlg
+//
+
+Z_Offset_Test_Dlg::Z_Offset_Test_Dlg(wxWindow* parent, wxWindowID id, Plater* plater)
+    : DPIDialog(parent, id, _L("Z offset"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE), m_plater(plater)
+{
+    SetBackgroundColour(*wxWHITE);
+    SetForegroundColour(wxColour("#363636"));
+    SetFont(Label::Body_14);
+
+    wxBoxSizer* v_sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(v_sizer);
+
+    wxString start_height_str = _L("Start layer height: ");
+    wxString end_height_str   = _L("End layer height: ");
+    wxString height_step_str  = _L("Step") + ": ";
+    int text_max = GetTextMax(this, std::vector<wxString>{start_height_str, end_height_str, height_step_str});
+
+    auto st_size = wxSize(text_max, -1);
+    auto ti_size = FromDIP(wxSize(120, -1));
+
+    LabeledStaticBox* stb = new LabeledStaticBox(this, _L("Settings"));
+    wxStaticBoxSizer* settings_sizer = new wxStaticBoxSizer(stb, wxVERTICAL);
+
+    settings_sizer->AddSpacer(FromDIP(5));
+
+    auto start_height_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto start_height_text = new wxStaticText(this, wxID_ANY, start_height_str, wxDefaultPosition, st_size, wxALIGN_LEFT);
+    m_tiStart = new TextInput(this, wxString::FromDouble(0.08), _L("mm"), "", wxDefaultPosition, ti_size);
+    m_tiStart->GetTextCtrl()->SetValidator(wxTextValidator(wxFILTER_NUMERIC));
+    start_height_sizer->Add(start_height_text, 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    start_height_sizer->Add(m_tiStart        , 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    settings_sizer->Add(start_height_sizer, 0, wxLEFT, FromDIP(3));
+
+    auto end_height_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto end_height_text = new wxStaticText(this, wxID_ANY, end_height_str, wxDefaultPosition, st_size, wxALIGN_LEFT);
+    m_tiEnd = new TextInput(this, wxString::FromDouble(0.32), _L("mm"), "", wxDefaultPosition, ti_size);
+    m_tiEnd->GetTextCtrl()->SetValidator(wxTextValidator(wxFILTER_NUMERIC));
+    end_height_sizer->Add(end_height_text, 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    end_height_sizer->Add(m_tiEnd        , 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    settings_sizer->Add(end_height_sizer, 0, wxLEFT, FromDIP(3));
+
+    auto height_step_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto height_step_text = new wxStaticText(this, wxID_ANY, height_step_str, wxDefaultPosition, st_size, wxALIGN_LEFT);
+    m_tiStep = new TextInput(this, wxString::FromDouble(0.04), _L("mm"), "", wxDefaultPosition, ti_size);
+    m_tiStep->GetTextCtrl()->SetValidator(wxTextValidator(wxFILTER_NUMERIC));
+    height_step_sizer->Add(height_step_text, 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    height_step_sizer->Add(m_tiStep        , 0, wxALL | wxALIGN_CENTER_VERTICAL, FromDIP(2));
+    settings_sizer->Add(height_step_sizer, 0, wxLEFT, FromDIP(3));
+
+    settings_sizer->AddSpacer(FromDIP(5));
+
+    auto hint = new wxStaticText(this, wxID_ANY,
+        _L("Each patch is printed at a different commanded layer height and carries countable ribs for identification by touch. Pick the best patch, then change the printer's Z offset by (patch height - first layer height)."));
+    hint->Wrap(FromDIP(420));
+    settings_sizer->Add(hint, 0, wxALL, FromDIP(5));
+
+    v_sizer->Add(settings_sizer, 0, wxTOP | wxRIGHT | wxLEFT | wxEXPAND, FromDIP(10));
+    v_sizer->AddSpacer(FromDIP(5));
+
+    auto dlg_btns = new DialogButtons(this, {"OK"});
+
+    auto bottom_sizer = new wxBoxSizer(wxHORIZONTAL);
+    bottom_sizer->AddStretchSpacer();
+    bottom_sizer->Add(dlg_btns, 0, wxEXPAND);
+    v_sizer->Add(bottom_sizer, 0, wxEXPAND);
+
+    dlg_btns->GetOK()->Bind(wxEVT_BUTTON, &Z_Offset_Test_Dlg::on_start, this);
+
+    wxGetApp().UpdateDlgDarkUI(this);
+
+    Layout();
+    Fit();
+}
+
+Z_Offset_Test_Dlg::~Z_Offset_Test_Dlg() {
+}
+
+void Z_Offset_Test_Dlg::on_start(wxCommandEvent& event) {
+    bool read_double = false;
+    read_double = m_tiStart->GetTextCtrl()->GetValue().ToDouble(&m_params.start);
+    read_double = read_double && m_tiEnd->GetTextCtrl()->GetValue().ToDouble(&m_params.end);
+    read_double = read_double && m_tiStep->GetTextCtrl()->GetValue().ToDouble(&m_params.step);
+
+    if (!read_double || m_params.start < 0.02 || m_params.step <= 0 || m_params.end < (m_params.start + m_params.step)) {
+        MessageDialog msg_dlg(nullptr,
+            _L("Please input valid values:\nstart >= 0.02\nstep > 0\nend > start + step"),
+            wxEmptyString, wxICON_WARNING | wxOK);
+        msg_dlg.ShowModal();
+        return;
+    }
+
+    m_params.mode = CalibMode::Calib_Z_offset;
+    m_plater->calib_z_offset(m_params);
+    EndModal(wxID_OK);
+}
+
+void Z_Offset_Test_Dlg::on_dpi_changed(const wxRect& suggested_rect) {
+    this->Refresh();
+    Fit();
+}
+
 // Input_Shaping_Freq_Test_Dlg
 //
 

@@ -348,25 +348,25 @@ void MakerbotDiscoveryDialog::EndModal_if_selected()
 
 
 // ── Subnet Scan: TCP-Connect auf Port 12309 ───────────────────────────────────
-// Birdwing-Drucker unterstützen kein mDNS und reagieren nicht auf UDP-Broadcasts
-// über Subnetz-Grenzen. Daher: paralleler TCP-Scan aller Hosts im /24-Subnetz.
+// Birdwing printers do not support mDNS and do not respond to UDP broadcasts
+// across subnet boundaries. Therefore: parallel TCP scan of all hosts in the /24 subnet.
 void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter>& out)
 {
     // Bekannte private Heimnetz-Subnetz-Prefixes
-    // (deckt die häufigsten Router-Konfigurationen ab)
+    // (covers the most common router configurations)
     std::vector<std::string> prefixes = {
         "192.168.2.", "192.168.1.", "192.168.0.", "192.168.3.",
         "192.168.178.", "10.0.0.", "10.0.1."
     };
 
-    // Lokale Subnetz-Prefix via /proc/net/if_inet6 und hostname -I Fallback
+    // Local subnet prefix via /proc/net/if_inet6 and hostname -I fallback
     {
-        // Lese lokale IPs aus /proc/net/fib_trie (Linux-spezifisch, zuverlässig)
+        // Read local IPs from /proc/net/fib_trie (Linux-specific, reliable)
         std::ifstream fib("/proc/net/fib_trie");
         std::string line;
         std::string last_local;
         while (std::getline(fib, line)) {
-            // Suche nach "LOCAL" Einträgen
+            // Search for "LOCAL" entries
             if (line.find("LOCAL") != std::string::npos && !last_local.empty()) {
                 const auto last_dot = last_local.rfind('.');
                 if (last_dot != std::string::npos) {
@@ -382,7 +382,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
             const auto start = line.find_first_not_of(" 	|+-");
             if (start != std::string::npos) {
                 const std::string trimmed = line.substr(start);
-                // Prüfe ob es wie eine IPv4 Adresse aussieht
+                // Check whether it looks like an IPv4 address
                 int a,b,c,d;
                 if (sscanf(trimmed.c_str(), "%d.%d.%d.%d", &a,&b,&c,&d) == 4)
                     last_local = std::to_string(a)+"."+std::to_string(b)+"."+
@@ -391,7 +391,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
         }
     }
 
-    // Für jedes Prefix: alle 254 Hosts parallel prüfen
+    // For each prefix: check all 254 hosts in parallel
     for (const auto& prefix : prefixes) {
         if (m_stop) break;
         BOOST_LOG_TRIVIAL(info) << "MakerbotDiscovery: scanning " << prefix << "0/24 port 12309";
@@ -426,7 +426,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
                 FD_ZERO(&write_fds); FD_ZERO(&err_fds);
                 FD_SET(sock, &write_fds);
                 FD_SET(sock, &err_fds);
-                struct timeval tv { 1, 200000 }; // 1200ms – Z18 braucht mehr Zeit
+                struct timeval tv { 1, 200000 }; // 1200ms - Z18 needs more time
 
                 if (select(sock + 1, nullptr, &write_fds, &err_fds, &tv) > 0) {
                     int err = 0; socklen_t len = sizeof(err);
@@ -451,7 +451,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
             });
         }
 
-        // Warte bis alle Threads fertig oder Stop
+        // Wait until all threads finished or stop
         for (int wait = 0; wait < 100 && pending > 0 && !m_stop; ++wait)
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -461,7 +461,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
         for (const auto& p : found_here)
             out.push_back(p);
 
-        if (!found_here.empty()) break; // Gefunden → nicht weiter scannen
+        if (!found_here.empty()) break; // found -> stop scanning
     }
 }
 

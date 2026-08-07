@@ -19,73 +19,73 @@ class KaitenSession;
 
 namespace GUI {
 
-class Worker;             // Jobs/Worker.hpp - loest Kaiten-Calls vom GUI-Thread
-class KaitenTelemetryJob; // in MakerbotDevicePanel.cpp definiert, braucht Friend-Zugriff
-class KaitenCameraJob;    // dito - fuer den Kamera-Tick (Schritt 2)
+class Worker;             // Jobs/Worker.hpp - offloads kaiten calls from the GUI thread
+class KaitenTelemetryJob; // defined in MakerbotDevicePanel.cpp, needs friend access
+class KaitenCameraJob;    // ditto - for the camera tick (step 2)
 
-// Welche der vier unterstützten MakerBot/UltiMaker-Druckerfamilien gerade
-// aktiv ist - bestimmt, welche UI-Sektionen überhaupt sinnvoll sind:
-//   Legacy     Cupcake...Replicator 2X: nur USB/seriell, kein Netzwerk,
-//              keine Kamera, kein RPC. Braucht avrdude-Firmware-Flash.
-//   Birdwing   Z18 & Co: SSL/kaiten-RPC, Smart Extruder, Kamera.
-//   Lava       Method/Sketch: HTTP-RPC, Dual-Extrusion (Model/Support), Kamera.
-//   UltiMaker  S-Serie/Cura-Familie: REST-API, i.d.R. Dual-Extrusion.
+// Which of the four supported MakerBot/UltiMaker printer families is
+// currently active - determines which UI sections make sense at all:
+//   Legacy     Cupcake...Replicator 2X: USB/serial only, no network,
+//              no camera, no RPC. Needs avrdude firmware flash.
+//   Birdwing   Z18 & co: SSL/kaiten RPC, smart extruder, camera.
+//   Lava       Method/Sketch: HTTP-RPC, dual extrusion (model/support), camera.
+//   UltiMaker  S-line/Cura family: REST-API, usually dual extrusion.
 enum class MBDeviceCategory { Legacy, Birdwing, Lava, UltiMaker };
 
 class MakerbotDevicePanel : public wxPanel {
 private:
     // --- UI Layout Containers ---
     wxBoxSizer* m_main_sizer;
-    wxBoxSizer* m_col_left  = nullptr;  // linke Spalte (Kamera)
-    wxBoxSizer* m_col_right = nullptr;  // rechte Spalte (Status/Z-Offset/Steuerung)
+    wxBoxSizer* m_col_left  = nullptr;  // left column (camera)
+    wxBoxSizer* m_col_right = nullptr;  // right column (status/Z-offset/control)
     wxStaticBoxSizer* m_extruder_info_sizer;
 
-    // --- Webcam & Digital Zoom (nur Birdwing/Lava/UltiMaker) ---
+    // --- Webcam & digital zoom (Birdwing/Lava/UltiMaker only) ---
     wxStaticBitmap* m_camera_bitmap   = nullptr;
     wxSlider*       m_zoom_slider     = nullptr;
     wxImage         m_raw_camera_frame;
 
-    // --- Global Z-Offset Calibration (nur Birdwing/Lava/UltiMaker) ---
+    // --- Global Z-offset calibration (Birdwing/Lava/UltiMaker only) ---
     wxSlider*   m_z_offset_slider = nullptr;
-    double      m_z_offset_max_mm = 2.0; // aus get_available_z_offset_adjustment
-    wxTimer*    m_z_offset_send_timer = nullptr; // entprelltes Senden (Slider)
+    double      m_z_offset_max_mm = 2.0; // from get_available_z_offset_adjustment
+    wxTimer*    m_z_offset_send_timer = nullptr; // debounced send (slider)
     wxTextCtrl* m_z_offset_text   = nullptr;
 
-    // --- Telemetry & Extruder Information (alle Familien, Inhalt variiert) ---
-    wxStaticText* m_lbl_extruder_1        = nullptr; // Wert-Feld: "Smart Extruder status"
-    wxStaticText* m_lbl_extruder_type     = nullptr; // Wert-Feld: "Smart Extruder Type installed"
+    // --- Telemetry & extruder information (all families, content varies) ---
+    wxStaticText* m_lbl_extruder_1        = nullptr; // value field: "Smart Extruder status"
+    wxStaticText* m_lbl_extruder_type     = nullptr; // value field: "Smart Extruder Type installed"
     wxStaticText* m_lbl_extruder_2        = nullptr;
-    wxStaticText* m_lbl_telemetry_temp    = nullptr; // Wert-Feld: "Current Nozzle temperature"
-    wxStaticText* m_lbl_telemetry_temp_chamber = nullptr; // Wert-Feld: "Current Printer Chamber temperature"
-    wxStaticText* m_lbl_telemetry_status  = nullptr; // Wert-Feld: "Current printer operation status" (kein Praefix mehr)
+    wxStaticText* m_lbl_telemetry_temp    = nullptr; // value field: "Current Nozzle temperature"
+    wxStaticText* m_lbl_telemetry_temp_chamber = nullptr; // value field: "Current Printer Chamber temperature"
+    wxStaticText* m_lbl_telemetry_status  = nullptr; // value field: "Current printer operation status" (no prefix anymore)
     wxStaticText* m_lbl_telemetry_progress= nullptr;
-    wxStaticText* m_lbl_time_remaining    = nullptr; // Restzeit unter dem Donut
+    wxStaticText* m_lbl_time_remaining    = nullptr; // remaining time under the donut
     wxPanel*      m_progress_donut       = nullptr; // ProgressDonut* (Cast in .cpp)
 
-    // --- Hardware Controls (nur Birdwing/Lava/UltiMaker) ---
+    // --- Hardware controls (Birdwing/Lava/UltiMaker only) ---
     wxButton* m_btn_pause       = nullptr;
     wxButton* m_btn_resume      = nullptr;
     wxButton* m_btn_cancel      = nullptr;
     wxButton* m_btn_rename      = nullptr;
     wxButton* m_btn_files       = nullptr;
-    std::string m_pending_rename_name; // kurzlebiger Zwischenspeicher fuer "rename"
+    std::string m_pending_rename_name; // short-lived scratch buffer for "rename"
     wxButton* m_btn_z_calib     = nullptr;
     wxButton* m_btn_preheat     = nullptr;
     wxButton* m_btn_unload_fil  = nullptr;
     wxButton* m_btn_start_print = nullptr;
 
-    // --- Firmware-Flash via avrdude (nur Legacy: Cupcake...Replicator 2X) ---
+    // --- Firmware flash via avrdude (legacy only: Cupcake...Replicator 2X) ---
     wxButton* m_btn_firmware_update = nullptr;
 
     // --- Background Tasks & State ---
-    // P5c: explizite Timer-IDs, damit der wxEVT_TIMER-Bind beide Timer
-    // (Telemetrie 2s, Kamera 1s) trennscharf an unterschiedliche Handler
-    // routet statt beide an denselben (wxID_ANY waere ein Wildcard-Match,
-    // der auch Events des jeweils anderen Timers einsammeln wuerde).
+    // P5c: explicit timer IDs so the wxEVT_TIMER bind routes both timers
+    // (telemetry 2s, camera 1s) cleanly to different handlers
+    // instead of both to the same one (wxID_ANY would be a wildcard match
+    // that would also catch the other timer's events).
     static const int ID_TELEMETRY_TIMER = wxID_HIGHEST + 101;
     static const int ID_CAMERA_TIMER    = wxID_HIGHEST + 102;
     wxTimer m_telemetry_timer;
-    wxTimer m_camera_timer; // P5c: eigener 1s-Tick nur fuer das Kamerabild
+    wxTimer m_camera_timer; // P5c: own 1s tick just for the camera image
     const DynamicPrintConfig* m_active_config;
     MBDeviceCategory m_category = MBDeviceCategory::Legacy;
 
@@ -94,22 +94,22 @@ private:
     // closed in stop_telemetry_polling()/destructor.
     std::shared_ptr<KaitenSession> m_kaiten_session;
     bool m_z_calibration_supported = false; // gated via has_z_calibration_routine
-    std::string m_firmware_version;          // zuletzt gemeldete Firmware-Version
-    bool m_firmware_is_custom = false;       // >= Custom-Schwelle -> Hinweise unterdruecken
+    std::string m_firmware_version;          // last reported firmware version
+    bool m_firmware_is_custom = false;       // >= custom threshold -> suppress hints
     bool m_capability_checked = false;      // reset whenever a new session opens
 
-    // tool_id aus der letzten Telemetrie (toolheads.extruder[0].tool_id),
-    // direkter Schluessel in die Smart-Extruder-Namenstabelle. Noch nicht
-    // an die Prepare-Tab-Vorauswahl gekoppelt - das Widget dafuer fehlt mir
-    // noch. -1 = noch keine Telemetrie erhalten.
+    // tool_id from the last telemetry (toolheads.extruder[0].tool_id),
+    // a direct key into the smart-extruder name table. Not yet
+    // coupled to the prepare-tab preselection - the widget for it is still
+    // missing. -1 = no telemetry received yet.
     int m_current_toolhead_id = -1;
 
-    // Schritt 1 der GUI-Freeze-Behebung: Telemetrie-Kaiten-Calls laufen jetzt
-    // auf einem eigenen Worker-Thread statt synchron im Timer-Tick. NACH
-    // m_kaiten_session deklariert, damit der Worker beim Zerstoeren VOR der
-    // Session abgebaut wird (umgekehrte Deklarationsreihenfolge) - kein
-    // laufender Job darf nach Zerstoerung der Session noch darauf schreiben.
-    // Kamera-Tick (P5c) bleibt vorerst synchron - folgt als naechster Schritt.
+    // Step 1 of the GUI-freeze fix: telemetry kaiten calls now run
+    // on their own worker thread instead of synchronously in the timer tick. Declared AFTER
+    // m_kaiten_session so the worker is torn down BEFORE the
+    // session (reverse declaration order) - no
+    // running job may write to it after the session is destroyed.
+    // The camera tick (P5c) stays synchronous for now - follows as the next step.
     std::unique_ptr<Worker> m_kaiten_worker;
     friend class KaitenTelemetryJob;
     friend class KaitenCameraJob;
@@ -121,32 +121,32 @@ private:
     void on_z_offset_slider_changed(wxCommandEvent& event);
     void on_firmware_update_clicked(wxCommandEvent& event);
     void on_telemetry_tick(wxTimerEvent& event);
-    void on_camera_tick(wxTimerEvent& event); // P5c: eigener Kamera-Tick (1s)
+    void on_camera_tick(wxTimerEvent& event); // P5c: own camera tick (1s)
 
     // --- Helper Methods ---
     static MBDeviceCategory category_for_config(const DynamicPrintConfig& config);
     bool ensure_kaiten_session(std::string& error); // lazily opens m_kaiten_session
     void sync_z_offset_to_hardware(double offset_mm);
     void execute_printer_action(const std::string& action_id);
-    void start_print_with_confirmation(); // print->put nach Bauplatten-Bestaetigung
+    void start_print_with_confirmation(); // print->put after build-plate confirmation
     void update_telemetry_ui(const std::string& status, int temp_ext, int temp_bed, int progress, int elapsed_s, int remaining_s);
 
-    // Schreibzugriffe fuer KaitenTelemetryJob::finalize() (laeuft auf dem
-    // GUI-Thread) - der Job selbst fasst nie ein wx-Widget direkt an.
+    // Write accessors for KaitenTelemetryJob::finalize() (runs on the
+    // GUI thread) - the job itself never touches a wx widget directly.
     void set_kaiten_session(std::shared_ptr<KaitenSession> session);
     void apply_capability_check(bool supported);
-    void apply_z_offset_range(double max_mm); // Slider-Grenze je Modell (B1)
-    void apply_z_offset_value(double value_mm); // Firmware-Wert in UI spiegeln
-    void apply_firmware_version(const std::string& version); // Version cachen + Aenderung melden
+    void apply_z_offset_range(double max_mm); // slider limit per model (B1)
+    void apply_z_offset_value(double value_mm); // mirror the firmware value into the UI
+    void apply_firmware_version(const std::string& version); // cache version + report change
     bool firmware_is_custom() const { return m_firmware_is_custom; }
     void set_telemetry_error(const std::string& error);
     void set_extruder_info(const wxString& type_text, const wxString& status_text);
     void set_z_offset_controls_enabled(bool enabled);
     void apply_control_button_states(const std::string& status); // A: Step-Gating
-    void apply_camera_frame(const wxImage& img); // fuer KaitenCameraJob::finalize()
+    void apply_camera_frame(const wxImage& img); // for KaitenCameraJob::finalize()
 
-    // UI-Bausteinmethoden - eine pro Sektion, jeweils nur aufgerufen wenn die
-    // aktive Kategorie sie tatsächlich unterstützt.
+    // UI builder methods - one per section, each called only when the
+    // active category actually supports it.
     void build_camera_section();
     void build_z_offset_section();
     void build_extruder_and_telemetry_section();

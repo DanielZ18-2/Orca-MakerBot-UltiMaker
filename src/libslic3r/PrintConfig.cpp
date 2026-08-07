@@ -7349,16 +7349,16 @@ void PrintConfigDef::init_fff_params()
     def->set_default_value(new ConfigOptionBool(true));
 
     // --- MakerBot / UltiMaker Fork: Smart Extruder profile keys ---
-    // Ohne diese Registrierung entfernt Orca beide Keys beim Laden
-    // von MakerBot/UltiMaker-Maschinenprofilen als "incorrect keys".
-    // Die Nutzerauswahl hat Vorrang. Bei verbundenem Drucker fuellt
-    // BirdwingHandshakeDialog / MakerbotDiscoveryDialog den erkannten Typ vor;
-    // weicht die Auswahl vom real eingesetzten Toolhead ab, wird unten links
-    // gewarnt (der Drucker bricht den Druck sonst mit
-    // print_extruder_mismatch ab).
-    // Hinweis: mk12 ist ein rein virtueller Extruder, mit dem MakerBot die
-    // Extruder-Pruefung umgeht (Demo-/Beispieldateien). Er wird bewusst nicht
-    // angeboten.
+    // Without this registration Orca removes both keys on load
+    // of MakerBot/UltiMaker machine profiles as "incorrect keys".
+    // The user selection takes precedence. With a connected printer,
+    // BirdwingHandshakeDialog / MakerbotDiscoveryDialog prefills the detected type;
+    // if the selection differs from the actually installed toolhead, a warning is
+    // shown at the bottom left (otherwise the printer aborts the print with
+    // print_extruder_mismatch).
+    // Note: mk12 is a purely virtual extruder that MakerBot uses to
+    // bypass the extruder check (demo/example files). It is deliberately not
+    // offered.
     def = this->add("smart_extruder_count", coInt);
     def->label   = L("Smart Extruder Count");
     def->tooltip = L("Number of active Smart Extruders: "
@@ -7390,8 +7390,8 @@ void PrintConfigDef::init_fff_params()
     def->set_default_value(new ConfigOptionStrings{ "none" });
 
     // --- MakerBot / UltiMaker Fork: Export-Kennungen ---
-    // Beide Keys werden im Export gelesen, muessen also registriert sein,
-    // sonst entfernt Orca sie beim Laden der Maschinenprofile.
+    // Both keys are read during export, so they must be registered,
+    // otherwise Orca removes them when loading the machine profiles.
     //   makerbot_bot_type -> MakerBotExport.cpp (bot_type in meta.json)
     //   gpx_machine_type  -> GPXExport.cpp (x3g-Maschinenkennung)
     def = this->add("makerbot_bot_type", coString);

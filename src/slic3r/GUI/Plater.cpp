@@ -311,7 +311,7 @@ static bool smart_extruder_is_birdwing(const DynamicPrintConfig& cfg)
     return (gcf && gcf->value == gcfMakerBotBirdwing) || printer_model_looks_like_birdwing(id);
 }
 
-// Modellabhaengiger Material-Hinweis (reiner Hinweis, KEIN Sperren).
+// Model-dependent material hint (hint only, NO blocking).
 enum class MbMaterialHint { None, BirdwingPla, LegacyRep2Pla, LegacyRep2xAbs };
 
 static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
@@ -323,13 +323,13 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
     const bool is_abs_like = ft.find("abs") != std::string::npos || ft.find("asa") != std::string::npos;
     const std::string id   = smart_extruder_identity_from_config(printer_cfg);
 
-    // Legacy Rep2X (ABS) VOR Rep2 pruefen ("replicator 2" ist Teilstring von "replicator 2x").
+    // Check legacy Rep2X (ABS) BEFORE Rep2 ("replicator 2" is a substring of "replicator 2x").
     if (id.find("replicator 2x") != std::string::npos)
         return is_abs_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2xAbs;
     if (id.find("replicator 2") != std::string::npos)
         return is_pla_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2Pla;
 
-    // Birdwing (alle): PLA; unterdruecken, wenn gecachte FW fuer diesen Host >= 2.7 (Custom-FW).
+    // Birdwing (all): PLA; suppress when cached FW for this host >= 2.7 (custom FW).
     if (smart_extruder_is_birdwing(printer_cfg)) {
         if (is_pla_like) return MbMaterialHint::None;
         if (!host.empty()) {
@@ -340,7 +340,7 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
                     const int mj = atoi(ver.substr(0, dot).c_str());
                     const int mn = atoi(ver.substr(dot + 1).c_str());
                     if (mj > 2 || (mj == 2 && mn >= 7))
-                        return MbMaterialHint::None;   // Custom-FW -> Hinweis unterdruecken
+                        return MbMaterialHint::None;   // custom FW -> suppress hint
                 }
             }
         }
@@ -356,7 +356,7 @@ static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg)
     if (printer_model_looks_like_sketch(id)) return false;
     // gcfMakerBotLava + "method"-Name = MakerBot Method/X/XL
     // gcfUltiGCode  + "method"-Name   = UltiMaker Method X CF
-    // gcfUltiGCode  ohne "method"      = UltiMaker Classic/S/Factor → KEIN Smart Extruder
+    // gcfUltiGCode  without "method"   = UltiMaker Classic/S/Factor -> NO smart extruder
     const bool name_is_method = printer_model_looks_like_method(id);
     const bool flavor_is_lava = gcf && gcf->value == gcfMakerBotLava;
     const bool is_makerbot    = id.find("makerbot")  != std::string::npos;
@@ -2912,7 +2912,7 @@ void Sidebar::update_all_preset_comboboxes()
 void Sidebar::set_detected_smart_extruder_type(int slot, const std::string& value)
 {
     if (value.empty() || slot < 0)
-        return; // unbekannter/nicht zuordenbarer Typ - lieber nichts als falsch raten
+        return; // unknown/unmappable type - better nothing than a wrong guess
 
     PresetBundle* bundle = wxGetApp().preset_bundle;
     if (!bundle) return;
@@ -2925,7 +2925,7 @@ void Sidebar::set_detected_smart_extruder_type(int slot, const std::string& valu
         vals.resize(size_t(slot) + 1, "none");
 
     if (vals[size_t(slot)] == value)
-        return; // unveraendert - nicht erneut schreiben/dirty markieren
+        return; // unchanged - do not rewrite / mark dirty again
 
     vals[size_t(slot)] = value;
     auto* new_opt = new ConfigOptionStrings();
@@ -9938,7 +9938,7 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         combo->ShowBadge(select_flag == (int)PresetComboBox::FilamentAMSType::FROM_AMS);
         q->on_filament_change(idx);
 
-        // MakerBot/Legacy Material-Hinweis (nicht-blockierend).
+        // MakerBot/legacy material hint (non-blocking).
         {
             const DynamicPrintConfig& pcfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
             std::string fila_type;
@@ -13706,6 +13706,121 @@ void Plater::calib_max_vol_speed(const Calib_Params& params)
     p->background_process.fff_print()->set_calib_params(new_params);
 }
 
+void Plater::calib_z_offset(const Calib_Params& params)
+{
+    if (params.mode != CalibMode::Calib_Z_offset)
+        return;
+
+    const auto calib_z_offset_name = wxString::Format(L"Z Offset Test");
+    new_project(false, false, calib_z_offset_name);
+    wxGetApp().mainframe->select_tab(size_t(MainFrame::tp3DEditor));
+
+    auto print_config = &wxGetApp().preset_bundle->prints.get_edited_preset().config;
+
+    // --- Dynamic tile geometry, sized to the selected printer's bed ---------
+    // The tiles are identical plain boxes; the per-tile test height is produced
+    // by the z_offset shift in GCode.cpp (per object, sequential), not by the
+    // geometry. Identification is by POSITION: tile 1 = first in the row =
+    // smallest nozzle-to-bed gap, growing to the last tile.
+    PartPlate   *plate        = get_partplate_list().get_curr_plate();
+    const Vec2d  plate_size   = plate->get_size();
+    const Vec3d  plate_org = plate->get_origin();
+    const double bed_w = plate_size.x();
+    const double bed_d = plate_size.y();
+    // True printable center = plate origin (front-left corner) + half the printable
+    // size. More reliable than get_center_origin() (m_bounding_box center), which
+    // counts asymmetric margins and lands slightly off-center.
+    const double center_x = plate_org.x() + bed_w / 2.0;
+    const double center_y = plate_org.y() + bed_d / 2.0;
+
+    double clearance = 0.0;
+    if (const auto *cr = print_config->option<ConfigOptionFloat>("extruder_clearance_radius"))
+        clearance = cr->value;
+
+    // Tile size scales with the bed, capped small (10..20 mm) so many tiles fit
+    // even on modest beds; the static reference used 20 mm and printed 7.
+    const double tile   = std::clamp(std::min(bed_w, bed_d) / 15.0, 10.0, 20.0);
+    const double tile_h = 0.6;
+    // Center-to-center pitch: edge-to-edge >= extruder_clearance_radius (+2 mm
+    // margin) so Orca accepts sequential printing; at least tile+8 mm so the
+    // nozzle can travel between tiles even when clearance is 0.
+    const double pitch  = std::max(clearance + tile + 2.0, tile + 8.0);
+
+    // Prefer 7 tiles; reduce (down to 3) until a centered row plus edge margin fits.
+    const double margin = 5.0;   // keep the row clear of the bed edges
+    int n = 7;
+    while (n > 3 && (n - 1) * pitch + tile + 2.0 * margin > bed_w)
+        --n;
+    if ((n - 1) * pitch + tile + 2.0 * margin > bed_w) {
+        get_notification_manager()->push_notification(
+            _L("Z offset calibration: the printer's bed is too small for this test.").ToStdString());
+        return;
+    }
+
+    // Recompute the step so the N tiles still span the full start..end range.
+    Calib_Params run = params;
+    if (n > 1)
+        run.step = (params.end - params.start) / double(n - 1);
+
+    const double row_total = (n - 1) * pitch;
+    for (int k = 0; k < n; ++k) {
+        ModelObject *obj = model().add_object();
+        obj->name = std::string("z_offset_tile_") + std::to_string(k + 1);
+        obj->add_volume(make_cube(tile, tile, tile_h));
+        obj->add_instance();
+        const double x = center_x - row_total / 2.0 + double(k) * pitch;
+        obj->instances[0]->set_offset(Vec3d(x, center_y, 0.0));
+        obj->ensure_on_bed();
+    }
+    if (model().objects.empty()) {
+        get_notification_manager()->push_notification(
+            _L("Z offset calibration: could not build the test model.").ToStdString());
+        return;
+    }
+
+    // Force object markers so GCode.cpp emits "; printing object" (block
+    // boundaries the sequential z_offset shift keys on).
+    print_config->set_key_value("gcode_label_objects", new ConfigOptionBool(true));
+    // Sequential print: each tile printed fully at its own z_offset. Per-object
+    // Z is impossible in the shared by-layer path, so this test needs ByObject.
+    print_config->set_key_value("print_sequence", new ConfigOptionEnum<PrintSequence>(PrintSequence::ByObject));
+
+    // No raft/brim/skirt: a raft would mask the z-offset effect; brim/skirt
+    // disturb layer 0. btNoBrim is defined in calib.hpp.
+    print_config->set_key_value("skirt_loops", new ConfigOptionInt(0));
+    print_config->set_key_value("brim_type", new ConfigOptionEnum<BrimType>(btNoBrim));
+    print_config->set_key_value("brim_width", new ConfigOptionFloat(0));
+
+    // Tiles thin and quick to print: 1 wall, real bottom/top shell, no infill.
+    for (ModelObject *obj : model().objects) {
+        obj->config.set_key_value("wall_loops", new ConfigOptionInt(1));
+        obj->config.set_key_value("top_shell_layers", new ConfigOptionInt(1));
+        obj->config.set_key_value("bottom_shell_layers", new ConfigOptionInt(1));
+        obj->config.set_key_value("sparse_infill_density", new ConfigOptionPercent(0));
+    }
+
+    std::vector<size_t> object_idxs;
+    for (size_t i = 0; i < model().objects.size(); ++i)
+        object_idxs.push_back(i);
+    changed_objects(object_idxs);
+    wxGetApp().get_tab(Preset::TYPE_PRINT)->update_dirty();
+    wxGetApp().get_tab(Preset::TYPE_PRINT)->reload_config();
+
+    // Layout description (position-based, no marks on the tiles).
+    get_notification_manager()->push_notification(
+        (_L("Z offset test:") + " " + wxString::FromDouble(run.start, 3) + " - "
+         + wxString::FromDouble(run.end, 3) + " mm, "
+         + wxString::Format(_L("%d tiles."), n) + " "
+         + _L("Tile 1 (first in the row) has the smallest nozzle-to-bed gap; the gap "
+              "grows toward the last tile. Pick the smoothest tile -- its position gives "
+              "the offset.")).ToStdString());
+
+    // set_calib_params MUST run after changed_objects (like calib_retraction):
+    // set earlier it is reset by the reslice that changed_objects triggers, and
+    // the GCode.cpp z-offset shift would then never see Calib_Z_offset.
+    p->background_process.fff_print()->set_calib_params(run);
+}
+
 void Plater::calib_retraction(const Calib_Params& params)
 {
     const auto calib_retraction_name = wxString::Format(L"Retraction");
@@ -16600,8 +16715,8 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
 
     // Orca: the use_3mf printer option makes us send a .gcode.3mf to the printer
     const auto* use_3mf_opt = physical_printer_config->option<ConfigOptionBool>("use_3mf");
-    // MakerBot/UltiMaker (Birdwing/Lava/UFP) MUSS ueber den 3mf/send_gcode-Pfad laufen,
-    // damit der Standalone-G-Code erzeugt und danach in das native Archiv gepackt wird.
+    // MakerBot/UltiMaker (Birdwing/Lava/UFP) MUST go through the 3mf/send_gcode path,
+    // so the standalone G-code is generated and then packed into the native archive.
     const auto* _gcf0 = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
     const GCodeFlavor _flavor0 = _gcf0 ? _gcf0->value : gcfMarlinLegacy;
     const bool _is_native_archive = (_flavor0 == gcfMakerBotBirdwing || _flavor0 == gcfMakerBotLava || _flavor0 == gcfUltiGCode);
@@ -16635,7 +16750,7 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         default_output_file.replace_extension(".gcode.3mf");
     }
     {
-        // MakerBot/UltiMaker: Send-Dialog soll den nativen Dateinamen zeigen.
+        // MakerBot/UltiMaker: the send dialog should show the native file name.
         const auto* _gcf = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
         const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
         if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
@@ -16768,8 +16883,8 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         config->set_bool("open_device_tab_post_upload", pDlg->switch_to_device_tab());
         // PrintHostUpload upload_data;
         upload_job.switch_to_device_tab    = pDlg->switch_to_device_tab();
-        // MakerBot/UltiMaker: nach dem Upload IMMER ins Device-Tab wechseln,
-        // damit der Nutzer dort die Bauplatte pruefen und den Druck starten kann.
+        // MakerBot/UltiMaker: ALWAYS switch to the Device tab after the upload,
+        // so the user can check the build plate there and start the print.
         {
             const auto _ht_opt = physical_printer_config->option<ConfigOptionEnum<PrintHostType>>("host_type");
             if (_ht_opt != nullptr &&
@@ -16813,17 +16928,17 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
 
         upload_job.upload_data.source_path = p->m_print_job_data._3mf_path;
 
-        // MakerBot/UltiMaker: nicht die generische .3mf hochladen, sondern die
-        // beim Slicen (BackgroundSlicingProcess::pack_to_archive) erzeugte
-        // native Archiv-Datei (.makerbot bzw. .ufp). Sie liegt neben der
-        // tmp-G-Code-Datei (gleicher Stamm). schedule_export laeuft vor
-        // schedule_upload, daher ist sie zum Upload-Zeitpunkt fertig.
+        // MakerBot/UltiMaker: do not upload the generic .3mf, but the
+        // native archive file (.makerbot or .ufp) produced during slicing
+        // (BackgroundSlicingProcess::pack_to_archive). It sits next to the
+        // tmp G-code file (same stem). schedule_export runs before
+        // schedule_upload, so it is ready at upload time.
         {
             const auto* _gcf = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
             const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
-            // Sende-Pfad erzeugt KEINE native Archivdatei (pack_to_archive laeuft nur beim
-            // Export auf Platte). Wir packen daher hier den Standalone-G-Code aus dem Slicing
-            // selbst und laden DIESES Archiv hoch (nicht den rohen G-Code -> vermeidet 1021).
+            // send path produces NO native archive file (pack_to_archive runs only during
+            // export to disk). So here we pack the standalone G-code from the slicing
+            // itself and upload THIS archive (not the raw G-code -> avoids 1021).
             const std::string _gcode = get_partplate_list().get_curr_plate()->get_tmp_gcode_path();
             const PrintConfig& _cfg  = get_partplate_list().get_current_fff_print().config();
             std::string _archive;

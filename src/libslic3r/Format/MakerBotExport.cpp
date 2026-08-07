@@ -3,17 +3,18 @@
 //
 // GOLD VERSION: Kombiniert Alpha (parse_header, build_birdwing_meta,
 // BBox, extrusion_mass_g, extract_thumbnails, Lava-Support) mit
-// Beta (pack_to_archive API, gcode_to_birdwing_jsontoolpath für
-// korrektes Print-4.x-Format mit relative.a=true).
+// Beta (pack_to_archive API, gcode_to_birdwing_jsontoolpath for
+// correct Print 4.x format with relative.a=true).
 //
-// Kernstrategie: Alle Geschwindigkeits- und Profil-Werte werden direkt
-// aus dem G-code-Settings-Block gelesen (parse_header), nicht mehr über
-// PrintConfig-Casts – das umgeht das DynamicPrintConfig/PrintConfig-Problem.
+// Core strategy: all speed and profile values are read directly
+// from the G-code settings block (parse_header), no longer via
+// PrintConfig casts - this avoids the DynamicPrintConfig/PrintConfig problem.
 
 #include "MakerBotExport.hpp"
 #include "MakerBotToolpath.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/miniz_extension.hpp"
+#include "libslic3r/LocalesUtils.hpp"
 
 #include <miniz.h>
 #include <nlohmann/json.hpp>
@@ -103,7 +104,7 @@ struct HeaderData
     double      retract_restart_extra        = 0.1;   // retract_restart_extra (-> ooze_feedstock_distance)
     int         bed_temperature              = 0;     // bed_temperature / platform_temperature
     double      travel_speed_z               = 3.0;   // travel_speed_z
-    // Plattentemperaturen einzeln, Auswahl spaeter ueber curr_bed_type
+    // plate temperatures individually, selection later via curr_bed_type
     int         cool_plate_temp              = -1;
     int         eng_plate_temp               = -1;
     int         hot_plate_temp               = -1;
@@ -143,14 +144,14 @@ struct ThumbnailBlob { int width = 0, height = 0; std::string bytes; };
 
 static double parse_double_safe(const std::string& s, double fb)
 {
-    // Locale-unabhaengig: G-Code nutzt '.' als Dezimaltrenner. std::stod folgt
-    // LC_NUMERIC (z.B. de_DE-Komma) und wuerde "1.75" als 1.0 lesen -> falsche
-    // Filament-Masse/-Distanz und layer_height=0 (6b). Klassisches ("C") Locale erzwingen.
-    std::istringstream iss(s);
-    iss.imbue(std::locale::classic());
-    double v = fb;
-    iss >> v;
-    return (!iss.fail() && std::isfinite(v)) ? v : fb;
+    // Locale-independent via upstream helper (fast_float, ALWAYS reads '.' as
+    // decimal separator, independent of the process locale -- earlier cause of wrong
+    // filament mass / layer_height=0 under de_DE). The helper leaves the value
+    // uninitialized on failure and returns pos==0; so check pos and
+    // return the fallback.
+    size_t pos = 0;
+    const double v = string_to_double_decimal_point(s, &pos);
+    return (pos != 0 && std::isfinite(v)) ? v : fb;
 }
 
 static int parse_int_safe(const std::string& s, int fb)
@@ -212,7 +213,7 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
                 if (semi == std::string::npos || semi > e_pos) {
                     try {
                         const double e = parse_double_safe(line.substr(e_pos + 1), 0.0);
-                        // signiert summieren: Retraction(-) und Restart(+) heben sich
+                        // signed accumulation: retraction(-) and restart(+) cancel
                         // auf -> netto = echter Verbrauch (deckt sich mit Orca-GUI).
                         h.total_filament_mm += e;
                     } catch (...) {}
@@ -320,9 +321,9 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
                                                h.duration_s                    = std::max(h.duration_s, hms_to_seconds(val));
     }
 
-    // Plattentemperatur passend zur gewaehlten Druckplatte auswaehlen.
-    // Ohne das landet immer hot_plate_temp in der meta.json, auch wenn der
-    // Nutzer die unbeheizte "Cool Plate" gewaehlt hat.
+    // select the plate temperature matching the chosen build plate.
+    // Without this, hot_plate_temp always ends up in meta.json, even if the
+    // user selected the unheated "Cool Plate".
     {
         std::string bt = boost::algorithm::to_lower_copy(h.curr_bed_type);
         int sel = -1;
@@ -338,9 +339,9 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
     }
 
     // Effective retract rate = min(process, filament_limit)
-    // Die Deckelung darf nur greifen, wenn das Filamentprofil tatsaechlich
-    // eine eigene Grenze gesetzt hat. Sonst wuerde der Vorgabewert (40) die
-    // korrekte Maschinen-Geschwindigkeit ausbremsen.
+    // The cap may only apply when the filament profile actually
+    // set its own limit. Otherwise the default value (40) would
+    // throttle the correct machine speed.
     h.filament_retraction_speed = h.saw_filament_retraction_speed
         ? std::min(h.retraction_speed, h.filament_retraction_speed)
         : h.retraction_speed;
@@ -412,10 +413,10 @@ static nlohmann::json build_birdwing_meta(
         ps["extruder_temperatures"]= nlohmann::json::array({h.first_layer_temp, h.temperature});
         ps["first_layer_height"]   = h.first_layer_height;
         ps["chamber_temperature"]  = h.chamber_temp;
-        // DIAGNOSE-Test (2026-06-28): testet, ob die Firmware den slicer-String
-        // gegen eine Liste prueft (Erklaerung fuer "Press the dial"), oder ob es
-        // am Transportweg (Netzwerk vs. USB) liegt. NICHT der finale Wert -
-        // siehe patch_slicer_string_diagnostic_test.py fuer Details.
+        // DIAGNOSTIC test (2026-06-28): tests whether the firmware checks the slicer string
+        // against a list (explanation for "Press the dial"), or whether it
+        // is due to the transport path (network vs. USB). NOT the final value -
+        // see patch_slicer_string_diagnostic_test.py for details.
         ps["slicer"]               = "SIMPLIFY3D";
         meta["printer_settings"]   = ps;
     }

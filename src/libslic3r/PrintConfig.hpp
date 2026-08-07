@@ -84,7 +84,7 @@ enum class WipeTowerType {
 enum PrintHostType {
     htPrusaLink, htPrusaConnect, htOctoPrint, htDuet, htFlashAir, htAstroBox, htRepetier, htMKS, htESP3D, htCrealityPrint, htObico, htFlashforge, htSimplyPrint, htElegooLink, ht3DPrinterOS, htMoonraker,
     // --- MakerBot / UltiMaker Fork ---
-    htMakerbotLink,  // JSON-RPC über SSL (Birdwing/Lava/Sketch)
+    htMakerbotLink,  // JSON-RPC over SSL (Birdwing/Lava/Sketch)
     htUltimakerLink  // REST-API (UltiMaker Classic/S/Factor/Method)
 };
 

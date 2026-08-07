@@ -19,8 +19,8 @@
 namespace Slic3r {
 namespace UltimakerUFPExport {
 
-// Generische, vendor-neutrale Hilfsfunktionen (siehe GCodeArchiveUtils.hpp) -
-// nur in dieser Übersetzungseinheit sichtbar, keine Abhängigkeit auf
+// Generic, vendor-neutral helper functions (see GCodeArchiveUtils.hpp) -
+// visible only in this translation unit, no dependency on
 // Format/MakerBotExport.* irgendeiner Art.
 using namespace GCodeArchiveUtils;
 
@@ -33,10 +33,10 @@ std::string get_archive_extension(GCodeFlavor flavor)
 
 // ── Internal: minimal, UltiMaker-eigener G-code-Header-Parser ──────────────
 //
-// Bewusst NICHT identisch mit MakerBotExport.cpp's parse_header() - dieses
-// Modul braucht nur eine kleine Teilmenge der Felder (kein tool_type, keine
-// Birdwing-Retraction-/Speed-Profile usw.) und soll komplett unabhängig vom
-// MakerBot-Modul bleiben, auch wenn beide denselben Orca-Kommentarstil lesen.
+// Deliberately NOT identical to MakerBotExport.cpp's parse_header() - this
+// module needs only a small subset of the fields (no tool_type, no
+// Birdwing retraction/speed profiles etc.) and should stay completely independent of the
+// MakerBot module, even though both read the same Orca comment style.
 
 struct GriffinSourceData
 {
@@ -51,7 +51,7 @@ struct GriffinSourceData
 
 static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path)
 {
-    const ScopedCNumericLocale locale_guard; // siehe GCodeArchiveUtils.hpp
+    const ScopedCNumericLocale locale_guard; // see GCodeArchiveUtils.hpp
     GriffinSourceData d;
 
     std::ifstream gf(gcode_path);
@@ -111,16 +111,16 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
 
 // ── Griffin-Header (von libCharon zwingend verlangt) ────────────────────────
 //
-// Ersetzt die frühere, hier nie aufgerufene Platzhalterimplementierung
-// dieser Klasse, UND die separate, im MakerBot-Modul lebende
-// pack_ufp()-Notlösung (die einen falschen OPC-Relationship-Typ benutzte und
-// gar keinen Griffin-Header schrieb). Jedes hier geschriebene Feld ist 1:1
-// an __validateGriffinHeader() in libCharon's GCodeFile.py ausgerichtet -
-// empirisch gegen eine Python-Nachbildung dieser Validierung getestet
-// (Einzel- UND Dual-Extruder-Fall, beide bestehen die Prüfung).
+// Replaces the earlier placeholder implementation, never called here,
+// of this class, AND the separate one living in the MakerBot module,
+// pack_ufp() stopgap (which used a wrong OPC relationship type and
+// wrote no Griffin header at all). Every field written here is 1:1
+// aligned to __validateGriffinHeader() in libCharon's GCodeFile.py -
+// empirically tested against a Python reimplementation of this validation
+// (single- AND dual-extruder case, both pass the check).
 //
-// Referenz: Ultimaker/libCharon (GCodeFile.py) und Ultimaker/Cura
-// (plugins/UFPWriter/UFPWriter.py), Stand Juni 2026 ("Cura 5.12").
+// Reference: Ultimaker/libCharon (GCodeFile.py) and Ultimaker/Cura
+// (plugins/UFPWriter/UFPWriter.py), as of June 2026 ("Cura 5.12").
 
 struct GriffinBBox
 {
@@ -149,7 +149,7 @@ static std::string build_griffin_header(
         if (const auto* s = dynamic_cast<const ConfigOptionString*>(opt))
             if (!s->value.empty()) machine = s->value;
 
-    int bed_temp = 0; // 0 ist laut isAPositiveNumber() gültig (>= 0)
+    int bed_temp = 0; // 0 is valid per isAPositiveNumber() (>= 0)
     if (const auto* opt = config.option("first_layer_bed_temperature"))
         if (const auto* v = dynamic_cast<const ConfigOptionInts*>(opt))
             if (!v->values.empty() && v->values[0] > 0) bed_temp = v->values[0];
@@ -158,7 +158,7 @@ static std::string build_griffin_header(
             if (const auto* v = dynamic_cast<const ConfigOptionInts*>(opt))
                 if (!v->values.empty()) bed_temp = v->values[0];
 
-    // Düsendurchmesser pro Extruder für EXTRUDER_TRAIN.<n>.NOZZLE.DIAMETER.
+    // Nozzle diameter per extruder for EXTRUDER_TRAIN.<n>.NOZZLE.DIAMETER.
     std::vector<double> nozzle_d = { 0.4 };
     if (const auto* opt = config.option("nozzle_diameter"))
         if (const auto* v = dynamic_cast<const ConfigOptionFloats*>(opt))
@@ -168,7 +168,7 @@ static std::string build_griffin_header(
         3.14159265358979323846 * std::pow(d.filament_diameter / 2.0, 2) * d.total_filament_mm;
 
     std::ostringstream hdr;
-    hdr.imbue(std::locale::classic()); // Zahlen IMMER im Punkt-Format - siehe GCodeArchiveUtils.hpp
+    hdr.imbue(std::locale::classic()); // numbers ALWAYS in dot format - see GCodeArchiveUtils.hpp
     hdr << ";START_OF_HEADER\n";
     hdr << ";HEADER_VERSION:0.1\n";
     hdr << ";FLAVOR:Griffin\n";
@@ -186,10 +186,10 @@ static std::string build_griffin_header(
     hdr << ";BUILD_PLATE.INITIAL_TEMPERATURE:" << bed_temp << "\n";
     for (size_t i = 0; i < nozzle_d.size(); ++i) {
         hdr << ";EXTRUDER_TRAIN." << i << ".INITIAL_TEMPERATURE:" << d.first_layer_temp << "\n";
-        // Mangels Tool-Change-Tracking in parse_griffin_source_data() wird
-        // der gesamte Filamentverbrauch Extruder 0 zugerechnet (bewusste,
-        // dokumentierte Vereinfachung; 0.0 ist für Werkzeug 1+ trotzdem ein
-        // laut Spec gültiger Wert, isAPositiveNumber() erlaubt >= 0).
+        // Without tool-change tracking in parse_griffin_source_data(),
+        // the entire filament usage is attributed to extruder 0 (a deliberate,
+        // documented simplification; 0.0 for tool 1+ is still a
+        // value valid per the spec, isAPositiveNumber() allows >= 0).
         hdr << ";EXTRUDER_TRAIN." << i << ".MATERIAL.VOLUME_USED:" << (i == 0 ? volume_used_mm3 : 0.0) << "\n";
         hdr << ";EXTRUDER_TRAIN." << i << ".NOZZLE.DIAMETER:" << nozzle_d[i] << "\n";
     }
@@ -216,7 +216,7 @@ static std::string build_ufp_content_types_xml(bool has_thumbnail)
 static std::string build_ufp_root_rels_xml()
 {
     // Der reale, von libCharon (OpenPackagingConvention.py) erwartete
-    // Relationship-Typ fürs G-code-Teil ist ".../relationships/gcode".
+    // Relationship type for the G-code part is ".../relationships/gcode".
     std::ostringstream xml;
     xml << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     xml << "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">\n";
@@ -240,7 +240,7 @@ static std::string build_ufp_model_rels_xml()
 std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {
     if (config.gcode_flavor != gcfUltiGCode)
-        return {}; // nicht unsere Flavor - nichts zu tun
+        return {}; // not our flavor - nothing to do
 
     namespace fs = boost::filesystem;
 
@@ -291,7 +291,7 @@ std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& co
     double bed_x = 0.0, bed_y = 0.0;
     if (!read_printable_area_size_mm(config, bed_x, bed_y)) { bed_x = 220.0; bed_y = 220.0; } // generischer UltiMaker-Fallback
 
-    GriffinBBox bbox; // Bauraum-Bounding-Box als Näherung (kein echtes Modell-Bounding-Box-Tracking hier)
+    GriffinBBox bbox; // build-volume bounding box as an approximation (no real model bounding-box tracking here)
     bbox.update(-bed_x / 2.0, -bed_y / 2.0, 0.0);
     bbox.update( bed_x / 2.0,  bed_y / 2.0, data.layer_height * data.num_layers);
 

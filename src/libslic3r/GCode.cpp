@@ -2463,6 +2463,9 @@ static BambuBedType to_bambu_bed_type(BedType type)
     return bambu_bed_type;
 }
 
+// Forward declarations for the Z-offset calibration helpers (defined before process_layer).
+static int zoff_calib_tile_index(const Print &print, const PrintObject &po, const std::string &name);
+static double zoff_calib_shift(int tile_index, const Calib_Params &p, double nominal);
 void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGeneratorCallback thumbnail_cb)
 {
     PROFILE_FUNC();
@@ -3346,8 +3349,20 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
                 // and export G-code into file.
                 tool_ordering.cal_most_used_extruder(print.config());
                 m_printed_objects.emplace_back(&object);
+                // Z-offset calibration: shift this whole object's z_offset so every
+                // layer and travel of the object prints at the tile's test height.
+                // change_layer() reads m_config.z_offset live, so this needs no extra
+                // Z move and cannot be overridden by the nominal layer Z. Sequential
+                // (ByObject) only -- per-object Z is impossible in the shared by-layer path.
+                const double _zoff_calib_saved = m_config.z_offset.value;
+                if (print.calib_params().mode == CalibMode::Calib_Z_offset) {
+                    const int _zt = zoff_calib_tile_index(print, object, object.model_object()->name);
+                    m_config.z_offset.value += zoff_calib_shift(_zt, print.calib_params(),
+                                                                print.config().initial_layer_print_height.value);
+                }
                 this->process_layers(print, tool_ordering, collect_layers_to_print(object), *print_object_instance_sequential_active - object.instances().data(), file,
                                      prime_extruder);
+                m_config.z_offset.value = _zoff_calib_saved;   // restore after this object
                 {
                     // save the flush statitics stored in tool ordering by object
                     print.m_statistics_by_extruder_count.stats_by_single_extruder += tool_ordering.get_filament_change_stats(ToolOrdering::FilamentChangeMode::SingleExt);
@@ -4541,6 +4556,35 @@ std::string GCode::generate_object_brim(const Print &print, const PrintObject &o
 // In non-sequential mode, process_layer is called per each print_z height with all object and support layers accumulated.
 // For multi-material prints, this routine minimizes extruder switches by gathering extruder specific extrusion paths
 // and performing the extruder specific extrusions together.
+// Z-offset calibration: per-object Z shift. Tile index primarily from the last
+// digit in the object name (z_offset_tile_3 -> 2); if Orca provides no name,
+// from the object's position in print.objects() (= sequential print order).
+static int zoff_calib_name_index(const std::string &s)
+{
+    int val = -1, cur = 0; bool in_num = false;
+    for (char c : s) {
+        if (c >= '0' && c <= '9') { cur = in_num ? cur * 10 + (c - '0') : (c - '0'); in_num = true; }
+        else if (in_num) { val = cur; in_num = false; }
+    }
+    const int n = in_num ? cur : val;
+    return (n >= 1) ? (n - 1) : -1;
+}
+static int zoff_calib_tile_index(const Print &print, const PrintObject &po, const std::string &name)
+{
+    int idx = zoff_calib_name_index(name);
+    if (idx < 0) {
+        const auto &objs = print.objects();
+        for (size_t i = 0; i < objs.size(); ++i)
+            if (objs[i] == &po) { idx = int(i); break; }
+    }
+    return idx;
+}
+static double zoff_calib_shift(int tile_index, const Calib_Params &p, double nominal)
+{
+    if (tile_index < 0) return 0.0;
+    return (p.start + tile_index * p.step) - nominal;
+}
+
 LayerResult GCode::process_layer(
     const Print                    			&print,
     // Set of object & print layers of the same PrintObject and with the same print_z.

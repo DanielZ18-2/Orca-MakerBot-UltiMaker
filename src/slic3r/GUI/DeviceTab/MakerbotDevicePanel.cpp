@@ -37,11 +37,11 @@ namespace GUI {
 
 namespace {
 
-// Anzahl konfigurierter Extruder (Düsendurchmesser-Array-Länge) - dient zur
-// Single-/Dual-Extruder-Unterscheidung innerhalb derselben Baureihe, z.B. um
-// bei Legacy-Druckern zwischen "Replicator Single" und "Replicator Dual" /
-// "Replicator 2X" zu unterscheiden, ohne dass dafür eine eigene Kategorie
-// nötig wäre.
+// Number of configured extruders (nozzle-diameter array length) - used to
+// distinguish single-/dual-extruder within the same product line, e.g. to
+// tell "Replicator Single" from "Replicator Dual" /
+// "Replicator 2X" on legacy printers without needing a dedicated category
+// for it.
 int extruder_count(const DynamicPrintConfig& config)
 {
     if (const auto* opt = config.option<ConfigOptionFloats>("nozzle_diameter"))
@@ -49,7 +49,7 @@ int extruder_count(const DynamicPrintConfig& config)
     return 1;
 }
 
-// YUYV(YUV422) -> wxImage (RGB), anschliessend 90 Grad nach links gedreht.
+// YUYV(YUV422) -> wxImage (RGB), then rotated 90 degrees counter-clockwise.
 static wxImage yuyv_to_wximage_rot90ccw(const std::string& yuyv, int w, int h)
 {
     auto clamp=[](int x){ return x<0?0:(x>255?255:x); };
@@ -57,7 +57,7 @@ static wxImage yuyv_to_wximage_rot90ccw(const std::string& yuyv, int w, int h)
     unsigned char* rgb = img.GetData();
     const unsigned char* d = reinterpret_cast<const unsigned char*>(yuyv.data());
     const size_t need = (size_t)w*h*2;
-    if (yuyv.size() < need) return wxImage(); // ungueltig
+    if (yuyv.size() < need) return wxImage(); // invalid
     for (int i = 0; i < w*h; i += 2) {
         size_t b = (size_t)i*2;
         int Y0=d[b], U=d[b+1], Y1=d[b+2], V=d[b+3];
@@ -71,12 +71,12 @@ static wxImage yuyv_to_wximage_rot90ccw(const std::string& yuyv, int w, int h)
             rgb[idx]=R; rgb[idx+1]=G; rgb[idx+2]=B;
         }
     }
-    // 90 Grad nach links (gegen Uhrzeigersinn): Sensor ist gedreht verbaut.
+    // 90 degrees left (counter-clockwise): the sensor is mounted rotated.
     return img.Rotate90(false);
 }
 
-// Fortschritts-Ring (Doughnut): grauer Hintergrundring + farbiger Bogen ab
-// 12 Uhr im Uhrzeigersinn + Prozenttext mittig. Wert -1 = kein Druck (leer).
+// Progress ring (doughnut): grey background ring + coloured arc from
+// 12 o'clock clockwise + percent text centered. Value -1 = no print (empty).
 class ProgressDonut : public wxPanel {
 public:
     ProgressDonut(wxWindow* parent, const wxSize& size)
@@ -101,15 +101,15 @@ private:
         const double thickness = std::max(6.0, std::min(W, H) * 0.14);
         const double r = (std::min(W, H) - thickness) / 2.0 - 2.0;
         const double cx = W / 2.0, cy = H / 2.0;
-        const double start = -M_PI / 2.0; // 12 Uhr
+        const double start = -M_PI / 2.0; // 12 o'clock
 
-        // Hintergrundring (grau)
+        // Background ring (grey)
         gc->SetPen(wxPen(wxColour(80, 80, 80), thickness));
         wxGraphicsPath bg = gc->CreatePath();
         bg.AddArc(cx, cy, r, start, start + 2 * M_PI, true);
         gc->StrokePath(bg);
 
-        // Fortschrittsbogen (Akzentfarbe) - nur wenn progress >= 0
+        // Progress arc (accent colour) - only when progress >= 0
         if (m_progress >= 0 && m_progress <= 100) {
             const double frac = m_progress / 100.0;
             gc->SetPen(wxPen(wxColour(0, 179, 134), thickness)); // #00b386
@@ -118,9 +118,9 @@ private:
             gc->StrokePath(fg);
         }
 
-        // Prozent-Text mittig
+        // Percent text centered
         wxString txt = (m_progress >= 0) ? wxString::Format("%d%%", m_progress)
-                                         : wxString::FromUTF8("\xe2\x80\x93"); // Gedankenstrich
+                                         : wxString::FromUTF8("\xe2\x80\x93"); // en dash
         wxFont font = GetFont();
         font.SetPointSize(std::max(10, (int)(std::min(W, H) * 0.18)));
         font.SetWeight(wxFONTWEIGHT_BOLD);
@@ -139,21 +139,21 @@ private:
 // Constructor: Initialize the main UI container and placeholder variables
 // -----------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// KaitenTelemetryJob - Schritt 1 der GUI-Freeze-Behebung.
-// process() laeuft auf dem Worker-Thread und fasst NIE ein wx-Widget an -
-// nur Daten in Member sammeln. finalize() laeuft auf dem GUI-Thread (Job-
-// Vertrag) und wendet die Ergebnisse ueber set_*/apply_*-Methoden an.
-// m_active_config wird NUR auf dem GUI-Thread gelesen (beim Erzeugen des
-// Jobs in on_telemetry_tick) - process() bekommt einen fertigen PrintHost,
-// fasst die Config selbst nie an.
+// KaitenTelemetryJob - step 1 of the GUI-freeze fix.
+// process() runs on the worker thread and NEVER touches a wx widget -
+// it only collects data into members. finalize() runs on the GUI thread (job
+// contract) and applies the results via set_*/apply_* methods.
+// m_active_config is read ONLY on the GUI thread (when creating the
+// job in on_telemetry_tick) - process() receives a ready-made PrintHost,
+// it never touches the config itself.
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// Smart-Extruder-Typnamen, aus tool_mappings.py extrahiert (Firmware Z18
-// 2.6.3.736) und live gegen den echten Drucker verifiziert (2026-06-27,
-// kaiten_machine_config_probe.py). toolheads.extruder[].tool_id aus der
-// normalen Telemetrie indiziert DIREKT hier rein - keine zweite RPC-Stufe
-// noetig (get_machine_config liefert auf dieser Firmware ohnehin nur
-// dieselbe Telemetrie-Struktur erneut, keine eigene Mapping-Tabelle).
+// Smart-extruder type names, extracted from tool_mappings.py (firmware Z18
+// 2.6.3.736) and verified live against the real printer (2026-06-27,
+// kaiten_machine_config_probe.py). toolheads.extruder[].tool_id from the
+// normal telemetry indexes DIRECTLY into this - no second RPC stage
+// needed (get_machine_config on this firmware only returns
+// the same telemetry structure again, no dedicated mapping table).
 // ---------------------------------------------------------------------------
 static const std::map<int, std::string>& smart_extruder_names()
 {
@@ -180,16 +180,16 @@ static const std::map<int, std::string>& smart_extruder_names()
         {20,  "Tough Smart Extruder+"},
         {21,  "Smart Extruder+"},
         {22,  "Tough Smart Extruder+"},
-        {99,  "Experimental Extruder"}, // s. Warnhinweis oben im Patch-Header
+        {99,  "Experimental Extruder"}, // see warning at the top of the patch header
         {100, "Shiny Octo Parakeet"},
     };
     return table;
 }
 
-// tool_id -> Wert fuer das Sidebar-Smart-Extruder-Dropdown (siehe
-// smart_extruder_sidebar_items_for_config() in Plater.cpp). Birdwing kennt
-// nur diese drei Werte; alles andere (z.B. aeltere mk12-Varianten) liefert
-// "" - bewusst KEINE Aenderung statt falschem Fallback.
+// tool_id -> value for the sidebar smart-extruder dropdown (see
+// smart_extruder_sidebar_items_for_config() in Plater.cpp). Birdwing knows
+// only these three values; anything else (e.g. older mk12 variants) returns
+// "" - deliberately NO change instead of a wrong fallback.
 static std::string birdwing_smart_extruder_config_value(int tool_id)
 {
     switch (tool_id) {
@@ -200,9 +200,9 @@ static std::string birdwing_smart_extruder_config_value(int tool_id)
     }
 }
 
-// Liest eine Integer-Option (z.B. Filament-Temperatur) aus der vollen,
-// gemergten Config (Drucker+Druck+Filament) - 0, falls nicht gesetzt
-// oder der Schluessel nicht existiert (kein Heizen statt Raten).
+// Reads an integer option (e.g. filament temperature) from the full,
+// merged config (printer+print+filament) - 0 if not set
+// or the key does not exist (no heating instead of guessing).
 static int filament_int_option_or_zero(const char* key)
 {
     PresetBundle* bundle = wxGetApp().preset_bundle;
@@ -233,7 +233,7 @@ public:
             std::string err;
             m_session = mb->open_kaiten_session(err);
             if (!m_session) { m_error = err; return; }
-            m_capability_checked_in = false; // neue Sitzung - Capability-Check erneut noetig
+            m_capability_checked_in = false; // new session - capability check needed again
         }
 
         if (!m_capability_checked_in) {
@@ -254,7 +254,7 @@ public:
                 try { m_z_offset_value = zc_resp.at("result").get<double>(); }
                 catch (...) { }
             }
-            m_capability_checked_in = true;  // Fix: Capability nur 1x je Sitzung
+            m_capability_checked_in = true;  // fix: capability only once per session
             m_capability_checked_out = true;
         }
 
@@ -274,9 +274,9 @@ public:
                 throw std::runtime_error("no params.info or result in response");
             const auto& result = *infop;
 
-            // Firmware-Version: kaiten liefert ein OBJEKT {major,minor,bugfix,build}
-            // (server.py::get_server_info). Der String "2.6.3.736" existiert nur im
-            // mDNS-Record. Beide Formen defensiv behandeln.
+            // Firmware version: kaiten returns an OBJECT {major,minor,bugfix,build}
+            // (server.py::get_server_info). The string "2.6.3.736" exists only in the
+            // mDNS record. Handle both forms defensively.
             if (result.contains("firmware_version")) {
                 const auto& fv = result["firmware_version"];
                 if (fv.is_object()) {
@@ -295,10 +295,10 @@ public:
                 const auto& proc = result["current_process"];
                 if (proc.contains("step") && proc["step"].is_string())
                     m_status = proc["step"].get<std::string>();
-                // 6a: proc["progress"] ist in Heiz-Steps (initial_heating/final_heating)
-                // der AUFHEIZ-Prozent (printprocess.py:951,1044-1051), NICHT der
-                // Druckfortschritt. m_status haelt hier bereits den step-String (oben
-                // gesetzt). Nur im echten Druck-Step fuellen, sonst -1 -> Donut zeigt "-".
+                // 6a: proc["progress"] in heating steps (initial_heating/final_heating) is
+                // the HEATING percent (printprocess.py:951,1044-1051), NOT the
+                // print progress. m_status already holds the step string here (set
+                // above). Fill only in the real print step, otherwise -1 -> donut shows "-".
                 if (m_status == "printing" && proc.contains("progress") && proc["progress"].is_number())
                     m_progress = proc["progress"].get<int>();
                 else
@@ -356,12 +356,12 @@ public:
     }
 
     void finalize(bool canceled, std::exception_ptr& eptr) override {
-        eptr = nullptr; // Fehler laufen ueber m_error, nicht ueber Exceptions
+        eptr = nullptr; // errors go through m_error, not through exceptions
         if (canceled || !m_panel) return;
 
-        // Sitzung zurueckschreiben, auch bei Fehler weiter unten - sonst
-        // geht eine frisch geoeffnete Sitzung beim naechsten Tick wieder
-        // verloren und wir verbinden bei jedem Tick neu.
+        // Write the session back, even on error below - otherwise
+        // a freshly opened session is lost on the next tick and we
+        // reconnect on every tick.
         m_panel->set_kaiten_session(m_session);
         if (m_capability_checked_out) {
             m_panel->apply_capability_check(m_z_calibration_supported);
@@ -380,8 +380,8 @@ public:
         if (m_has_extruder_label) {
             m_panel->set_extruder_info(m_extruder_type_text, m_extruder_status_text);
             m_panel->m_current_toolhead_id = m_tool_id;
-            // Prepare-Tab-Vorauswahl: nur Vorauswahl, sperrt nichts. Schreibt
-            // nur bei tatsaechlicher Aenderung (siehe
+            // Prepare-tab preselection: preselect only, locks nothing. Writes
+            // only on an actual change (see
             // Sidebar::set_detected_smart_extruder_type()).
             const std::string se_value = birdwing_smart_extruder_config_value(m_tool_id);
             if (!se_value.empty()) {
@@ -419,13 +419,13 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-// KaitenCameraJob - Schritt 2 der GUI-Freeze-Behebung.
-// Laeuft auf demselben m_kaiten_worker wie KaitenTelemetryJob - dieselbe
-// sequentielle Job-Queue schliesst die Session-Oeffnungs-Race zwischen
-// Kamera- und Telemetrie-Pfad architektonisch aus (siehe Kommentar oben).
-// process() (Worker-Thread) baut nur das wxImage (reine Pixel-Arithmetik,
-// kein natives Fenster involviert) - die Zuweisung an das wxStaticBitmap
-// passiert erst in finalize() (GUI-Thread) ueber apply_camera_frame().
+// KaitenCameraJob - step 2 of the GUI-freeze fix.
+// Runs on the same m_kaiten_worker as KaitenTelemetryJob - the same
+// sequential job queue closes the session-open race between the
+// camera and telemetry path architecturally (see comment above).
+// process() (worker thread) only builds the wxImage (pure pixel arithmetic,
+// no native window involved) - the assignment to the wxStaticBitmap
+// happens only in finalize() (GUI thread) via apply_camera_frame().
 // ---------------------------------------------------------------------------
 class KaitenCameraJob : public Job {
 public:
@@ -439,10 +439,10 @@ public:
         auto* mb = dynamic_cast<MakerbotLink*>(m_host.get());
         if (!mb) return;
 
-        // Breath-1b: Kamera oeffnet KEINE eigene Session (Passagier). Sonst
-        // eine zweite authenticate -> Drucker resettet -> Reconnect-Sturm.
-        // Ist keine Session offen, wird dieser Frame uebersprungen; die
-        // Telemetrie oeffnet/haelt die eine Session.
+        // Breath-1b: the camera opens NO session of its own (passenger). Otherwise
+        // a second authenticate -> printer resets -> reconnect storm.
+        // If no session is open this frame is skipped; the
+        // telemetry opens/holds the single session.
         if (!m_session || !m_session->is_open())
             return;
 
@@ -468,12 +468,12 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-// KaitenActionJob - Schritt 3 der Kaiten-Session-Race-Behebung.
-// Laeuft auf DEMSELBEN m_kaiten_worker wie Telemetrie/Kamera - schliesst
-// die per Log bestaetigte Race (korruptes JSON, zerrissene Kamerabilder)
-// architektonisch aus, da alle drei Job-Typen dieselbe sequentielle Queue
-// teilen. process() macht nur den RPC-Call, finalize() (GUI-Thread) zeigt
-// Erfolg/Fehler-Dialog - kein wx-Widget-Zugriff aus process().
+// KaitenActionJob - step 3 of the kaiten-session race fix.
+// Runs on the SAME m_kaiten_worker as telemetry/camera - closes
+// the log-confirmed race (corrupt JSON, torn camera frames)
+// architecturally, since all three job types share the same sequential queue.
+// process() only makes the RPC call, finalize() (GUI thread) shows the
+// success/error dialog - no wx widget access from process().
 // ---------------------------------------------------------------------------
 class KaitenActionJob : public Job {
 public:
@@ -537,9 +537,9 @@ private:
     nlohmann::json m_response;
 };
 
-// Eigener Job fuer den kompletten Druckstart (print -> put). Anders als
-// KaitenActionJob (ein einzelner RPC) ruft dieser den mehrstufigen
-// kaiten_print_and_upload-Ablauf mit Upload-Progress auf.
+// Dedicated job for the full print start (print -> put). Unlike
+// KaitenActionJob (a single RPC), this one calls the multi-stage
+// kaiten_print_and_upload flow with upload progress.
 class KaitenPrintJob : public Job {
 public:
     KaitenPrintJob(MakerbotDevicePanel* panel,
@@ -558,10 +558,10 @@ public:
             m_session = mb->open_kaiten_session(err);
             if (!m_session) { m_error = err; return; }
         }
-        // Upload-Progress wird hier bewusst NICHT in die GUI gespiegelt
-        // (Worker-Thread). Eine Progress-Anzeige koennte spaeter ueber
-        // ein Event nachgeruestet werden; fuer den ersten funktionierenden
-        // Stand genuegt der Donut/Status aus der Telemetrie.
+        // Upload progress is deliberately NOT mirrored to the GUI here
+        // (worker thread). A progress display could be added later via
+        // an event; for the first working
+        // state the donut/status from telemetry is enough.
         PrintHost::ProgressFn noop = [](Http::Progress, bool&) {};
         m_ok = mb->kaiten_print_and_upload(*m_session, m_local_path, noop, m_error);
     }
@@ -603,9 +603,9 @@ MakerbotDevicePanel::MakerbotDevicePanel(wxWindow* parent)
     this->SetSizer(m_main_sizer);
 
     // Bind the telemetry timer to the tick event handler
-    // P5c: explizite IDs fuer beide Timer (s. Kommentar in der .hpp) -
-    // sonst wuerde der generische wxEVT_TIMER-Bind (wxID_ANY) auch die
-    // Kamera-Tick-Events an on_telemetry_tick routen statt an on_camera_tick.
+    // P5c: explicit IDs for both timers (see comment in the .hpp) -
+    // otherwise the generic wxEVT_TIMER bind (wxID_ANY) would also catch the
+    // route camera-tick events to on_telemetry_tick instead of on_camera_tick.
     m_telemetry_timer.SetOwner(this, ID_TELEMETRY_TIMER);
     this->Bind(wxEVT_TIMER, &MakerbotDevicePanel::on_telemetry_tick, this, ID_TELEMETRY_TIMER);
     m_camera_timer.SetOwner(this, ID_CAMERA_TIMER);
@@ -617,9 +617,9 @@ MakerbotDevicePanel::~MakerbotDevicePanel() {
 }
 
 // -----------------------------------------------------------------------------------------
-// Öffnet die persistente Klartext-kaiten-Session (Port 9999) bei Bedarf.
-// Nur für Birdwing relevant - Lava/Method und UltiMaker nutzen andere
-// Protokolle (HTTP/REST) und sind hier nicht eingebunden.
+// Opens the persistent plaintext kaiten session (port 9999) on demand.
+// Relevant only for Birdwing - Lava/Method and UltiMaker use different
+// protocols (HTTP/REST) and are not wired in here.
 // -----------------------------------------------------------------------------------------
 bool MakerbotDevicePanel::ensure_kaiten_session(std::string& error) {
     if (m_kaiten_session && m_kaiten_session->is_open())
@@ -631,12 +631,12 @@ bool MakerbotDevicePanel::ensure_kaiten_session(std::string& error) {
     if (!mb) { error = "Active printer is not a MakerbotLink host."; return false; }
 
     m_kaiten_session = mb->open_kaiten_session(error);
-    m_capability_checked = false; // neue Sitzung - Capability-Check erneut nötig
+    m_capability_checked = false; // new session - capability check needed again
     return m_kaiten_session != nullptr;
 }
 
 // -----------------------------------------------------------------------------------------
-// Kategorie-Zuordnung: bestimmt, welche der vier Baureihen aktiv ist.
+// Category mapping: determines which of the four product lines is active.
 // -----------------------------------------------------------------------------------------
 MBDeviceCategory MakerbotDevicePanel::category_for_config(const DynamicPrintConfig& config)
 {
@@ -653,8 +653,8 @@ MBDeviceCategory MakerbotDevicePanel::category_for_config(const DynamicPrintConf
 }
 
 // -----------------------------------------------------------------------------------------
-// Core UI Builder: baut die UI ausschließlich aus den Sektionen zusammen, die
-// für die aktive Kategorie tatsächlich Sinn ergeben.
+// Core UI builder: assembles the UI only from the sections that
+// actually make sense for the active category.
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config) {
     m_active_config = &config;
@@ -662,7 +662,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
 
     // Clear existing UI elements to prevent stacking during printer switch
     m_main_sizer->Clear(true);
-    m_col_left = nullptr;   // gehoeren dem soeben geleerten Sizer-Baum
+    m_col_left = nullptr;   // belong to the just-cleared sizer tree
     m_col_right = nullptr;
     m_camera_bitmap = nullptr;
     m_zoom_slider = nullptr;
@@ -675,8 +675,8 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
 
-    // Eine offene Sitzung gehört zum VORHERIGEN Drucker - sonst würden wir
-    // nach einem Druckerwechsel stillschweigend weiter mit dem alten Host
+    // An open session belongs to the PREVIOUS printer - otherwise we would
+    // silently keep talking to the old host after a printer switch
     // sprechen.
     if (m_kaiten_session) {
         m_kaiten_session->close();
@@ -686,8 +686,8 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
 
     const bool is_networked = (m_category != MBDeviceCategory::Legacy);
 
-    // Netzwerk-Druckerfamilien: zweispaltiges Layout.
-    //   LINKS  = Kamera (gross), RECHTS = Status + Z-Offset + Steuerung.
+    // Network printer families: two-column layout.
+    //   LEFT  = camera (large), RIGHT = status + Z-offset + control.
     if (is_networked) {
         wxBoxSizer* columns = new wxBoxSizer(wxHORIZONTAL);
         m_col_left  = new wxBoxSizer(wxVERTICAL);
@@ -702,8 +702,8 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
         build_z_offset_section();                // -> m_col_right
         build_hardware_controls_section();       // -> m_col_right
     } else {
-        // Legacy (Cupcake...Replicator 2X): kein Netzwerk, keine Kamera,
-        // kein RPC - nur statische Infos + Firmware-Flash via avrdude.
+        // Legacy (Cupcake...Replicator 2X): no network, no camera,
+        // no RPC - only static info + firmware flash via avrdude.
         build_legacy_static_info_section();
         build_firmware_section();
     }
@@ -711,7 +711,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     // Refresh UI Layout hierarchy to display the updated nodes
     this->Layout();
 
-    // Live-Polling ergibt nur bei Netzwerk-Druckern einen Sinn.
+    // Live polling only makes sense for networked printers.
     if (is_networked)
         start_telemetry_polling();
     else
@@ -735,8 +735,8 @@ void MakerbotDevicePanel::build_camera_section() {
     zoom_sizer->Add(m_zoom_slider, 1, wxEXPAND | wxALL, FromDIP(5));
     camera_sizer->Add(zoom_sizer, 0, wxEXPAND | wxALL, FromDIP(2));
 
-    // In die linke Spalte (P5a). Fallback auf m_main_sizer, falls (Legacy o.ae.)
-    // kein Spalten-Layout aktiv ist.
+    // Into the left column (P5a). Falls back to m_main_sizer if (legacy etc.)
+    // no column layout is active.
     (m_col_left ? m_col_left : m_main_sizer)->Add(camera_sizer, 1, wxEXPAND | wxALL, FromDIP(5));
 
     m_zoom_slider->Bind(wxEVT_SLIDER, &MakerbotDevicePanel::on_zoom_changed, this);
@@ -748,7 +748,7 @@ void MakerbotDevicePanel::build_camera_section() {
 void MakerbotDevicePanel::build_z_offset_section() {
     wxStaticBoxSizer* z_offset_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _L("Global Z-Offset Calibration"));
 
-    // (5a) Icon + Slider + Wertfeld in einer Zeile
+    // (5a) Icon + slider + value field in one row
     wxBoxSizer* z_row = new wxBoxSizer(wxHORIZONTAL);
     wxStaticBitmap* z_icon = new wxStaticBitmap(this, wxID_ANY, create_scaled_bitmap("param_extruder_clearance", this, 20));
     // Slider values range from -200 to 200, representing -2.00 mm to +2.00 mm
@@ -763,8 +763,8 @@ void MakerbotDevicePanel::build_z_offset_section() {
     z_offset_sizer->Add(z_row, 0, wxEXPAND | wxALL, FromDIP(2));
 
     // (5b) Endwert-Labels + Null-Markierung, RESPONSIV: gleiche Spalten-Struktur wie
-    // z_row (Icon-Spacer | Slider-Bereich prop 1 | Wertfeld+Einheit-Spacer). Die drei
-    // Labels teilen den Slider-Bereich zu je 1/3 -> "0" sitzt immer ueber der Mitte,
+    // z_row (icon spacer | slider area prop 1 | value+unit spacer). The three
+    // Labels split the slider range into thirds -> "0" always sits over the center,
     // unabhaengig von Aufloesung/DPI.
     wxBoxSizer* z_scale = new wxBoxSizer(wxHORIZONTAL);
     z_scale->AddSpacer(FromDIP(20) + FromDIP(6));                 // Icon-Breite + Abstand (wie z_row)
@@ -772,21 +772,21 @@ void MakerbotDevicePanel::build_z_offset_section() {
     z_ticks->Add(new wxStaticText(this, wxID_ANY, "-2.0"), 1, wxALIGN_LEFT);
     z_ticks->Add(new wxStaticText(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL), 1, wxALIGN_CENTRE_HORIZONTAL);
     z_ticks->Add(new wxStaticText(this, wxID_ANY, "+2.0", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT), 1, wxALIGN_RIGHT);
-    z_scale->Add(z_ticks, 1, wxEXPAND | wxRIGHT, FromDIP(10));    // prop 1, deckungsgleich mit dem Slider
-    z_scale->AddSpacer(FromDIP(60) + FromDIP(2) + FromDIP(24) + FromDIP(5)); // Wertfeld + Einheit + Raender
+    z_scale->Add(z_ticks, 1, wxEXPAND | wxRIGHT, FromDIP(10));    // prop 1, aligned with the slider
+    z_scale->AddSpacer(FromDIP(60) + FromDIP(2) + FromDIP(24) + FromDIP(5)); // value field + unit + margins
     z_offset_sizer->Add(z_scale, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(2));
 
-    // (5c) Richtungs-Hinweis direkt unter dem Slider
+    // (5c) Direction hint directly below the slider
     wxStaticText* z_dir = new wxStaticText(this, wxID_ANY,
-        _L("Negative = less distance between nozzle and build plate; positive = more distance."));
+        _L("Positive = less distance between nozzle and build plate; negative = more distance."));
     z_dir->Wrap(FromDIP(340));
     z_offset_sizer->Add(z_dir, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, FromDIP(2));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Warnhinweis (MakerBot-Konvention): ein zu negativer Z-Offset kann Bett/Extruder beschaedigen.
+    // Warning (MakerBot convention): a too-positive Z-offset can damage bed/extruder.
     wxStaticText* z_offset_warn = new wxStaticText(this, wxID_ANY,
-        _L("Caution: a too-negative Z-offset can damage the build plate and/or the Smart Extruder.\n"
+        _L("Caution: a too-positive Z-offset can damage the build plate and/or the Smart Extruder.\n"
            "The Z-offset can be adjusted live during a print; incorrect values may cause hardware damage."));
     z_offset_warn->SetForegroundColour(wxColour(200, 60, 60));
     z_offset_warn->Wrap(FromDIP(340));
@@ -831,16 +831,16 @@ void MakerbotDevicePanel::build_z_offset_section() {
 }
 
 // -----------------------------------------------------------------------------------------
-// 3. EXTRUDER-INFO & TELEMETRIE (Birdwing/Lava/UltiMaker - Legacy hat eigene
-//    statische Sektion, siehe build_legacy_static_info_section())
+// 3. EXTRUDER INFO & TELEMETRY (Birdwing/Lava/UltiMaker - Legacy has its own
+//    static section, see build_legacy_static_info_section())
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
     m_extruder_info_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _L("Printer Status & Hardware"));
 
-    // Parameter/Wert-Tabelle statt zusammengesetzter Saetze (Daniel,
-    // 2026-06-27): feste Parameter-Beschriftung links, NUR der Wert rechts
-    // aendert sich - leichter zu erfassen als ein Label, dessen kompletter
-    // Text bei jedem Update neu zusammengesetzt wird.
+    // Parameter/value table instead of composed sentences (Daniel,
+    // 2026-06-27): fixed parameter label on the left, ONLY the value on the right
+    // changes - easier to read than a label whose complete
+    // text is recomposed on every update.
     wxFlexGridSizer* grid = new wxFlexGridSizer(2, FromDIP(2), FromDIP(10));
     grid->AddGrowableCol(1);
 
@@ -853,9 +853,9 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
         *value_out = value;
     };
 
-    // Dual-Extrusion (Lava/Method, UltiMaker S-Serie) vs. Single Smart
-    // Extruder (Birdwing/Z18). Dual-Zweig bewusst NICHT auf die Tabelle
-    // umgestellt - das Protokoll dafuer ist noch nicht bestaetigt.
+    // Dual extrusion (Lava/Method, UltiMaker S-line) vs. single smart
+    // extruder (Birdwing/Z18). The dual branch deliberately does NOT rely on the table
+    // switched - the protocol for it is not confirmed yet.
     if (m_category == MBDeviceCategory::Lava || m_category == MBDeviceCategory::UltiMaker) {
         m_lbl_extruder_1 = new wxStaticText(this, wxID_ANY, _L("Extruder 1 (Model): Syncing..."));
         m_lbl_extruder_2 = new wxStaticText(this, wxID_ANY, _L("Extruder 2 (Support): Syncing..."));
@@ -872,13 +872,13 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
 
     m_extruder_info_sizer->Add(grid, 0, wxEXPAND | wxALL, FromDIP(2));
 
-    m_lbl_telemetry_progress = nullptr; // wird nicht mehr als Text gezeigt
+    m_lbl_telemetry_progress = nullptr; // no longer shown as text
 
     wxStaticText* donut_heading = new wxStaticText(this, wxID_ANY, _L("Current progress"));
     wxFont hf = donut_heading->GetFont(); hf.MakeBold(); donut_heading->SetFont(hf);
     m_extruder_info_sizer->Add(donut_heading, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, FromDIP(8));
 
-    // Fortschritt als Doughnut-Ring (ersetzt die fruehere Progress-Textzeile).
+    // Progress as a doughnut ring (replaces the former progress text line).
     ProgressDonut* donut = new ProgressDonut(this, wxSize(FromDIP(110), FromDIP(110)));
     m_progress_donut = donut;
     m_extruder_info_sizer->Add(donut, 0, wxALIGN_CENTER_HORIZONTAL);
@@ -889,23 +889,23 @@ void MakerbotDevicePanel::build_extruder_and_telemetry_section() {
 }
 
 // -----------------------------------------------------------------------------------------
-// 4. HARDWARE-STEUERUNG (Birdwing/Lava/UltiMaker)
-//    Die Buttons existieren, lösen aber bewusst noch keine echten Kommandos
-//    aus: die kaiten-/REST-Kommando-Namen für Z-Offset-Push, Filament
-//    Load/Unload sind noch nicht bestätigt (siehe execute_printer_action()).
-//    Auf realer Hardware blind geratene RPC-Aufrufe zu senden ist riskanter
-//    als nur Telemetrie falsch anzuzeigen, daher hier bewusst zurückhaltend.
+// 4. HARDWARE CONTROL (Birdwing/Lava/UltiMaker)
+//    The buttons exist but deliberately trigger no real commands
+//    yet: the kaiten/REST command names for Z-offset push, filament
+//    load/unload are not confirmed yet (see execute_printer_action()).
+//    Sending blindly guessed RPC calls to real hardware is riskier
+//    than only showing telemetry wrong, hence deliberately conservative here.
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_hardware_controls_section() {
-    // Gerahmte "Steuerung"-Karte (Mockup-Vorgabe). Reihenfolge nach
-    // Nutzungshaeufigkeit (Daniel, 2026-06-28): Druck-Steuerung oben,
-    // Material darunter, Kalibrierung isoliert ganz unten.
+    // Framed "control" card (mockup spec). Order by
+    // usage frequency (Daniel, 2026-06-28): print control on top,
+    // material below, calibration isolated at the very bottom.
     wxStaticBoxSizer* control_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Steuerung"));
 
-    // Druck-Steuerung: haeufigste Aktionen. RPC bestaetigt (process_method
-    // "suspend"/"resume", cancel_process) - keine Capability-Vorprüfung wie
-    // in der Referenz, wir senden direkt und zeigen den Firmware-Fehler,
-    // falls gerade nicht unterstuetzt. Ungetestet auf echter Hardware.
+    // Print control: most common actions. RPC confirmed (process_method
+    // "suspend"/"resume", cancel_process) - no capability precheck like
+    // in the reference; we send directly and show the firmware error
+    // if currently unsupported. Untested on real hardware.
     wxBoxSizer* primary_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_pause  = new wxButton(this, wxID_ANY, _L("Pause"));
     m_btn_resume = new wxButton(this, wxID_ANY, _L("Resume"));
@@ -915,8 +915,8 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     primary_sizer->Add(m_btn_cancel, 1, 0);
     control_box->Add(primary_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Material: Vorheizen + Filament entladen in einer Reihe. "Laden"
-    // macht nur am Drucker selbst Sinn (Daniels Entscheidung).
+    // Material: preheat + unload filament in one row. "Load"
+    // only makes sense at the printer itself (Daniel's decision).
     wxBoxSizer* material_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_preheat = new wxButton(this, wxID_ANY, _L("Preheat"));
     m_btn_unload_fil = new wxButton(this, wxID_ANY, _L("Unload Filament"));
@@ -928,8 +928,8 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     material_sizer->Add(m_btn_unload_fil, 1, 0);
     control_box->Add(material_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Geraet: Verwaltungsfunktionen, seltener genutzt als Material/Steuerung,
-    // aber nicht so selten wie die Kalibrierung - daher knapp darueber.
+    // Device: management functions, used less often than material/control,
+    // but not as rare as calibration - hence just above it.
     wxStaticText* device_heading = new wxStaticText(this, wxID_ANY, _L("DEVICE"));
     wxFont device_heading_font = device_heading->GetFont();
     device_heading_font.MakeBold();
@@ -943,24 +943,24 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     device_sizer->Add(m_btn_files, 1, 0);
     control_box->Add(device_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Kalibrierung: bewusst isoliert, volle Breite, ganz unten - am
-    // seltensten genutzt von allem in dieser Karte.
+    // Calibration: deliberately isolated, full width, at the very bottom - the
+    // used the least of everything in this card.
     m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
     control_box->Add(m_btn_z_calib, 0, wxEXPAND | wxALL, FromDIP(5));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(control_box, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // "Druck starten" bleibt bewusst ausserhalb der Steuerung-Karte -
+    // "Start print" deliberately stays outside the control card -
     // eigene Zeile, optisch hervorgehoben (voller Breite, Akzentfarbe).
     m_btn_start_print = new wxButton(this, wxID_ANY, _L("Start Print"));
     m_btn_start_print->SetBackgroundColour(wxColour(0, 179, 134)); // #00b386, P5c-Akzent (wie Donut)
     m_btn_start_print->SetForegroundColour(*wxWHITE);
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Firmware: Verweis auf die Firmware-Sammlung (Platzhalter-URL, spaeter GitHub-
-    // Quellen). Bewusst KEIN Flashen aus Orca heraus (Haftung/Upstream) - Birdwing/
-    // Lava/UltiMaker aktualisieren ueber Netzwerk bzw. USB-Stick am Drucker. Button
-    // braucht kein Member (nie dynamisch getoggelt) -> keine .hpp-Aenderung noetig.
+    // Firmware: link to the firmware collection (placeholder URL, later GitHub
+    // source). Deliberately NO flashing from within Orca (liability/upstream) - Birdwing/
+    // Lava/UltiMaker update over network or USB stick at the printer. The button
+    // needs no member (never toggled dynamically) -> no .hpp change needed.
     {
         wxStaticBoxSizer* fw_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Firmware"));
         wxButton* btn_available_fw = new wxButton(this, wxID_ANY, _L("Available Firmware"));
@@ -969,7 +969,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
         fw_box->Add(btn_available_fw, 0, wxEXPAND | wxALL, FromDIP(5));
         (m_col_right ? m_col_right : m_main_sizer)->Add(fw_box, 0, wxEXPAND | wxALL, FromDIP(5));
         btn_available_fw->Bind(wxEVT_BUTTON, [](wxCommandEvent&) {
-            // PLATZHALTER-URL: spaeter gegen die GitHub-Firmware-Sammlung tauschen.
+            // PLACEHOLDER URL: swap later for the GitHub firmware collection.
             wxLaunchDefaultBrowser("https://github.com/DanielZ18-2/Unofficial-OrcaSlicer_for_MakerBot_UltiMaker");
         });
     }
@@ -996,11 +996,11 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
 }
 
 // -----------------------------------------------------------------------------------------
-// 5. FIRMWARE-FLASH via avrdude (NUR Legacy: Cupcake...Replicator 2X - diese
-//    Baureihe nutzt AVR/Sailfish-Firmware über USB-Seriell. Birdwing/Lava/
-//    UltiMaker aktualisieren ihre Firmware übers Netzwerk, nicht über
-//    avrdude - das ist ein separates, noch nicht begonnenes Feature
-//    ("WiFi-Setup via USB", siehe HANDOVER.md) und hier bewusst nicht
+// 5. FIRMWARE FLASH via avrdude (ONLY legacy: Cupcake...Replicator 2X - this
+//    line uses AVR/Sailfish firmware over USB-serial. Birdwing/Lava/
+//    UltiMaker update their firmware over the network, not via
+//    avrdude - that is a separate feature not yet started
+//    ("WiFi setup via USB", see HANDOVER.md) and deliberately not
 //    nachgebaut.)
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_firmware_section() {
@@ -1014,12 +1014,12 @@ void MakerbotDevicePanel::build_firmware_section() {
 }
 
 // -----------------------------------------------------------------------------------------
-// 6. STATISCHE INFO-SEKTION (NUR Legacy)
-//    Cupcake...Replicator 2X sprechen in dieser Architektur ausschließlich
-//    über USB/seriell mit Sailfish/MightyBoard-Firmware - es gibt keinen
-//    RPC-/REST-Kanal für Live-Status. Statt einer vorgetäuschten Telemetrie
-//    zeigen wir hier nur, was aus der aktiven Konfiguration tatsächlich
-//    bekannt ist (Modellname, Extruderzahl).
+// 6. STATIC INFO SECTION (legacy ONLY)
+//    Cupcake...Replicator 2X talk in this architecture exclusively
+//    over USB/serial with Sailfish/MightyBoard firmware - there is no
+//    RPC/REST channel for live status. Instead of faked telemetry
+//    we show here only what is actually known from the active configuration
+//    is known (model name, extruder count).
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::build_legacy_static_info_section() {
     wxStaticBoxSizer* info_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _L("Printer Info"));
@@ -1083,14 +1083,14 @@ void MakerbotDevicePanel::on_z_offset_slider_changed(wxCommandEvent& event) {
 
 void MakerbotDevicePanel::sync_z_offset_to_hardware(double offset_mm) {
     if (m_category != MBDeviceCategory::Birdwing) {
-        // set_z_adjusted_offset wurde nur für Birdwing/Z18 bestätigt (Capture
-        // vom 2026-06). Für Lava/UltiMaker bewusst kein geratener Aufruf.
+        // set_z_adjusted_offset is confirmed only for Birdwing/Z18 (capture
+        // from 2026-06). For Lava/UltiMaker deliberately no guessed call.
         BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset control not confirmed for this printer family, not sent.";
         return;
     }
-    // Ueber DENSELBEN Worker wie Telemetrie/Kamera/Aktionen serialisieren.
-    // Direktaufruf auf der geteilten m_kaiten_session vom UI-Thread erzeugte
-    // eine Datenrace mit dem laufenden Poll-/Kamera-Job -> Verbindungs-Reset.
+    // Serialize over the SAME worker as telemetry/camera/actions.
+    // A direct call on the shared m_kaiten_session from the UI thread caused
+    // a data race with the running poll/camera job -> connection reset.
     if (!m_kaiten_worker)
         m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
     std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
@@ -1103,13 +1103,13 @@ void MakerbotDevicePanel::sync_z_offset_to_hardware(double offset_mm) {
     BOOST_LOG_TRIVIAL(info) << "MakerbotDevicePanel: Z-Offset " << offset_mm << "mm ueber Worker eingereiht";
 }
 
-// Liest den lokalen .makerbot-Pfad aus der pending-Datei, zeigt einen
-// Bauplatten-Bestaetigungsdialog MIT Live-Kamerabild und startet bei
-// Bestaetigung den korrekten print->put-Ablauf (KaitenPrintJob).
+// Reads the local .makerbot path from the pending file, shows a
+// build-plate confirmation dialog WITH live camera image and, on
+// confirmation, starts the correct print->put flow (KaitenPrintJob).
 void MakerbotDevicePanel::start_print_with_confirmation() {
     if (m_category != MBDeviceCategory::Birdwing) return;
 
-    // pending-Datei lesen (enthaelt jetzt den LOKALEN Pfad).
+    // read pending file (now contains the LOCAL path).
     std::string host;
     if (const auto* opt = m_active_config->option<ConfigOptionString>("print_host"))
         host = opt->value;
@@ -1129,8 +1129,8 @@ void MakerbotDevicePanel::start_print_with_confirmation() {
         return;
     }
 
-    // Bestaetigungsdialog MIT Live-Kamerabild (Daniels Wunsch). Zeigt das
-    // zuletzt empfangene Kamerabild gross an, damit der Nutzer die freie
+    // confirmation dialog WITH live camera image (Daniel's wish). Shows the
+    // last received camera frame large, so the user can check the free
     // Bauplatte direkt im Dialog sieht.
     wxDialog dlg(this, wxID_ANY, _L("Check Build Plate"),
                  wxDefaultPosition, wxDefaultSize,
@@ -1141,7 +1141,7 @@ void MakerbotDevicePanel::start_print_with_confirmation() {
         // Auf vernuenftige Dialoggroesse skalieren (max. 480 breit).
         wxImage img = m_raw_camera_frame.Copy();
         int w = img.GetWidth(), h = img.GetHeight();
-        const int max_w = FromDIP(640); // (2) doppelte Groesse im Clearance-Dialog
+        const int max_w = FromDIP(640); // (2) double size in the clearance dialog
         if (w > max_w && w > 0) {
             int new_h = (int)((double)h * max_w / w);
             img = img.Scale(max_w, new_h, wxIMAGE_QUALITY_HIGH);
@@ -1168,7 +1168,7 @@ void MakerbotDevicePanel::start_print_with_confirmation() {
     if (dlg.ShowModal() != wxID_OK)
         return;
 
-    // Korrekten print->put-Ablauf auf dem Worker starten.
+    // Start the correct print->put flow on the worker.
     if (!m_kaiten_worker)
         m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
     std::unique_ptr<PrintHost> host_obj(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
@@ -1190,12 +1190,12 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     std::string method;
     nlohmann::json params = nlohmann::json::object();
     int timeout_s = 5;
-    wxString success_message; // leer = keine Erfolgsmeldung
-    std::function<void(const nlohmann::json&)> on_result; // gesetzt = zeigt Ergebnis statt fester Meldung
+    wxString success_message; // empty = no success message
+    std::function<void(const nlohmann::json&)> on_result; // set = show result instead of a fixed message
 
     if (action_id == "start_print") {
-        // Eigener, mehrstufiger Ablauf (Kamera-Dialog + print->put) - nicht
-        // ueber den generischen KaitenActionJob abbildbar.
+        // Dedicated multi-stage flow (camera dialog + print->put) - not
+        // expressible via the generic KaitenActionJob.
         start_print_with_confirmation();
         return;
     } else if (action_id == "pause") {
@@ -1209,7 +1209,7 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         params["params"] = nlohmann::json::object();
         success_message = _L("Resume command sent to the printer.");
     } else if (action_id == "cancel") {
-        // Destruktiv -> Rueckfrage vor dem Senden.
+        // Destructive -> confirm before sending.
         if (wxMessageDialog(this, _L("Cancel the current print? This cannot be undone."),
                 _L("Cancel Print"), wxYES_NO | wxICON_WARNING).ShowModal() != wxID_YES)
             return;
@@ -1219,8 +1219,8 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         method = "change_machine_name";
         params["machine_name"] = m_pending_rename_name;
     } else if (action_id == "files") {
-        // Format der Antwort nicht bestaetigt - rohe JSON-Antwort anzeigen
-        // statt ein Format zu erraten und falsch zu parsen.
+        // Response format not confirmed - show the raw JSON response
+        // instead of guessing a format and parsing it wrong.
         method = "birdwing_list";
         params["path"] = "/";
         on_result = [this](const nlohmann::json& resp) {
@@ -1235,14 +1235,14 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     } else if (action_id == "z_calibration") {
         method = "calibrate_z_offset";
     } else if (action_id == "preheat") {
-        // temperature_settings: [Extruder0, Extruder1, Kammer/Plattform, unbelegt].
-        // Temperatur kommt aus dem aktiven Filament-Profil (Daniels Wunsch).
-        // Index 2 ist im Kaiten-Protokoll EIN gemeinsamer Slot fuer Kammer
-        // ODER Bett, je nach Hardware (Z18: Kammer; andere Birdwing-Modelle
-        // ohne Kammerheizung: teils beheiztes Bett statt Kammer). Erst
-        // chamber_temperature versuchen (Z18-Fall), bei 0 auf
-        // bed_temperature zurueckfallen (anderes Modell). 0, wenn im Profil
-        // nichts gesetzt ist (kein Heizen).
+        // temperature_settings: [extruder0, extruder1, chamber/platform, unused].
+        // Temperature comes from the active filament profile (Daniel's wish).
+        // Index 2 in the kaiten protocol is ONE shared slot for chamber
+        // OR bed, depending on hardware (Z18: chamber; other Birdwing models
+        // without chamber heating: partly heated bed instead of chamber). First
+        // try chamber_temperature (Z18 case), and on 0 fall back to
+        // bed_temperature (other model). 0 if nothing is set in the
+        // profile (no heating).
         int nozzle_temp = filament_int_option_or_zero("temperature");
         int platform_temp = filament_int_option_or_zero("chamber_temperature");
         if (platform_temp == 0)
@@ -1251,11 +1251,11 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         params["temperature_settings"] = {nozzle_temp, 0, platform_temp, 0};
         params["wait_till_heated"] = false;
     } else if (action_id == "unload_filament") {
-        // RPC bestaetigt per Quellcode-Analyse (conveyor 3.10.1,
-        // birdwing.py:2084-2096) - keine Vermutung mehr. tool_index 0:
-        // einziger Fall fuer Single-Extruder-Z18 (Dual-Extrusion oben
-        // schon ausgeschlossen). 215 °C PLA-Default, da keine
-        // Material-/Temperaturauswahl-UI existiert.
+        // RPC confirmed by source-code analysis (conveyor 3.10.1,
+        // birdwing.py:2084-2096) - no longer a guess. tool_index 0:
+        // only case for single-extruder Z18 (dual extrusion above
+        // already excluded). 215 C PLA default, since no
+        // material/temperature selection UI exists.
         method = "unload_filament";
         params["tool_index"] = 0;
         params["temperature_settings"] = 215;
@@ -1264,8 +1264,8 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         return;
     }
 
-    // Schritt 3: ueber DENSELBEN Worker wie Telemetrie/Kamera - schliesst
-    // die per Log bestaetigte Race auf m_kaiten_session aus.
+    // Step 3: over the SAME worker as telemetry/camera - closes
+    // the log-confirmed race on m_kaiten_session.
     if (!m_kaiten_worker)
         m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
 
@@ -1323,7 +1323,7 @@ void MakerbotDevicePanel::on_firmware_update_clicked(wxCommandEvent& event) {
 }
 
 // -----------------------------------------------------------------------------------------
-// Telemetry & MJPEG Polling Logic (nur Birdwing/Lava/UltiMaker)
+// Telemetry & MJPEG polling logic (only Birdwing/Lava/UltiMaker)
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::start_telemetry_polling() {
     if (!m_telemetry_timer.IsRunning()) {
@@ -1346,13 +1346,13 @@ void MakerbotDevicePanel::stop_telemetry_polling() {
         BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Camera polling routine stopped.";
     }
     if (m_kaiten_worker) {
-        // Worker stoppen lassen, BEVOR wir unsere eigene Referenz auf die
-        // Sitzung unten fallen lassen. Kein explizites close() mehr hier:
-        // falls ein Job noch laeuft, haelt seine eigene shared_ptr-Kopie die
-        // Sitzung am Leben, bis er fertig ist; der KaitenSession-Destruktor
-        // ruft close() automatisch auf DEM Thread auf, der die letzte
-        // Referenz fallen laesst - nie gleichzeitig mit einem noch
-        // laufenden call() auf dem Worker-Thread.
+        // Let the worker stop BEFORE we drop our own reference to the
+        // session below. No explicit close() here anymore:
+        // if a job is still running, its own shared_ptr copy keeps the
+        // session alive until it finishes; the KaitenSession destructor
+        // calls close() automatically on THE thread that holds the last
+        // reference - never at the same time as a still
+        // running call() on the worker thread.
         m_kaiten_worker->cancel_all();
         m_kaiten_worker->wait_for_idle(2000);
     }
@@ -1371,7 +1371,7 @@ void MakerbotDevicePanel::apply_capability_check(bool supported) {
 }
 
 void MakerbotDevicePanel::apply_z_offset_range(double max_mm) {
-    // Grenze plausibilisieren (Modelle: 0.4 / 0.8 / 4.0). Fallback 2.0.
+    // sanity-check the limit (models: 0.4 / 0.8 / 4.0). Fallback 2.0.
     m_z_offset_max_mm = std::max(2.0, (max_mm > 0.0 && max_mm < 50.0) ? max_mm : 2.0);
     const int lim = (int)(m_z_offset_max_mm * 100.0 + 0.5);
     if (m_z_offset_slider) {
@@ -1398,13 +1398,13 @@ void MakerbotDevicePanel::apply_z_offset_value(double value_mm) {
 }
 
 // ---------------------------------------------------------------------------
-// Firmware-Version pro GERAET (print_host) in AppConfig cachen - nicht im Preset:
-// PhysicalPrinter hat eine Key-Whitelist, und ein Preset kann von mehreren
-// Geraeten geteilt werden. Bei Aenderung einmal benachrichtigen. Ab der
-// Custom-Schwelle gilt die Firmware als Custom -> Material-Hinweise entfallen.
+// Cache the firmware version per DEVICE (print_host) in AppConfig - not in the preset:
+// PhysicalPrinter has a key whitelist, and a preset can be shared by
+// several devices. Notify once on change. From the
+// custom threshold the firmware counts as custom -> material hints drop out.
 // ---------------------------------------------------------------------------
-static const int MAKERBOT_CUSTOM_FW_MIN_MAJOR = 2;   // <== Custom-Schwelle anpassen
-static const int MAKERBOT_CUSTOM_FW_MIN_MINOR = 7;   // <== (hier: ab 2.7.x)
+static const int MAKERBOT_CUSTOM_FW_MIN_MAJOR = 2;   // <== adjust custom threshold
+static const int MAKERBOT_CUSTOM_FW_MIN_MINOR = 7;   // <== (here: from 2.7.x)
 
 static bool makerbot_fw_is_custom(const std::string& v)
 {
@@ -1422,7 +1422,7 @@ void MakerbotDevicePanel::apply_firmware_version(const std::string& version)
         return;
     m_firmware_is_custom = makerbot_fw_is_custom(version);
     if (version == m_firmware_version)
-        return;                       // in dieser Sitzung bereits verarbeitet
+        return;                       // already handled in this session
     m_firmware_version = version;
 
     std::string host;
@@ -1465,9 +1465,9 @@ void MakerbotDevicePanel::set_extruder_info(const wxString& type_text, const wxS
 }
 
 void MakerbotDevicePanel::apply_control_button_states(const std::string& status) {
-    // A: Steuerungs-Knoepfe am Prozess-Step freigeben (Firmware-Zustandsmodell).
-    // suspend nur im Step "printing", resume in "suspending"/"suspended";
-    // cancel nur bei aktivem Prozess; preheat/unload/start nur im Idle.
+    // A: enable control buttons per process step (firmware state model).
+    // suspend only in step "printing", resume in "suspending"/"suspended";
+    // cancel only with an active process; preheat/unload/start only when idle.
     const bool idle      = (status == "Idle");
     const bool printing  = (status == "printing");
     const bool suspended = (status == "suspended" || status == "suspending");
@@ -1489,33 +1489,33 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
     if (!m_active_config || m_category == MBDeviceCategory::Legacy) return;
 
     if (m_category != MBDeviceCategory::Birdwing) {
-        // Lava/Method (HTTP) und UltiMaker (REST): kein bestätigtes Schema -
-        // noch kein Capture für diese Familien.
+        // Lava/Method (HTTP) and UltiMaker (REST): no confirmed schema -
+        // no capture for these families yet.
         if (m_lbl_telemetry_status)
             m_lbl_telemetry_status->SetLabel(_L("Status: Live telemetry not yet implemented for this printer family"));
         return;
     }
 
-    // Schritt 1 der GUI-Freeze-Behebung: ab hier kein Netzwerk-Call mehr auf
-    // dem GUI-Thread. Nur PrintHost konstruieren (kein Netzwerk, schnell) und
-    // einen Job auf den Worker schieben - der macht den eigentlichen Kaiten-
-    // Call und liefert ueber finalize() (GUI-Thread) das Ergebnis zurueck.
-    // Folgefix: reiner BoostThreadWorker statt PlaterWorker<BoostThreadWorker>
-    // - PlaterWorker haengt jeden Job in einen CursorSetterRAII-Wrapper
-    // (Sanduhr-Cursor), richtig fuer einmalige Plater-Jobs, aber bei
-    // sekuendlichem Polling ein staendig flackernder "Lade"-Cursor.
-    // process_events() rufen wir deshalb jetzt selbst hier auf statt
-    // automatisch via wxEVT_IDLE/PAINT.
+    // Step 1 of the GUI-freeze fix: from here on no network call on
+    // the GUI thread. Only construct the PrintHost (no network, fast) and
+    // push a job onto the worker - which does the actual kaiten
+    // call and returns the result via finalize() (GUI thread).
+    // Follow-up fix: plain BoostThreadWorker instead of PlaterWorker<BoostThreadWorker>
+    // - PlaterWorker wraps every job in a CursorSetterRAII wrapper
+    // (hourglass cursor), right for one-off Plater jobs, but with
+    // per-second polling a constantly flickering "loading" cursor.
+    // we therefore call process_events() ourselves here instead of
+    // automatically via wxEVT_IDLE/PAINT.
     if (!m_kaiten_worker)
         m_kaiten_worker = std::make_unique<BoostThreadWorker>(nullptr, "kaiten_telemetry_worker");
     m_kaiten_worker->process_events();
 
     if (!m_kaiten_worker->is_idle())
-        return; // voriger Tick laeuft noch (Drucker antwortet langsam) - diesen Tick auslassen
+        return; // previous tick still running (printer responds slowly) - skip this tick
 
     std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
     if (!dynamic_cast<MakerbotLink*>(host.get()))
-        return; // sollte wegen des category-Checks oben nicht vorkommen
+        return; // should not happen due to the category check above
 
     auto job = std::make_shared<KaitenTelemetryJob>(this, std::move(host), m_kaiten_session, m_capability_checked);
     m_kaiten_worker->push(job);
@@ -1523,8 +1523,8 @@ void MakerbotDevicePanel::on_telemetry_tick(wxTimerEvent& event) {
 
 void MakerbotDevicePanel::apply_camera_frame(const wxImage& img) {
     if (!img.IsOk()) return;
-    // (1)/(2) Live-Bild auf doppelte Groesse skalieren (eine Stelle -> gilt fuer
-    // Live- und Zoom-Pfad, da beide m_raw_camera_frame nutzen).
+    // (1)/(2) Scale the live image to double size (one spot -> applies to
+    // both live and zoom path, since both use m_raw_camera_frame).
     if (img.GetWidth() > 0 && img.GetHeight() > 0) {
         wxImage scaled = img.Copy();
         scaled.Rescale(img.GetWidth() * 2, img.GetHeight() * 2, wxIMAGE_QUALITY_HIGH);
@@ -1532,9 +1532,9 @@ void MakerbotDevicePanel::apply_camera_frame(const wxImage& img) {
     } else {
         m_raw_camera_frame = img;
     }
-    // Zoom anwenden (wie on_zoom_changed), sonst 1:1 anzeigen. Zoom-Status
-    // wird hier (GUI-Thread, zum Anwendungszeitpunkt) frisch gelesen statt
-    // beim Job-Start mitgegeben - vermeidet einen 1s alten Zoom-Stand.
+    // Apply zoom (like on_zoom_changed), otherwise show 1:1. Zoom state
+    // is read fresh here (GUI thread, at apply time) instead of
+    // being passed at job start - avoids a 1s-stale zoom value.
     if (m_zoom_slider && m_zoom_slider->GetValue() > 100) {
         wxCommandEvent dummy;
         on_zoom_changed(dummy);
@@ -1545,10 +1545,10 @@ void MakerbotDevicePanel::apply_camera_frame(const wxImage& img) {
 }
 
 void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
-    // P5c: eigener 1s-Tick, entkoppelt von der 2s-Telemetrie.
-    // Schritt 2 der GUI-Freeze-Behebung: kein Netzwerk-Call mehr auf dem
-    // GUI-Thread - Job auf DENSELBEN Worker wie die Telemetrie schieben,
-    // damit beide nie gleichzeitig eine Session oeffnen koennen.
+    // P5c: own 1s tick, decoupled from the 2s telemetry.
+    // Step 2 of the GUI-freeze fix: no more network call on the
+    // GUI thread - push a job onto the SAME worker as telemetry,
+    // so the two can never open a session at the same time.
     if (!m_active_config || m_category != MBDeviceCategory::Birdwing) return;
     if (!m_camera_bitmap) return;
 
@@ -1557,7 +1557,7 @@ void MakerbotDevicePanel::on_camera_tick(wxTimerEvent& event) {
     m_kaiten_worker->process_events();
 
     if (!m_kaiten_worker->is_idle())
-        return; // Telemetrie- oder vorheriger Kamera-Job laeuft noch - diesen Tick auslassen
+        return; // telemetry or previous camera job still running - skip this tick
 
     std::unique_ptr<PrintHost> host(PrintHost::get_print_host(const_cast<DynamicPrintConfig*>(m_active_config)));
     if (!dynamic_cast<MakerbotLink*>(host.get()))

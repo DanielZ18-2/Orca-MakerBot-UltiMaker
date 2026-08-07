@@ -577,6 +577,265 @@ double CalibPressureAdvancePattern::flow_val() const
     return speed * pattern_line.mm3_per_mm() * flow_mult;
 };
 
+// Number formatting without <iomanip> and without <cstdio>: precision() is a
+// member function; std::fixed comes from <ios> and thus already via <sstream>.
+static std::string zfmt(double v, int prec)
+{
+    std::ostringstream o;
+    o.precision(prec);
+    o << std::fixed << v;
+    return o.str();
+}
+
+// Cross-section of an extruded bead: rectangle with semicircular ends.
+static inline double extrusion_area(double w, double h)
+{
+    if (w < h) return M_PI * (w / 2.0) * (w / 2.0);
+    return (w - h) * h + M_PI * (h / 2.0) * (h / 2.0);
+}
+
+class ZOffEmitter
+{
+public:
+    ZOffEmitter(const ZOffsetPatternParams &p) : m_p(p)
+    {
+        m_fil_area = M_PI * (p.filament / 2.0) * (p.filament / 2.0);
+    }
+
+    double e_for(double len, double layer_h) const
+    {
+        return extrusion_area(m_p.line_width, layer_h) * len / m_fil_area * m_p.flow;
+    }
+
+    void comment(const std::string &s) { m_ss << "; " << s << "\n"; }
+
+    void travel_z(double z, const std::string &cmt)
+    {
+        m_ss << "G0 Z" << zfmt(z, 3) << " F" << zfmt(m_p.speed_travel * 60.0, 0)
+             << " ; " << cmt << "\n";
+        m_z = z;
+    }
+
+    // Lift, move, lower -- avoids scrape marks over printed fields.
+    void lift_travel(double x, double y, double z)
+    {
+        const double safe = ((m_z > z) ? m_z : z) + m_p.z_hop;
+        const std::string fr = zfmt(m_p.speed_travel * 60.0, 0);
+        m_ss << "G0 Z" << zfmt(safe, 3) << " F" << fr << "\n"
+             << "G0 X" << zfmt(x, 3) << " Y" << zfmt(y, 3) << " F" << fr << "\n"
+             << "G0 Z" << zfmt(z, 3) << " F" << fr << "\n";
+        m_x = x; m_y = y; m_z = z;
+    }
+
+    // Reposition without lift and without retract when Z stays the same and the path is
+    // short. Only this avoids a travel-move orgy between adjacent paths.
+    void hop_if_needed(double x, double y, double z, double short_move)
+    {
+        const bool same_z = std::fabs(z - m_z) < 1e-6;
+        const double d = std::hypot(x - m_x, y - m_y);
+        if (same_z && d <= short_move) {
+            m_ss << "G0 X" << zfmt(x, 3) << " Y" << zfmt(y, 3)
+                 << " F" << zfmt(m_p.speed_travel * 60.0, 0) << "\n";
+            m_x = x; m_y = y;
+            return;
+        }
+        retract();
+        lift_travel(x, y, z);
+        unretract();
+    }
+
+    void retract()   { m_ss << "G1 E" << zfmt(-m_p.retract, 3) << " F1800\n"; }
+    void unretract() { m_ss << "G1 E" << zfmt( m_p.retract, 3) << " F1800\n"; }
+
+    void line_to(double x, double y, double layer_h, double speed)
+    {
+        const double d = std::hypot(x - m_x, y - m_y);
+        if (d < 1e-9) return;
+        const double e = e_for(d, layer_h);
+        m_e_abs += e;
+        m_ss << "G1 X" << zfmt(x, 3) << " Y" << zfmt(y, 3)
+             << " E" << zfmt(m_p.relative_e ? e : m_e_abs, 5)
+             << " F" << zfmt(speed * 60.0, 0) << "\n";
+        m_x = x; m_y = y;
+        m_len += d;
+    }
+
+    std::string str() const { return m_ss.str(); }
+    double      len() const { return m_len; }
+    double      e()   const { return m_e_abs; }
+    void set_pos(double x, double y, double z) { m_x = x; m_y = y; m_z = z; }
+
+private:
+    const ZOffsetPatternParams &m_p;
+    std::ostringstream m_ss;
+    double m_fil_area = 1.0;
+    double m_x = 0.0, m_y = 0.0, m_z = 0.0;
+    double m_len = 0.0, m_e_abs = 0.0;
+};
+
+ZOffsetPatternResult generate_z_offset_pattern(const ZOffsetPatternParams &p)
+{
+    ZOffsetPatternResult r;
+
+    if (p.step <= 0.0)               { r.error = "step <= 0"; return r; }
+    if (p.end < p.start + p.step)    { r.error = "end < start + step"; return r; }
+
+    // Anzahl Felder wie Orcas get_num_patterns()
+    const int n = int(std::ceil((p.end - p.start) / p.step + 1.0));
+    r.patches = n;
+
+    std::vector<double> nominal(n), emit(n);
+    for (int i = 0; i < n; ++i) {
+        nominal[i] = p.start + i * p.step;
+        emit[i]    = nominal[i] + p.z_offset;
+    }
+    r.heights = nominal;
+
+    // Ribs at target height -- they must adhere in as many misalignment cases as possible.
+    const double rib_nom  = p.first_layer;
+    const double rib_emit = rib_nom + p.z_offset;
+
+    double min_emit = rib_emit;
+    for (double v : emit) if (v < min_emit) min_emit = v;
+    r.min_emit = min_emit;
+    if (min_emit < p.min_z) {
+        r.error = "smallest emitted Z " + zfmt(min_emit, 3) + " mm is below the safety limit "
+                + zfmt(p.min_z, 3) + " mm (first layer " + zfmt(p.first_layer, 3)
+                + " + z offset " + zfmt(p.z_offset, 3)
+                + "). The nozzle would be driven into the bed.";
+        return r;
+    }
+
+    // Layout
+    const double cell_w = p.patch + p.gap;
+    const double cell_h = p.patch + p.rib_gap + p.rib_len + p.rib_pitch + p.gap;
+    const double usable_x = p.bed_x - 2 * p.margin;
+    int per_row = int((usable_x + p.gap) / cell_w);
+    if (per_row < 1) per_row = 1;
+    if (per_row > n) per_row = n;
+    const int rows = int(std::ceil(double(n) / double(per_row)));
+
+    const double total_w = per_row * cell_w - p.gap;
+    const double total_h = rows * cell_h - p.gap;
+    if (total_h > p.bed_y - 2 * p.margin || total_w > usable_x) {
+        r.error = "layout does not fit on the bed; reduce patch count or size";
+        return r;
+    }
+
+    const double ox = p.bed_min_x + (p.bed_x - total_w) / 2.0;
+    const double oy = p.bed_min_y + (p.bed_y + total_h) / 2.0;
+
+    // Carrier in the lower-left corner, clearly separated from the pattern. It prints a
+    // a real bottom layer (otherwise Orca discards it), but must not place it into the
+    // test area. Determine the pattern's lower bound and, with clearance, below/
+    // daneben ausweichen.
+    const double lay_bottom = oy - rows * cell_h + p.gap;
+    const double clear = p.handle_size + 6.0;
+    double hx = p.bed_min_x + p.margin + p.handle_size / 2.0;
+    double hy = p.bed_min_y + p.margin + p.handle_size / 2.0;
+    // If the corner would fall under the pattern, move below the pattern's lower bound
+    // instead; above if necessary.
+    if (hy + p.handle_size / 2.0 > lay_bottom - 6.0 &&
+        hx + p.handle_size / 2.0 > ox - 6.0) {
+        hy = lay_bottom - clear;
+        if (hy - p.handle_size / 2.0 < p.bed_min_y + p.margin)
+            hy = oy + clear;
+    }
+    r.handle_x = hx;
+    r.handle_y = hy;
+
+    // Zero mark: the field whose nominal height is closest to the target height,
+    // gets a longer crossbar. This helps you orient by touch
+    // without counting up from field 1.
+    int mark_idx = 0;
+    for (int i = 1; i < n; ++i)
+        if (std::fabs(nominal[i] - p.first_layer) < std::fabs(nominal[mark_idx] - p.first_layer))
+            mark_idx = i;
+
+    ZOffEmitter em(p);
+    em.comment("start Z offset pattern");
+    em.comment(std::to_string(n) + " patches, " + zfmt(nominal.front(), 3) + ".."
+               + zfmt(nominal.back(), 3) + " mm nominal, step " + zfmt(p.step, 3)
+               + ", z offset " + zfmt(p.z_offset, 3));
+
+    for (int i = 0; i < n; ++i) {
+        const int    row = i / per_row, col = i % per_row;
+        const double x0  = ox + col * cell_w;
+        const double y0  = oy - row * cell_h - p.patch;
+        const double hz  = emit[i];
+
+        em.comment("patch " + std::to_string(i + 1) + "/" + std::to_string(n) + ", "
+                   + std::to_string(i + 1) + " ribs, nominal " + zfmt(nominal[i], 3)
+                   + " -> emitted " + zfmt(hz, 3));
+
+        // Ribs: countable by finger, always at target height
+        for (int k = 0; k <= i; ++k) {
+            const double xx = x0 + p.rib_pitch / 2.0 + k * p.rib_pitch;
+            const double yt = y0 - p.rib_gap;
+            if (k == 0) { em.lift_travel(xx, yt, rib_emit); em.unretract(); }
+            else        { em.hop_if_needed(xx, yt, rib_emit, 2.0 * p.rib_pitch); }
+            em.line_to(xx, yt - p.rib_len, rib_nom, p.speed_first);
+        }
+        em.retract();
+
+        // zero mark at the target field
+        if (i == mark_idx) {
+            const double yb = y0 - p.rib_gap - p.rib_len - p.rib_pitch;
+            em.lift_travel(x0, yb, rib_emit);
+            em.unretract();
+            em.line_to(x0 + p.patch, yb, rib_nom, p.speed_first);
+            em.retract();   // Z then switches to the field
+        }
+
+        // Konturbahnen
+        for (int q = 0; q < p.perimeters; ++q) {
+            const double o = p.line_width / 2.0 + q * p.line_width;
+            const double a = x0 + o, b = y0 + o;
+            const double c = x0 + p.patch - o, d = y0 + p.patch - o;
+            if (c <= a || d <= b) break;
+            if (q == 0) { em.lift_travel(a, b, hz); em.unretract(); }
+            else        { em.hop_if_needed(a, b, hz, 4.0 * p.line_width); }
+            em.line_to(c, b, nominal[i], p.speed_first);
+            em.line_to(c, d, nominal[i], p.speed_first);
+            em.line_to(a, d, nominal[i], p.speed_first);
+            em.line_to(a, b, nominal[i], p.speed_first);
+            if (q == p.perimeters - 1) em.retract();
+        }
+
+        // Fuellung: parallele Bahnen im Zickzack
+        const double inner = p.line_width / 2.0 + p.perimeters * p.line_width;
+        const double ia = x0 + inner, ib = y0 + inner;
+        const double ic = x0 + p.patch - inner, id = y0 + p.patch - inner;
+        if (ic > ia && id > ib) {
+            int nl = int(std::lround((id - ib) / p.line_width)) + 1;
+            if (nl < 1) nl = 1;
+            const double stepy = (nl > 1) ? (id - ib) / (nl - 1) : 0.0;
+            // Continuous serpentine line: the turn segments are extruded along,
+            // as a slicer does with solid infill.
+            for (int k = 0; k < nl; ++k) {
+                const double yy = ib + k * stepy;
+                const double xa = (k % 2 == 0) ? ia : ic;
+                const double xb = (k % 2 == 0) ? ic : ia;
+                if (k == 0) { em.lift_travel(xa, yy, hz); em.unretract(); }
+                else        { em.line_to(xa, yy, nominal[i], p.speed_infill); }
+                em.line_to(xb, yy, nominal[i], p.speed_infill);
+            }
+            em.retract();
+        }
+    }
+
+    // IMPORTANT: reset Z to the nominal first layer. The carrier prints
+    // afterwards at this height; the PA template sets Z only at the layer start.
+    em.travel_z(p.first_layer + p.z_offset, "restore first layer height");
+    em.comment("end Z offset pattern");
+
+    r.ok        = true;
+    r.gcode     = em.str();
+    r.total_len = em.len();
+    r.total_e   = em.e();
+    return r;
+}
+
 CustomGCode::Info CalibPressureAdvancePattern::generate_custom_gcodes(const DynamicPrintConfig &config,
                                                                       bool                      is_bbl_machine,
                                                                       const ModelObject        &object,

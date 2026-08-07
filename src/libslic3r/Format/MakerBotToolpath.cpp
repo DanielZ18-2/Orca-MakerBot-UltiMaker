@@ -1,23 +1,24 @@
 // MakerBot / UltiMaker Fork – Orca Slicer 2.4
-// MakerBotToolpath.cpp  — VOLLSTÄNDIG ÜBERARBEITET 2026-06-14
+// MakerBotToolpath.cpp  — FULLY REWORKED 2026-06-14
 //
 // G-code → Birdwing JSON Toolpath converter.
 // Basiert auf Reverse-Engineering des 1cm_x_1cm_block_Rep+.makerbot
 // aus MakerBot Print 4.10.1 (Resources.zip/app.asar.unpacked/)
 //
-// KRITISCHE KORREKTUREN gegenüber der Vorversion:
+// CRITICAL FIXES compared to the previous version:
 //  1. JSON-Struktur:   Jeder Befehl in {"command":{...}} eingebettet
-//  2. Metadata-Feld:   {"relative":{"a":true,"x":false,"y":false,"z":false}}
+//  2. Metadata field:   {"relative":{"a":true,"x":false,"y":false,"z":false}}
 //  3. Tag-Namen:       "Travel Move","Retract","Restart","Inset","Infill",
 //                      "Trailing Extrusion Move","Leaky Travel Move","Connection"
 //  4. Retract-Moves:   Tag="Retract", a=negative mm (MK13: -0.5, MK12: -1.0)
 //  5. Restart-Moves:   Tag="Restart", a=positive mm (~0.6)
-//  6. Z-Tracking:      cur_z immer aktualisiert (auch vor in_print_area)
-//  7. Kommentare:      "Layer Section N (M)" statt "chunk N (N)"
-//  8. Feedrate:        F/60 (mm/min→mm/s) korrekt aus G-code übernommen
-//  9. Koordinaten:     Vollständige Float-Präzision (keine Integer-Rundung)
+//  6. Z tracking:       cur_z always updated (even before in_print_area)
+//  7. Comments:         "Layer Section N (M)" instead of "chunk N (N)"
+//  8. Feedrate:        F/60 (mm/min->mm/s) taken correctly from the G-code
+//  9. Koordinaten:     full float precision (no integer rounding)
 
 #include "MakerBotToolpath.hpp"
+#include "libslic3r/LocalesUtils.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -35,29 +36,29 @@
 
 namespace Slic3r {
 
-// ── Locale-unabhängiges Double-Parsing ──────────────────────────────────────
-// Gleicher Fehler / gleicher Fix wie in MakerBotExport.cpp::parse_double_safe:
-// std::stod richtet sich nach dem globalen C-Locale (setlocale), das
-// wxWidgets beim Start typischerweise auf das System-Locale setzt. Unter
-// einem Komma-Dezimal-Locale (z.B. de_DE) werden Punkt-Werte wie "123.45"
-// aus dem G-code silent fehlinterpretiert. Diese Funktion parst IMMER nach
-// der "C"-Konvention (Punkt als Dezimaltrennzeichen), unabhängig vom
-// Prozess-Locale – betrifft hier JEDE X/Y/Z/E-Koordinate und jeden
-// Linienbreiten-Wert im realen Toolpath, der an den Drucker geschickt wird.
+// ── Locale-independent double parsing ──────────────────────────────────────
+// Same bug / same fix as in MakerBotExport.cpp::parse_double_safe:
+// std::stod follows the global C locale (setlocale), which
+// wxWidgets typically sets the system locale at startup. Under
+// a comma-decimal locale (e.g. de_DE), dot values like "123.45"
+// silently misinterpreted from the G-code. This function ALWAYS parses per
+// the "C" convention (dot as decimal separator), independent of the
+// process locale - this affects EVERY X/Y/Z/E coordinate and every
+// line-width value in the real toolpath sent to the printer.
 static bool parse_double_locale_safe(const std::string& s, double& out)
 {
-    std::istringstream iss(s);
-    iss.imbue(std::locale::classic());
-    double v = 0.0;
-    iss >> v;
-    if (iss.fail() || !std::isfinite(v)) return false;
+    // Locale-unabhaengig via Upstream-Helfer (fast_float, immer '.'). Der Helfer
+    // leaves out uninitialized on failure and returns pos==0 -> check pos.
+    size_t pos = 0;
+    const double v = string_to_double_decimal_point(s, &pos);
+    if (pos == 0 || !std::isfinite(v)) return false;
     out = v;
     return true;
 }
 
-// Defense-in-depth, identisch zu MakerBotExport.cpp (siehe dort für Details):
-// erzwingt LC_NUMERIC="C" für die Dauer des Scopes, stellt danach den
-// vorherigen Zustand wieder her, beeinflusst also nicht die restliche GUI.
+// Defense-in-depth, identical to MakerBotExport.cpp (see there for details):
+// forces LC_NUMERIC="C" for the duration of the scope, then restores the
+// previous state, so it does not affect the rest of the GUI.
 class ScopedCNumericLocale
 {
 public:
@@ -76,12 +77,12 @@ private:
 
 // ── Tag-Mapping: Orca ;TYPE: → Birdwing JSON-Tag ────────────────────────────
 // Referenz: 1cm_x_1cm_block_Rep+.makerbot aus MakerBot Print 4.10.1
-// Gültige Tags: "Trailing Extrusion Move", "Infill", "Inset",
+// Valid tags: "Trailing Extrusion Move", "Infill", "Inset",
 //               "Leaky Travel Move", "Travel Move", "Connection",
 //               "Retract", "Restart", "Support", "Outline"
 static std::string orca_type_to_birdwing_tag(const std::string& orca_type)
 {
-    // "Outline" = Außenwand (MakerBot Desktop 3.x / Birdwing)
+    // "Outline" = outer wall (MakerBot Desktop 3.x / Birdwing)
     // "Inset"   = Innenwand
     if (orca_type == "Outer wall")             return "Outline";
     if (orca_type == "Inner wall")             return "Inset";
@@ -111,7 +112,7 @@ static bool parse_gcode_param(const std::string& token, char axis, double& out)
 }
 
 // ── Befehl als {"command":{...}} emittieren ───────────────────────────────────
-// KRITISCH: MakerBot Print erwartet IMMER den äußeren "command"-Wrapper!
+// CRITICAL: MakerBot Print ALWAYS expects the outer "command" wrapper!
 static nlohmann::json make_command(
     const std::string& function_name,
     const nlohmann::json& parameters,
@@ -158,7 +159,7 @@ static void emit_layer_comments(
     double width)
 {
     auto fmt = [](double v) -> std::string {
-        // MakerBot nutzt kein Trailing-Zero-Format – direkte String-Konvertierung
+        // MakerBot uses no trailing-zero format - direct string conversion
         std::ostringstream o;
         o << v;
         return o.str();
@@ -168,7 +169,7 @@ static void emit_layer_comments(
         "Layer Section " + std::to_string(layer_idx) + " (" +
         std::to_string(layer_idx + 1) + ")"));
     commands.push_back(make_comment("Material 0"));
-    // Eingerückte Felder mit konsistenter Breite wie im Original
+    // Indented fields with consistent width as in the original
     commands.push_back(make_comment("Lower Position  " + fmt(z_lower)));
     commands.push_back(make_comment("Upper Position  " + fmt(z_upper)));
     commands.push_back(make_comment("Thickness       " + fmt(thickness)));
@@ -184,23 +185,23 @@ std::string gcode_to_birdwing_jsontoolpath(
     double                    layer_height,
     std::string&              error)
 {
-    const ScopedCNumericLocale locale_guard; // siehe Kommentar an der Klassendefinition
+    const ScopedCNumericLocale locale_guard; // see the comment at the class definition
     std::ifstream f(gcode_path);
     if (!f.is_open()) {
         error = "Cannot open: " + gcode_path;
         return "";
     }
 
-    // Koordinaten-Offset: Orca-Ursprung (links-vorne-unten) →
+    // Coordinate offset: Orca origin (left-front-bottom) ->
     // MakerBot-Ursprung (Mitte des Druckbetts)
     const double x_offset = bv.x / 2.0;   // Z18: 150.0
     const double y_offset = bv.y / 2.0;   // Z18: 152.5
 
     nlohmann::json commands = nlohmann::json::array();
 
-    // ── Parser-Zustand ──────────────────────────────────────────────────────
-    // Orca nutzt IMMER relative E (use_relative_e_distances=1 für gcfMakerBotBirdwing)
-    // MakerBot G-code sendet kein M82/M83 – absolute_ext = false ist fest.
+    // ── Parser state ──────────────────────────────────────────────────────
+    // Orca ALWAYS uses relative E (use_relative_e_distances=1 for gcfMakerBotBirdwing)
+    // MakerBot G-code sends no M82/M83 - absolute_ext = false is fixed.
     const bool absolute_ext = false;
     bool       absolute_pos = true;
 
@@ -214,9 +215,9 @@ std::string gcode_to_birdwing_jsontoolpath(
     std::string current_tag = "Outline";
     double      layer_w     = bv.layer_width;
 
-    // Luefter- und Temperaturzustand: nur bei Aenderung emittieren, sonst
-    // blaeht sich der Toolpath unnoetig auf.
-    double last_fan_value   = -1.0;   // 0.0-1.0, -1 = noch nicht gesetzt
+    // Fan and temperature state: emit only on change, otherwise
+    // the toolpath bloats unnecessarily.
+    double last_fan_value   = -1.0;   // 0.0-1.0, -1 = not set yet
     bool   fan_is_on        = false;
     double last_tool_temp   = -1.0;
 
@@ -232,7 +233,7 @@ std::string gcode_to_birdwing_jsontoolpath(
         const std::string comment = (semi != std::string::npos)
                                     ? line.substr(semi + 1) : "";
 
-        // ;TYPE:xxx – Klassifikation der folgenden Moves
+        // ;TYPE:xxx - classification of the following moves
         if (!comment.empty() && comment.find("TYPE:") == 0) {
             const std::string type = boost::trim_copy(comment.substr(5));
             const std::string new_tag = orca_type_to_birdwing_tag(type);
@@ -273,12 +274,12 @@ std::string gcode_to_birdwing_jsontoolpath(
         if (cmd == "M83") { /* absolute_ext = false – bei Birdwing Standard  */ continue; }
 
         // ── M106 / M107 – Bauteilluefter ──────────────────────────────────────
-        // Die Firmware (libparser.so) kennt fan_duty und toggle_fan; miracle_grue
-        // nutzt beide und taggt sie mit "Fan Speed Change" / "Enable Fan" /
-        // "Disable Fan". Ohne diese Befehle laeuft der Luefter konstant mit dem
-        // einen Wert aus der meta.json.
+        // The firmware (libparser.so) knows fan_duty and toggle_fan; miracle_grue
+        // uses both and tags them with "Fan Speed Change" / "Enable Fan" /
+        // "Disable Fan". Without these commands the fan runs constantly at the
+        // a value from meta.json.
         if (cmd == "M106" || cmd == "M107") {
-            double duty = (cmd == "M107") ? 0.0 : 1.0;   // M106 ohne S = volle Kraft
+            double duty = (cmd == "M107") ? 0.0 : 1.0;   // M106 without S = full power
             bool   has_s = false;
             if (cmd == "M106") {
                 for (size_t i = 1; i < tokens.size(); ++i) {
@@ -301,7 +302,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                     false));
                 fan_is_on = want_on;
             }
-            // Drehzahl nur setzen, wenn der Luefter laeuft und sich der Wert aendert
+            // Set speed only when the fan runs and the value changes
             if (want_on && std::abs(duty - last_fan_value) > 0.0005) {
                 commands.push_back(make_command("fan_duty",
                     {{"index", 0}, {"value", duty}},
@@ -314,8 +315,8 @@ std::string gcode_to_birdwing_jsontoolpath(
         }
 
         // ── M104 / M109 – Duesentemperatur ────────────────────────────────────
-        // M109 wartet in Marlin auf die Temperatur; die Birdwing-Firmware kennt
-        // kein wait_for_temperature (erst Method/Lava), daher werden beide auf
+        // M109 waits for temperature in Marlin; the Birdwing firmware knows
+        // no wait_for_temperature (only Method/Lava), so both are
         // set_toolhead_temperature abgebildet.
         if (cmd == "M104" || cmd == "M109") {
             double t = -1.0;
@@ -350,8 +351,8 @@ std::string gcode_to_birdwing_jsontoolpath(
                 if (parse_gcode_param(tokens[i], 'Z', v)) cur_z = v;
             }
             if (e_reset) {
-                // Nach G92 E0: Retract-Zustand zurücksetzen (kritisch für
-                // korrekte E-Tracking-Akkumulation nach Purge-Linie)
+                // After G92 E0: reset retract state (critical for
+                // correct E-tracking accumulation after the purge line)
                 retracted = false;
             }
             continue;
@@ -384,26 +385,26 @@ std::string gcode_to_birdwing_jsontoolpath(
                 }
             }
 
-            // Feedrate aktualisieren wenn angegeben
+            // Update feedrate if specified
             if (nf > 0) cur_feedrate = nf;
 
-            // Vorherige Position merken – VOR dem Position-Update, damit
-            // die Distanzberechnung für die a-Wert-Kalkulation unten stimmt.
+            // Remember previous position - BEFORE the position update, so
+            // the distance calculation for the a-value computation below is correct.
             const double prev_x = cur_x;
             const double prev_y = cur_y;
 
-            // Z IMMER aktualisieren (auch vor in_print_area!)
+            // ALWAYS update Z (even before in_print_area!)
             if (has_z) {
                 // Layer-Wechsel: neues Z-Maximum erreicht (monoton steigend).
-                // Z-Hops (hoch dann runter) werden korrekt ignoriert, weil nach dem
-                // Hop das Z wieder auf das vorherige Niveau zurückfällt.
-                // FIX: Keine fragile Toleranz-Prüfung mehr – nur Z > letztes Z-Max.
+                // Z-hops (up then down) are correctly ignored, because after the
+                // hop the Z falls back to the previous level.
+                // FIX: no fragile tolerance check anymore - only Z > last Z-max.
                 if (in_print_area && nz > layer_z_lower + 1e-5) {
                     ++layer_idx;
                     const double thickness = nz - layer_z_lower;
                     const double width = (layer_w > 1e-5) ? layer_w : 0.4; // Fallback
                     emit_layer_comments(commands, layer_idx,
-                        nz,           // upper = neue Z
+                        nz,           // upper = new Z
                         layer_z_lower,// lower = vorheriges Z-Maximum
                         thickness,
                         width);
@@ -412,13 +413,13 @@ std::string gcode_to_birdwing_jsontoolpath(
                 cur_z = nz;
             }
 
-            // Positions- und E-Stand aktualisieren
+            // update position and E state
             cur_x = nx; cur_y = ny; cur_e = ne;
 
-            // Vor dem Druckbereich: keine Moves ausgeben
+            // Before the print area: emit no moves
             if (!in_print_area) continue;
 
-            // Kein XY-Move → reiner Retract / Unretract / Z-Hop → separat behandeln
+            // No XY move -> pure retract / unretract / Z-hop -> handled separately
             const bool has_xy = has_x || has_y;
 
             // E-Delta (in relativem Modus = raw E-Wert direkt)
@@ -431,7 +432,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 return 0.0;
             }() : 0.0;
 
-            // ── Reiner Retract-Move (kein XY, negatives E) ───────────────────
+            // ── Pure retract move (no XY, negative E) ───────────────────
             if (!has_xy && has_e && e_raw < -1e-4) {
                 // KORREKTES FORMAT: Tag="Retract", a=negative mm
                 commands.push_back(make_command("move",
@@ -439,7 +440,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                         {"x", nx - x_offset},
                         {"y", ny - y_offset},
                         {"z", nz},
-                        {"a", e_raw},          // negativ! z.B. -0.5 oder -0.8
+                        {"a", e_raw},          // negative! e.g. -0.5 or -0.8
                         {"feedrate", cur_feedrate}
                     },
                     {"Retract"}));
@@ -447,7 +448,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 continue;
             }
 
-            // ── Reiner Restart-Move (kein XY, positives E nach Retract) ─────
+            // ── Pure restart move (no XY, positive E after retract) ─────
             if (!has_xy && has_e && e_raw > 1e-4 && retracted) {
                 // KORREKTES FORMAT: Tag="Restart", a=positive mm
                 commands.push_back(make_command("move",
@@ -455,7 +456,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                         {"x", nx - x_offset},
                         {"y", ny - y_offset},
                         {"z", nz},
-                        {"a", e_raw},          // positiv! z.B. +0.5 oder +0.6
+                        {"a", e_raw},          // positive! e.g. +0.5 or +0.6
                         {"feedrate", cur_feedrate}
                     },
                     {"Restart"}));
@@ -463,7 +464,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 continue;
             }
 
-            // ── Z-only Move (kein XY, kein E) → Travel Move ─────────────────
+            // ── Z-only move (no XY, no E) -> travel move ─────────────────
             if (!has_xy && !has_e) continue;
             if (!has_xy && has_e && std::fabs(e_raw) < 1e-4) continue;
 
@@ -487,7 +488,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                     tag = "Restart";
                     retracted = false;
                 } else {
-                    // FIX: prev_x/prev_y statt cur_x/cur_y (cur wurde bereits updated!)
+                    // FIX: prev_x/prev_y instead of cur_x/cur_y (cur was already updated!)
                     const double dx   = nx - prev_x;
                     const double dy   = ny - prev_y;
                     const double dist = std::sqrt(dx*dx + dy*dy);
@@ -496,27 +497,27 @@ std::string gcode_to_birdwing_jsontoolpath(
                           : current_tag;
                 }
             } else if (e_raw < -1e-4) {
-                // Negative E bei XY-Move → Retract während Bewegung (rare)
+                // Negative E on an XY move -> retract during motion (rare)
                 tag = "Retract";
                 retracted = true;
             } else if (!has_e && has_xy && in_print_area &&
                        current_tag != "Travel Move" &&
                        current_tag != "Leaky Travel Move") {
-                // ── Kein E im G-code, aber Print-TYPE aktiv ──────────────────────
-                // Birdwing-Profil in Orca erzeugt G-code OHNE inline E-Werte
-                // (z.B. 'G1 X120 Y117 F3000' ohne E). Die Extrusion muss aus
-                // der Geometrie berechnet werden:
+                // ── No E in the G-code, but a print TYPE is active ──────────────────────
+                // The Birdwing profile in Orca produces G-code WITHOUT inline E values
+                // (e.g. 'G1 X120 Y117 F3000' without E). The extrusion must be
+                // computed from the geometry:
                 //   a = L × layer_height × line_width / (π × (d_fil/2)²)
-                // Mit d_fil=1.77mm, A_fil=2.4606mm², layer_height und line_width
-                // aus dem Profil.
+                // With d_fil=1.77mm, A_fil=2.4606mm², layer_height and line_width
+                // from the profile.
                 //
-                // WICHTIG: Nur wenn current_tag ein echter Print-Tag ist
-                // (Outline, Inset, Infill, Support, Bridge) – nicht Travel.
+                // IMPORTANT: only when current_tag is a real print tag
+                // (Outline, Inset, Infill, Support, Bridge) - not Travel.
                 tag = current_tag;
                 if (retracted) { tag = "Restart"; retracted = false; }
-                // a wird unten berechnet
+                // a is computed below
             } else {
-                // Kein / minimales E + kein Print-TAG → Travel
+                // No / minimal E + no print TAG -> Travel
                 if (std::fabs(e_raw) < 1e-6) {
                     tag = "Travel Move";
                 } else {
@@ -532,8 +533,8 @@ std::string gcode_to_birdwing_jsontoolpath(
             } else if (!tag.empty() &&
                        tag != "Travel Move" &&
                        tag != "Leaky Travel Move") {
-                // Kein E im G-code → aus Geometrie berechnen
-                // Formel: a = dist × (layer_h × line_w) / A_filament
+                // No E in the G-code -> compute from geometry
+                // Formula: a = dist × (layer_h × line_w) / A_filament
                 // A_filament = π × (1.77/2)² = 2.4606 mm²
                 const double dx   = nx - prev_x;
                 const double dy   = ny - prev_y;
@@ -547,8 +548,8 @@ std::string gcode_to_birdwing_jsontoolpath(
             }
 
             // ── Move emittieren ───────────────────────────────────────────────
-            // Retract hat negatives a_val (e_raw) – darf NICHT geclipt werden!
-            // Für alle anderen: a soll >= 0 sein.
+            // Retract has a negative a_val (e_raw) - must NOT be clipped!
+            // For everything else: a should be >= 0.
             const double a_emit = (tag == "Retract") ? a_val : std::max(0.0, a_val);
             commands.push_back(make_command("move",
                 {
@@ -573,7 +574,7 @@ std::string gcode_to_birdwing_jsontoolpath(
 }
 
 
-// ── make_birdwing_meta_json: unverändert (funktioniert korrekt) ──────────────
+// ── make_birdwing_meta_json: unchanged (works correctly) ──────────────
 static std::string make_birdwing_meta_json_full(
     const std::string& bot_type,
     double             layer_height,
@@ -596,8 +597,8 @@ static std::string make_birdwing_meta_json_full(
     double             retract_rate = 30.0,
     double             restart_rate = 18.0)
 {
-    // Extruder-Hardware-ID (bwcoreutils/tool_mappings.hh aus z18_6.json)
-    // Bestätigt durch z18_6.json: mk12=7, mk13=8
+    // Extruder hardware ID (bwcoreutils/tool_mappings.hh from z18_6.json)
+    // Confirmed by z18_6.json: mk12=7, mk13=8
     int extruder_id = 7; // mk12 default
     if      (extruder_type == "mk13")              extruder_id = 8;
     else if (extruder_type == "mk13_impla")        extruder_id = 14;
@@ -617,8 +618,8 @@ static std::string make_birdwing_meta_json_full(
     // commanded_duration ≈ 75% von total (Overhead durch Beschleunigung etc.)
     const double commanded_duration = duration_s * 0.75;
 
-    // ── Extrusions-Profil (aus z18_6.json und legacy profile) ─────────────────
-    // Werte direkt aus MakerBot-Originalquellen:
+    // ── Extrusion profile (from z18_6.json and legacy profile) ─────────────────
+    // Values taken directly from the original MakerBot sources:
     // retract_distance: mk12=1.0mm, mk13=0.5mm (aus z18_6.json)
     // retract_rate:     50 mm/s
     // restart_rate:     30 mm/s
@@ -739,8 +740,8 @@ static std::string make_birdwing_meta_json_full(
         {"extruderProfiles", {extrusion_profile}}
     };
 
-    // ── machine_config Extruder-Profil ────────────────────────────────────────
-    // Exakt übernommen aus z18_6.json für mk13 (das übliche Modell)
+    // ── machine_config extruder profile ────────────────────────────────────────
+    // Taken exactly from z18_6.json for mk13 (the usual model)
     nlohmann::json ext_hw_profile = {
         {"nozzle_diameter", nozzle_diameter > 0 ? nozzle_diameter : 0.4},
         {"max_speed_mm_per_second", {{"a", 5.3}}},  // aus z18_6.json!
@@ -755,7 +756,7 @@ static std::string make_birdwing_meta_json_full(
             {"temperature",            ext_temp_int},
             // slip_compensation_table ENTFERNT:
             // Orca's Kalibrierung (flow_ratio, Max Volumetric Speed) ersetzt sie.
-            // Doppelkompensation durch Firmware + Slicer → Überextrusion vermeiden!
+            // Double compensation by firmware + slicer -> avoid over-extrusion!
             {"acceleration", {
                 {"impulse_speed_limit_mm_per_s", {{"a", 3.0}}},
                 {"max_speed_change_mm_per_s",    {{"a", 0.5}}},
@@ -765,15 +766,15 @@ static std::string make_birdwing_meta_json_full(
         }}}}
     };
 
-    // ── Vollständiges meta.json ───────────────────────────────────────────────
-    // Pflichtfelder bestätigt durch Firmware-Analyse Z18 v2.6.3
+    // ── Complete meta.json ───────────────────────────────────────────────
+    // Mandatory fields confirmed by firmware analysis Z18 v2.6.3
     nlohmann::json meta = {
         {"version",       "1.1.0"},
         {"bot_type",      bot_type},
         {"toolpath_type", "jsontoolpath"},
         {"grue_version",  "5.4.0"},
 
-        // Extruder-Identifikation (Firmware validiert!)
+        // Extruder identification (validated by firmware!)
         {"tool_type",           extruder_type},
         {"tool_types",          {extruder_type}},
         {"_attached_extruders", {extruder_type}},
@@ -804,7 +805,7 @@ static std::string make_birdwing_meta_json_full(
         {"duration_s",           duration_s},
         {"commanded_duration_s", commanded_duration},
 
-        // Druckqualität
+        // Print quality
         {"preferences", {
             {"default", {
                 {"print_mode", "balanced"},
@@ -822,7 +823,7 @@ static std::string make_birdwing_meta_json_full(
             {"gaggles",    {{"default", mg}}}
         }},
 
-        // machine_config (Extruder-IDs werden von Firmware validiert!)
+        // machine_config (extruder IDs are validated by firmware!)
         {"machine_config", {
             {"bot_type",  bot_type},
             {"version",   "1.1.0"},
@@ -833,7 +834,7 @@ static std::string make_birdwing_meta_json_full(
             // start_position aus z18_6.json
             {"start_position", {{"x", 145.5}, {"y", 130.0}, {"z", layer_height}}},
             {"max_speed_mm_per_second", {{"x", 175}, {"y", 175}, {"z", 3.0}}},
-            // steps_per_mm aus z18_6.json (exakte Werte!)
+            // steps_per_mm from z18_6.json (exact values!)
             {"steps_per_mm", {
                 {"x",  88.573186},
                 {"y",  88.573186},
@@ -873,7 +874,7 @@ static std::string make_birdwing_meta_json_full(
                     {"14", "mk13_impla"},
                     {"99", "mk13_experimental"}
                 }},
-                // Profil für den gewählten Extruder
+                // Profile for the selected extruder
                 {extruder_type, ext_hw_profile}
             }}
         }}
@@ -882,10 +883,10 @@ static std::string make_birdwing_meta_json_full(
     return meta.dump(2);
 }
 
-// ── Öffentlicher Wrapper: Exakte alte 18-Parameter-Signatur ───────────────────
-// MakerBotExport.cpp ruft diese Version auf (ohne retract_rate/restart_rate).
+// ── Public wrapper: exact old 18-parameter signature ───────────────────
+// MakerBotExport.cpp calls this version (without retract_rate/restart_rate).
 // Sensible Defaults: retract_rate=30mm/s, restart_rate=18mm/s.
-// Sobald MakerBotExport.cpp aktualisiert wird, kann der Wrapper entfernt werden.
+// Once MakerBotExport.cpp is updated, the wrapper can be removed.
 std::string make_birdwing_meta_json(
     const std::string& bot_type,
     double             layer_height,

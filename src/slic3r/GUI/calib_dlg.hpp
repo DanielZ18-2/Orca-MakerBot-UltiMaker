@@ -121,6 +121,24 @@ protected:
     Plater* m_plater;
 };
 
+class Z_Offset_Test_Dlg : public DPIDialog
+{
+public:
+    Z_Offset_Test_Dlg(wxWindow* parent, wxWindowID id, Plater* plater);
+    ~Z_Offset_Test_Dlg();
+    void on_dpi_changed(const wxRect& suggested_rect) override;
+
+protected:
+
+    virtual void on_start(wxCommandEvent& event);
+    Calib_Params m_params;
+
+    TextInput* m_tiStart;
+    TextInput* m_tiEnd;
+    TextInput* m_tiStep;
+    Plater* m_plater;
+};
+
 class Input_Shaping_Freq_Test_Dlg : public DPIDialog
 {
 public:

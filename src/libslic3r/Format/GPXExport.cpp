@@ -43,9 +43,9 @@ std::string getenv_string(const char* name)
     return value ? std::string(value) : std::string();
 }
 
-// Generischer Options-Zugriff über die gemeinsame ConfigBase-Schnittstelle -
-// funktioniert identisch für PrintConfig (StaticConfig) und DynamicPrintConfig
-// (DynamicConfig), im Gegensatz zu .has()/.opt_string(), die nur auf
+// Generic option access via the shared ConfigBase interface -
+// works identically for PrintConfig (StaticConfig) and DynamicPrintConfig
+// (DynamicConfig), unlike .has()/.opt_string(), which only exist on
 // DynamicConfig existieren.
 std::string config_string_if_present(const PrintConfig& config, const std::string& key)
 {
@@ -65,8 +65,8 @@ std::string printer_model_string(const PrintConfig& config)
     return model;
 }
 
-// Anzahl konfigurierter Extruder (Düsendurchmesser-Array-Länge) - dient zur
-// Single-/Dual-Extruder-Unterscheidung innerhalb derselben Baureihe
+// Number of configured extruders (nozzle-diameter array length) - used to
+// distinguish single-/dual-extruder within the same product line
 // (z.B. Replicator 1 single vs. dual, TOM single vs. dual).
 int extruder_count(const PrintConfig& config)
 {
@@ -98,24 +98,24 @@ std::string GPXExport::find_gpx_binary()
 
 // ── GPX-Maschinen-Zuordnung ──────────────────────────────────────────────────
 //
-// Die hier verwendeten Kürzel sind 1:1 aus dem tatsächlichen GPX-Quellcode
-// übernommen und gegen die offiziellen MakerBot-Desktop-"bot_type"-Werte
-// abgeglichen (Quellen: github.com/markwal/GPX, src/shared/std_machines.h;
-// sowie Library/MakerBot/default_configs/*.json aus der offiziellen
+// The short codes used here are taken 1:1 from the actual GPX source
+// and cross-checked against the official MakerBot Desktop "bot_type" values
+// (sources: github.com/markwal/GPX, src/shared/std_machines.h;
+// as well as Library/MakerBot/default_configs/*.json from the official
 // MakerBot-Print-Installation):
 //
 //   bot_type (MakerBot)      Achsen/Tools (offiziell)        GPX -m
 //   -----------------------  -------------------------------  ------
-//   tomstepstrudersingle     1 Tool (Mk7), X106 Y120 Z106      t7   (t6 ist baugleich)
+//   tomstepstrudersingle     1 Tool (Mk7), X106 Y120 Z106      t7   (t6 is identical)
 //   (TOM, 2 Tools)           2 Tools                            t7d
 //   replicatorsingle         1 Tool (Mk8/A),  X225 Y145 Z150    r1
 //   replicatordual           2 Tools (Mk8/A+B)                  r1d
 //   replicator2              1 Tool (Mk8/A)                     r2
 //   replicator2x             2 Tools (Mk8/A+B), X246 Y152 Z155  r2x
 //
-// Cupcake wurde von MakerBot Desktop/Print nie offiziell geführt (das Gerät
-// ist älter als diese Software) - die c3/c4/cp4/cpp-Kürzel stammen direkt aus
-// GPX selbst (Gen3/Gen4/Pololu-Elektronik-Varianten).
+// Cupcake was never officially listed by MakerBot Desktop/Print (the device
+// predates that software) - the c3/c4/cp4/cpp codes come directly from
+// GPX itself (Gen3/Gen4/Pololu electronics variants).
 std::string GPXExport::gpx_machine_for_config(const PrintConfig& config)
 {
     // Optional future profile key. It is intentionally read defensively so old
@@ -126,18 +126,18 @@ std::string GPXExport::gpx_machine_for_config(const PrintConfig& config)
     const std::string model = boost::algorithm::to_lower_copy(printer_model_string(config));
     const int extruders = extruder_count(config);
 
-    // Replicator 2X (immer 2 Extruder, eigenes Kürzel unabhängig von extruders)
+    // Replicator 2X (always 2 extruders, own code independent of extruders)
     if (contains(model, "2x"))
         return "r2x";
 
-    // Replicator 2 (nicht-X). "hbp"/"heated" -> beheiztes Druckbett-Mod.
+    // Replicator 2 (non-X). "hbp"/"heated" -> heated-bed mod.
     if (contains(model, "replicator 2") || contains(model, "replicator2")) {
         if (contains(model, "hbp") || contains(model, "heated"))
             return "r2h";
         return "r2";
     }
 
-    // Replicator 1 / "Original" (Single oder Dual je nach Extruderzahl)
+    // Replicator 1 / "Original" (single or dual depending on extruder count)
     if (contains(model, "replicator")) {
         if (contains(model, "dual") || extruders >= 2)
             return "r1d";
@@ -150,7 +150,7 @@ std::string GPXExport::gpx_machine_for_config(const PrintConfig& config)
             return "t7d";
         if (contains(model, "mk6"))
             return "t6";
-        return "t7"; // Mk7 - und mechanisch identisch zu Mk6, daher unkritischer Default
+        return "t7"; // Mk7 - and mechanically identical to Mk6, thus an uncritical default
     }
 
     // Cupcake-Varianten (Elektronik/Extruder-Generation)
@@ -161,11 +161,11 @@ std::string GPXExport::gpx_machine_for_config(const PrintConfig& config)
             return "cpp";
         if (contains(model, "gen4") || contains(model, "g4"))
             return "c4";
-        return "c3"; // Gen3 - verbreitetster/ältester Cupcake-Stand
+        return "c3"; // Gen3 - most common/oldest Cupcake revision
     }
 
-    // Kein Modellname erkannt: sicherer Fallback auf die in diesem Projekt
-    // verbreitetste Dual-Legacy-Maschine.
+    // No model name recognized: safe fallback to the dual-legacy machine
+    // most common in this project.
     BOOST_LOG_TRIVIAL(warning) << "GPXExport: could not identify printer_model '" << model
         << "' for GPX machine mapping, falling back to r2x. Set 'gpx_machine_type' explicitly to override.";
     return "r2x";
@@ -230,7 +230,7 @@ std::string GPXExport::get_archive_extension(GCodeFlavor flavor)
 std::string GPXExport::pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {
     if (config.gcode_flavor != gcfMakerBotLegacy)
-        return {}; // nicht unsere Flavor - nichts zu tun
+        return {}; // not our flavor - nothing to do
 
     const fs::path gcode_p(gcode_path);
 

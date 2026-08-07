@@ -146,7 +146,7 @@ bool UltimakerLink::check_auth(std::string &error) const
         return false;
     }
 
-    // Kein Token vorhanden → Pairing anfordern
+    // No token present -> request pairing
     if (m_api_id.empty() || m_api_key.empty()) {
         nlohmann::json req = {
             { "application", "OrcaSlicerFork" },
@@ -157,7 +157,7 @@ bool UltimakerLink::check_auth(std::string &error) const
             return false;
 
         if (resp.contains("id") && resp.contains("key")) {
-            // Signalisiert der GUI, dass der User am Drucker bestätigen muss
+            // Signals the GUI that the user must confirm on the printer
             error = "PAIRING_PENDING:"
                   + resp["id"].get<std::string>() + ":"
                   + resp["key"].get<std::string>();
@@ -207,14 +207,14 @@ bool UltimakerLink::upload(PrintHostUpload upload_data,
                             ErrorFn         err_fn,
                             InfoFn          info_fn) const
 {
-    // ── 1. Auth prüfen ────────────────────────────────────────────────────────
+    // ── 1. Check auth ────────────────────────────────────────────────────────
     std::string err;
     if (!check_auth(err)) {
         err_fn("UltiMaker auth failed: " + err);
         return false;
     }
 
-    // ── 2. Datei als Multipart POST an /api/v1/print_job senden ──────────────
+    // ── 2. Send file as a multipart POST to /api/v1/print_job ──────────────
     const std::string url =
         (boost::format("http://%1%:%2%/api/v1/print_job") % m_host % m_port).str();
 
