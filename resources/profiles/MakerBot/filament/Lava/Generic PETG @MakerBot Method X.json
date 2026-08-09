@@ -40,10 +40,10 @@
         "70"
     ],
     "filament_diameter": [
-        "1.77"
+        "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "10.0"
+        "9.8"
     ],
     "chamber_temperature": [
         "55"
@@ -65,5 +65,8 @@
     ],
     "slow_down_min_speed": [
         "8"
+    ],
+    "filament_retraction_length": [
+        "0.767"
     ]
 }

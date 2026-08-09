@@ -40,10 +40,10 @@
         "70"
     ],
     "filament_diameter": [
-        "1.77"
+        "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "6.0"
+        "7.3"
     ],
     "fan_min_speed": [
         "50"
@@ -59,5 +59,14 @@
     ],
     "slow_down_min_speed": [
         "6"
+    ],
+    "filament_retraction_length": [
+        "0.512"
+    ],
+    "filament_retraction_speed": [
+        "50"
+    ],
+    "filament_deretraction_speed": [
+        "30"
     ]
 }

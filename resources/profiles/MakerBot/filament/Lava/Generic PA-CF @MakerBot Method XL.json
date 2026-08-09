@@ -46,10 +46,10 @@
         "250"
     ],
     "filament_diameter": [
-        "1.77"
+        "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "6.5"
+        "8.7"
     ],
     "fan_min_speed": [
         "50"
@@ -65,5 +65,8 @@
     ],
     "slow_down_min_speed": [
         "8"
+    ],
+    "filament_retraction_length": [
+        "0.767"
     ]
 }
