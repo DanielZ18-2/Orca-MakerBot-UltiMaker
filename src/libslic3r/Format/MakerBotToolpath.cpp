@@ -210,6 +210,7 @@ std::string gcode_to_birdwing_jsontoolpath(
     double layer_z_lower = 0.0;
     int    layer_idx     = -1;
     bool   in_print_area = false;
+    bool   in_custom_block = false;
     bool   retracted     = false;
 
     std::string current_tag = "Outline";
@@ -240,9 +241,11 @@ std::string gcode_to_birdwing_jsontoolpath(
             if (new_tag.empty()) {
                 // "Custom" → start/end G-code → Ausgabe pausieren
                 in_print_area = false;
+                in_custom_block = true;
             } else {
                 current_tag   = new_tag;
                 in_print_area = true;
+                in_custom_block = false;
             }
             continue;
         }
@@ -417,7 +420,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             cur_x = nx; cur_y = ny; cur_e = ne;
 
             // Before the print area: emit no moves
-            if (!in_print_area) continue;
+            if (!in_print_area && !in_custom_block) continue;
 
             // No XY move -> pure retract / unretract / Z-hop -> handled separately
             const bool has_xy = has_x || has_y;
@@ -465,7 +468,15 @@ std::string gcode_to_birdwing_jsontoolpath(
             }
 
             // ── Z-only move (no XY, no E) -> travel move ─────────────────
-            if (!has_xy && !has_e) continue;
+            if (!has_xy && !has_e) {
+                if (in_custom_block) {
+                    commands.push_back(make_command("move",
+                        { {"x", cur_x - x_offset}, {"y", cur_y - y_offset},
+                          {"z", nz}, {"a", 0.0}, {"feedrate", cur_feedrate} },
+                        {"Travel Move"}));
+                }
+                continue;
+            }
             if (!has_xy && has_e && std::fabs(e_raw) < 1e-4) continue;
 
             // ── Koordinaten validieren ────────────────────────────────────────
