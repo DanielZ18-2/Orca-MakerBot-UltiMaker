@@ -932,9 +932,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
 
     wxBoxSizer* device_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_rename = new wxButton(this, wxID_ANY, _L("Rename"));
-    m_btn_files = new wxButton(this, wxID_ANY, _L("Files"));
     device_sizer->Add(m_btn_rename, 1, wxRIGHT, FromDIP(5));
-    device_sizer->Add(m_btn_files, 1, 0);
     control_box->Add(device_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
     (m_col_right ? m_col_right : m_main_sizer)->Add(control_box, 0, wxEXPAND | wxALL, FromDIP(5));
@@ -946,22 +944,6 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     m_btn_start_print->SetForegroundColour(*wxWHITE);
     (m_col_right ? m_col_right : m_main_sizer)->Add(m_btn_start_print, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Firmware: link to the firmware collection (placeholder URL, later GitHub
-    // source). Deliberately NO flashing from within Orca (liability/upstream) - Birdwing/
-    // Lava/UltiMaker update over network or USB stick at the printer. The button
-    // needs no member (never toggled dynamically) -> no .hpp change needed.
-    {
-        wxStaticBoxSizer* fw_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Firmware"));
-        wxButton* btn_available_fw = new wxButton(this, wxID_ANY, _L("Available Firmware"));
-        btn_available_fw->SetToolTip(_L("Opens the firmware collection in your browser. "
-            "Flashing is done via USB stick on the printer, not from OrcaSlicer."));
-        fw_box->Add(btn_available_fw, 0, wxEXPAND | wxALL, FromDIP(5));
-        (m_col_right ? m_col_right : m_main_sizer)->Add(fw_box, 0, wxEXPAND | wxALL, FromDIP(5));
-        btn_available_fw->Bind(wxEVT_BUTTON, [](wxCommandEvent&) {
-            // PLACEHOLDER URL: swap later for the GitHub firmware collection.
-            wxLaunchDefaultBrowser("https://github.com/DanielZ18-2/Unofficial-OrcaSlicer_for_MakerBot_UltiMaker");
-        });
-    }
 
     m_btn_pause->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("pause"); });
     m_btn_resume->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("resume"); });
@@ -977,7 +959,6 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
             }
         }
     });
-    m_btn_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("files"); });
     m_btn_preheat->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("preheat"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
@@ -1206,20 +1187,6 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     } else if (action_id == "rename") {
         method = "change_machine_name";
         params["machine_name"] = m_pending_rename_name;
-    } else if (action_id == "files") {
-        // Response format not confirmed - show the raw JSON response
-        // instead of guessing a format and parsing it wrong.
-        method = "birdwing_list";
-        params["path"] = "/";
-        on_result = [this](const nlohmann::json& resp) {
-            std::string text = resp.contains("result") ? resp.at("result").dump(2) : resp.dump(2);
-            wxTextEntryDialog dlg(this,
-                _L("Raw response (list format not yet confirmed):"),
-                _L("Files"), wxString::FromUTF8(text),
-                wxTextEntryDialogStyle | wxTE_MULTILINE);
-            dlg.SetSize(FromDIP(wxSize(500, 400)));
-            dlg.ShowModal();
-        };
     } else if (action_id == "preheat") {
         // temperature_settings: [extruder0, extruder1, chamber/platform, unused].
         // Temperature comes from the active filament profile (Daniel's wish).

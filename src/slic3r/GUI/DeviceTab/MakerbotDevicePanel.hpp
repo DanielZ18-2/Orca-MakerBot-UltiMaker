@@ -67,7 +67,6 @@ private:
     wxButton* m_btn_resume      = nullptr;
     wxButton* m_btn_cancel      = nullptr;
     wxButton* m_btn_rename      = nullptr;
-    wxButton* m_btn_files       = nullptr;
     std::string m_pending_rename_name; // short-lived scratch buffer for "rename"
     wxButton* m_btn_preheat     = nullptr;
     wxButton* m_btn_unload_fil  = nullptr;
