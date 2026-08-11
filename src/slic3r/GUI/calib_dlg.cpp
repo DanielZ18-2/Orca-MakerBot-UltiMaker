@@ -904,7 +904,7 @@ Z_Offset_Test_Dlg::Z_Offset_Test_Dlg(wxWindow* parent, wxWindowID id, Plater* pl
     settings_sizer->AddSpacer(FromDIP(5));
 
     auto hint = new wxStaticText(this, wxID_ANY,
-        _L("Each patch is printed at a different commanded layer height and carries countable ribs for identification by touch. Pick the best patch, then change the printer's Z offset by (patch height - first layer height)."));
+        _L("Each patch is printed at a different commanded layer height and is labeled with a printed flag showing that height. Pick the patch with the cleanest first layer, then change the printer's Z offset by (patch height - first layer height)."));
     hint->Wrap(FromDIP(420));
     settings_sizer->Add(hint, 0, wxALL, FromDIP(5));
 

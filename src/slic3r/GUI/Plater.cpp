@@ -13706,6 +13706,76 @@ void Plater::calib_max_vol_speed(const Calib_Params& params)
     p->background_process.fff_print()->set_calib_params(new_params);
 }
 
+namespace {
+static void zoff_append_box(indexed_triangle_set &out,
+                            float x, float y, float z, float dx, float dy, float dz)
+{
+    indexed_triangle_set cbe = its_make_cube(dx, dy, dz);
+    Vec3f mn = cbe.vertices.empty() ? Vec3f(0,0,0) : cbe.vertices[0];
+    for (const auto &v : cbe.vertices) mn = mn.cwiseMin(v);
+    const int base = int(out.vertices.size());
+    for (const auto &v : cbe.vertices)
+        out.vertices.emplace_back(v.x() - mn.x() + x, v.y() - mn.y() + y, v.z() - mn.z() + z);
+    for (const auto &t : cbe.indices)
+        out.indices.emplace_back(t[0] + base, t[1] + base, t[2] + base);
+}
+static void zoff_append_glyph(indexed_triangle_set &out, char ch,
+                              float gx, float gy, float gz,
+                              float gw, float gh, float th, float dh)
+{
+    const float xl = gx, xr = gx + gw - th;
+    const float yt = gy + gh - th, ym = gy + gh / 2.f - th / 2.f, yb = gy;
+    auto H = [&](float x, float y){ zoff_append_box(out, x, y, gz, gw, th, dh); };
+    auto V = [&](float x, float y){ zoff_append_box(out, x, y, gz, th, gh / 2.f, dh); };
+    auto A=[&]{H(gx,yt);}; auto G=[&]{H(gx,ym);}; auto D=[&]{H(gx,yb);};
+    auto F=[&]{V(xl, gy + gh / 2.f);}; auto B=[&]{V(xr, gy + gh / 2.f);};
+    auto E=[&]{V(xl, gy);};           auto C=[&]{V(xr, gy);};
+    switch (ch) {
+        case '0': A();B();C();D();E();F(); break;
+        case '1': B();C(); break;
+        case '2': A();B();G();E();D(); break;
+        case '3': A();B();G();C();D(); break;
+        case '4': F();G();B();C(); break;
+        case '5': A();F();G();C();D(); break;
+        case '6': A();F();G();E();C();D(); break;
+        case '7': A();B();C(); break;
+        case '8': A();B();C();D();E();F();G(); break;
+        case '9': A();B();C();D();F();G(); break;
+        default: break;
+    }
+}
+static TriangleMesh zoff_make_value_flag(double value, const BoundingBoxf3 &tile_bb, double tile)
+{
+    indexed_triangle_set its;
+    const float gh = float(tile * 0.25);
+    const float gw = gh * 0.60f;
+    const float th = std::max(0.6f, gw * 0.22f);
+    const float gap = gw * 0.40f;
+    const float dot = th * 1.4f;
+    const float pad = gh * 0.40f;
+    const float base_h = 0.4f, dh = 0.6f;
+    const std::string s = wxString::Format("%.2f", value).ToStdString();
+    float tw = 0.f;
+    for (char c : s) tw += (c == '.') ? (dot + gap) : (gw + gap);
+    if (!s.empty()) tw -= gap;
+    const float flag_w = tw + 2.f * pad;
+    const float flag_d = gh + 2.f * pad;
+    const float cx    = float((tile_bb.min.x() + tile_bb.max.x()) / 2.0);
+    const float front = float(tile_bb.min.y());
+    const float overlap = std::max(1.0f, float(tile * 0.10));
+    const float fx0 = cx - flag_w / 2.f;
+    const float fy0 = front - flag_d + overlap;
+    zoff_append_box(its, fx0, fy0, 0.f, flag_w, flag_d, base_h);
+    float gx = cx - tw / 2.f;
+    const float gy = fy0 + pad;
+    for (char c : s) {
+        if (c == '.') { zoff_append_box(its, gx, gy, base_h, dot, dot, dh); gx += dot + gap; }
+        else          { zoff_append_glyph(its, c, gx, gy, base_h, gw, gh, th, dh); gx += gw + gap; }
+    }
+    return TriangleMesh(its);
+}
+} // namespace
+
 void Plater::calib_z_offset(const Calib_Params& params)
 {
     if (params.mode != CalibMode::Calib_Z_offset)
@@ -13766,7 +13836,10 @@ void Plater::calib_z_offset(const Calib_Params& params)
     for (int k = 0; k < n; ++k) {
         ModelObject *obj = model().add_object();
         obj->name = std::string("z_offset_tile_") + std::to_string(k + 1);
-        obj->add_volume(make_cube(tile, tile, tile_h));
+        TriangleMesh tilem_zoff = make_cube(tile, tile, tile_h);
+        obj->add_volume(tilem_zoff);
+        const double nominal_k = params.start + double(k) * run.step;
+        obj->add_volume(zoff_make_value_flag(nominal_k, tilem_zoff.bounding_box(), tile));
         obj->add_instance();
         const double x = center_x - row_total / 2.0 + double(k) * pitch;
         obj->instances[0]->set_offset(Vec3d(x, center_y, 0.0));
