@@ -237,11 +237,6 @@ public:
         }
 
         if (!m_capability_checked_in) {
-            nlohmann::json cap_resp; std::string cap_err;
-            if (m_session->call("has_z_calibration_routine", nlohmann::json::object(), cap_resp, cap_err)) {
-                try { m_z_calibration_supported = cap_resp.at("result").get<bool>(); }
-                catch (...) { m_z_calibration_supported = true; }
-            }
             nlohmann::json zr_resp; std::string zr_err;
             if (m_session->call("get_available_z_offset_adjustment",
                                 nlohmann::json::object(), zr_resp, zr_err)) {
@@ -364,7 +359,7 @@ public:
         // reconnect on every tick.
         m_panel->set_kaiten_session(m_session);
         if (m_capability_checked_out) {
-            m_panel->apply_capability_check(m_z_calibration_supported);
+            m_panel->apply_capability_check();
             m_panel->apply_z_offset_range(m_z_offset_max);
             m_panel->apply_z_offset_value(m_z_offset_value);
         }
@@ -400,7 +395,6 @@ private:
     std::shared_ptr<KaitenSession>  m_session;
     bool m_capability_checked_in;
     bool m_capability_checked_out   = false;
-    bool m_z_calibration_supported  = true;
     double m_z_offset_max           = 2.0;
     double m_z_offset_value         = 0.0;
     bool m_ok                       = false;
@@ -671,7 +665,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_btn_pause = m_btn_resume = m_btn_cancel = nullptr;
     m_btn_preheat = nullptr;
     m_btn_rename = nullptr;
-    m_btn_z_calib = m_btn_unload_fil = m_btn_firmware_update = nullptr;
+    m_btn_unload_fil = m_btn_firmware_update = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
 
@@ -943,11 +937,6 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     device_sizer->Add(m_btn_files, 1, 0);
     control_box->Add(device_sizer, 0, wxEXPAND | wxALL, FromDIP(5));
 
-    // Calibration: deliberately isolated, full width, at the very bottom - the
-    // used the least of everything in this card.
-    m_btn_z_calib = new wxButton(this, wxID_ANY, _L("Run Z-Calibration"));
-    control_box->Add(m_btn_z_calib, 0, wxEXPAND | wxALL, FromDIP(5));
-
     (m_col_right ? m_col_right : m_main_sizer)->Add(control_box, 0, wxEXPAND | wxALL, FromDIP(5));
 
     // "Start print" deliberately stays outside the control card -
@@ -989,7 +978,6 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
         }
     });
     m_btn_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("files"); });
-    m_btn_z_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("z_calibration"); });
     m_btn_preheat->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("preheat"); });
     m_btn_unload_fil->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("unload_filament"); });
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
@@ -1232,8 +1220,6 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
             dlg.SetSize(FromDIP(wxSize(500, 400)));
             dlg.ShowModal();
         };
-    } else if (action_id == "z_calibration") {
-        method = "calibrate_z_offset";
     } else if (action_id == "preheat") {
         // temperature_settings: [extruder0, extruder1, chamber/platform, unused].
         // Temperature comes from the active filament profile (Daniel's wish).
@@ -1363,11 +1349,8 @@ void MakerbotDevicePanel::set_kaiten_session(std::shared_ptr<KaitenSession> sess
     m_kaiten_session = std::move(session);
 }
 
-void MakerbotDevicePanel::apply_capability_check(bool supported) {
-    m_z_calibration_supported = supported;
+void MakerbotDevicePanel::apply_capability_check() {
     m_capability_checked = true;
-    if (m_btn_z_calib)
-        m_btn_z_calib->Enable(m_z_calibration_supported);
 }
 
 void MakerbotDevicePanel::apply_z_offset_range(double max_mm) {
