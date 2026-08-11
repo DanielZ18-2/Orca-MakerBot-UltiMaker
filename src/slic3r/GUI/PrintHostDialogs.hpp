@@ -279,6 +279,18 @@ private:
     const char* CONFIG_KEY_IFS       = "flashforge_use_material_station";
 };
 
+class MakerbotPrintHostSendDialog : public PrintHostSendDialog
+{
+public:
+    MakerbotPrintHostSendDialog(const boost::filesystem::path& path,
+                                PrintHostPostUploadActions     post_actions,
+                                const wxArrayString&           groups,
+                                const wxArrayString&           storage_paths,
+                                const wxArrayString&           storage_names);
+
+    virtual void init() override;
+};
+
 wxDECLARE_EVENT(EVT_PRINTHOST_PROGRESS, PrintHostQueueDialog::Event);
 wxDECLARE_EVENT(EVT_PRINTHOST_ERROR, PrintHostQueueDialog::Event);
 wxDECLARE_EVENT(EVT_PRINTHOST_CANCEL, PrintHostQueueDialog::Event);

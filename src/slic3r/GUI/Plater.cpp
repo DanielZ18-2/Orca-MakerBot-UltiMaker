@@ -16943,6 +16943,11 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
                                                                    supports_material_station,
                                                                    std::move(slots),
                                                                    project_filaments);
+        } else if (host_type == htMakerbotLink || host_type == htUltimakerLink) {
+            // MakerBot/UltiMaker: dedicated dialog that force-checks and locks the
+            // "switch to Device tab" checkbox (the print is started from there).
+            pDlg = std::make_unique<MakerbotPrintHostSendDialog>(default_output_file, upload_job.printhost->get_post_upload_actions(), groups,
+                                                                 storage_paths, storage_names);
         } else {
             pDlg = std::make_unique<PrintHostSendDialog>(default_output_file, upload_job.printhost->get_post_upload_actions(), groups,
                                                          storage_paths, storage_names, config->get_bool("open_device_tab_post_upload"));

@@ -642,6 +642,31 @@ void PrintHostSendDialog::EndModal(int ret)
     MsgDialog::EndModal(ret);
 }
 
+// ---------------------------------------------------------------------------
+// MakerBot / UltiMaker (Birdwing, Lava, S-line): the print is started from the
+// Device tab (camera build-plate check + explicit user confirmation), never
+// straight from this upload dialog. Switching to the Device tab after upload is
+// therefore mandatory, not a preference -> force the checkbox on and lock it.
+// ---------------------------------------------------------------------------
+MakerbotPrintHostSendDialog::MakerbotPrintHostSendDialog(const fs::path&            path,
+                                                         PrintHostPostUploadActions post_actions,
+                                                         const wxArrayString&       groups,
+                                                         const wxArrayString&       storage_paths,
+                                                         const wxArrayString&       storage_names)
+    : PrintHostSendDialog(path, post_actions, groups, storage_paths, storage_names, /*switch_to_device_tab=*/true)
+{}
+
+void MakerbotPrintHostSendDialog::init()
+{
+    m_switch_to_device_tab = true;      // opens the checkbox checked
+    PrintHostSendDialog::init();
+    // Lock the "Switch to Device tab after upload" checkbox (wxID_APPLY): the
+    // switch is enforced for MakerBot/UltiMaker, so a togglable box would only
+    // mislead. Value stays true, control cannot be turned off.
+    if (wxWindow* cb = FindWindow(wxID_APPLY))
+        cb->Enable(false);
+}
+
 FlashforgePrintHostSendDialog::FlashforgePrintHostSendDialog(const fs::path&             path,
                                                              PrintHostPostUploadActions  post_actions,
                                                              const wxArrayString&        groups,
