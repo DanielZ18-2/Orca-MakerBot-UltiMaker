@@ -407,11 +407,20 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
 
             threads.emplace_back([ip, &found_here, &results_mutex, &pending, this] {
                 // Non-blocking TCP connect with 400ms timeout
+#ifdef _WIN32
+                SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+                if (sock == INVALID_SOCKET) { --pending; return; }
+#else
                 int sock = socket(AF_INET, SOCK_STREAM, 0);
                 if (sock < 0) { --pending; return; }
+#endif
 
                 // Set non-blocking
+#ifdef _WIN32
+                u_long nb = 1; ioctlsocket(sock, FIONBIO, &nb);
+#else
                 fcntl(sock, F_SETFL, O_NONBLOCK);
+#endif
 
                 struct sockaddr_in addr {};
                 addr.sin_family = AF_INET;
@@ -430,7 +439,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
 
                 if (select(sock + 1, nullptr, &write_fds, &err_fds, &tv) > 0) {
                     int err = 0; socklen_t len = sizeof(err);
-                    getsockopt(sock, SOL_SOCKET, SO_ERROR, &err, &len);
+                    getsockopt(sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &len);
                     if (err == 0 && FD_ISSET(sock, &write_fds) && !m_stop) {
                         // Port 12309 open → likely Birdwing printer
                         DiscoveredPrinter p;
@@ -446,7 +455,11 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
                         found_here.push_back(p);
                     }
                 }
+#ifdef _WIN32
+                closesocket(sock);
+#else
                 close(sock);
+#endif
                 --pending;
             });
         }

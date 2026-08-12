@@ -12,9 +12,14 @@
 #include <zlib.h>
 #include <fstream>
 #include <cstdlib>
-#include <sys/socket.h> // follow-up fix: SO_RCVTIMEO for KaitenSession reads (ineffective, see below)
-#include <sys/time.h>
-#include <poll.h> // corrective fix: real timeout via raw poll() before each read_some()
+#ifdef _WIN32
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#else
+#  include <sys/socket.h> // follow-up fix: SO_RCVTIMEO for KaitenSession reads (ineffective, see below)
+#  include <sys/time.h>
+#  include <poll.h> // corrective fix: real timeout via raw poll() before each read_some()
+#endif
 #include "Http.hpp"
 
 #include <boost/asio.hpp>
@@ -145,6 +150,17 @@ private:
 // therefore reliably provides a timeout. Return: true = data available,
 // false = timeout/error (the caller then checks its own, larger
 // timeout and retries if needed).
+#ifdef _WIN32
+static bool kaiten_wait_readable(SOCKET fd, int timeout_ms)
+{
+    WSAPOLLFD pfd{};
+    pfd.fd = fd;
+    pfd.events = POLLRDNORM;
+    int rc = ::WSAPoll(&pfd, 1, timeout_ms);
+    if (rc <= 0) return false; // timeout (0) or error (<0)
+    return (pfd.revents & POLLRDNORM) != 0;
+}
+#else
 static bool kaiten_wait_readable(int fd, int timeout_ms)
 {
     pollfd pfd{};
@@ -154,6 +170,7 @@ static bool kaiten_wait_readable(int fd, int timeout_ms)
     if (rc <= 0) return false; // timeout (0) or error (<0)
     return (pfd.revents & POLLIN) != 0;
 }
+#endif
 
 struct KaitenSession::Impl
 {
