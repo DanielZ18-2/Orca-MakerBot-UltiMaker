@@ -83,7 +83,7 @@ jobs:
       matrix:
         include:
           - arch: x64
-            os: windows-latest
+            os: windows-2022
           - arch: arm64
             os: windows-11-arm
     # Don't run scheduled builds on forks:
