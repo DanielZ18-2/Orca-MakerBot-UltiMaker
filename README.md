@@ -26,7 +26,7 @@ Download the build for your operating system from the **[Releases](../../release
 ## What this fork adds
 
 - **Output formats:** `.makerbot` (Birdwing), `.x3g` (legacy / Sailfish), `.ufp` (UltiMaker)
-- **Network printing + a Device tab:** live telemetry, webcam, print controls (pause / resume / cancel), live Z-offset adjustment, and a start-print flow with an on-camera build-plate confirmation
+- **Network printing + a Device tab:** live telemetry, webcam, print controls (pause / resume / cancel), global Z-offset adjustment, and a start-print flow with an on-camera build-plate confirmation
 - **Vendor profiles** for the MakerBot & UltiMaker range (machine / process / filament)
 - **Z-offset calibration** with printed value flags on the test model
 - **User interface translated into 21 languages**
