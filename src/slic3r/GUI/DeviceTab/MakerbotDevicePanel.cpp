@@ -779,8 +779,8 @@ void MakerbotDevicePanel::build_z_offset_section() {
 
     // Warning (MakerBot convention): a too-positive Z-offset can damage bed/extruder.
     wxStaticText* z_offset_warn = new wxStaticText(this, wxID_ANY,
-        _L("Caution: a too-positive Z-offset can damage the build plate and/or the Smart Extruder.\n"
-           "The Z-offset can be adjusted live during a print; incorrect values may cause hardware damage."));
+        _L("Caution: the Z-offset can only be adjusted while the printer is powered on and connected, and not during a print.\n"
+           "Incorrect values (too small a gap between nozzle and build plate) can damage the printer!"));
     z_offset_warn->SetForegroundColour(wxColour(200, 60, 60));
     z_offset_warn->Wrap(FromDIP(340));
     (m_col_right ? m_col_right : m_main_sizer)->Add(z_offset_warn, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(5));
