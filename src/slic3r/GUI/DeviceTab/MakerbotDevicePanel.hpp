@@ -72,9 +72,6 @@ private:
     wxButton* m_btn_unload_fil  = nullptr;
     wxButton* m_btn_start_print = nullptr;
 
-    // --- Firmware flash via avrdude (legacy only: Cupcake...Replicator 2X) ---
-    wxButton* m_btn_firmware_update = nullptr;
-
     // --- Background Tasks & State ---
     // P5c: explicit timer IDs so the wxEVT_TIMER bind routes both timers
     // (telemetry 2s, camera 1s) cleanly to different handlers
@@ -116,7 +113,6 @@ private:
     // --- Event Handlers ---
     void on_zoom_changed(wxCommandEvent& event);
     void on_z_offset_slider_changed(wxCommandEvent& event);
-    void on_firmware_update_clicked(wxCommandEvent& event);
     void on_telemetry_tick(wxTimerEvent& event);
     void on_camera_tick(wxTimerEvent& event); // P5c: own camera tick (1s)
 
@@ -148,7 +144,6 @@ private:
     void build_z_offset_section();
     void build_extruder_and_telemetry_section();
     void build_hardware_controls_section();
-    void build_firmware_section();
     void build_legacy_static_info_section();
 
 public:

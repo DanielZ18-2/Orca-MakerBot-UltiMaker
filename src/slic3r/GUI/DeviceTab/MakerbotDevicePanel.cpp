@@ -665,7 +665,7 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_btn_pause = m_btn_resume = m_btn_cancel = nullptr;
     m_btn_preheat = nullptr;
     m_btn_rename = nullptr;
-    m_btn_unload_fil = m_btn_firmware_update = nullptr;
+    m_btn_unload_fil = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
 
@@ -697,9 +697,8 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
         build_hardware_controls_section();       // -> m_col_right
     } else {
         // Legacy (Cupcake...Replicator 2X): no network, no camera,
-        // no RPC - only static info + firmware flash via avrdude.
+        // no RPC - only static info (firmware flashing removed until a firmware repo exists).
         build_legacy_static_info_section();
-        build_firmware_section();
     }
 
     // Refresh UI Layout hierarchy to display the updated nodes
@@ -894,7 +893,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     // Framed "control" card (mockup spec). Order by
     // usage frequency (Daniel, 2026-06-28): print control on top,
     // material below, calibration isolated at the very bottom.
-    wxStaticBoxSizer* control_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Steuerung"));
+    wxStaticBoxSizer* control_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Control"));
 
     // Print control: most common actions. RPC confirmed (process_method
     // "suspend"/"resume", cancel_process) - no capability precheck like
@@ -964,23 +963,7 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     m_btn_start_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { execute_printer_action("start_print"); });
 }
 
-// -----------------------------------------------------------------------------------------
-// 5. FIRMWARE FLASH via avrdude (ONLY legacy: Cupcake...Replicator 2X - this
-//    line uses AVR/Sailfish firmware over USB-serial. Birdwing/Lava/
-//    UltiMaker update their firmware over the network, not via
-//    avrdude - that is a separate feature not yet started
-//    ("WiFi setup via USB", see HANDOVER.md) and deliberately not
-//    nachgebaut.)
-// -----------------------------------------------------------------------------------------
-void MakerbotDevicePanel::build_firmware_section() {
-    wxStaticBoxSizer* fw_sizer = new wxStaticBoxSizer(wxHORIZONTAL, this, _L("Maintenance"));
-    m_btn_firmware_update = new wxButton(this, wxID_ANY, _L("Flash Firmware (USB/Serial)"));
-    fw_sizer->Add(m_btn_firmware_update, 1, wxALL, FromDIP(2));
 
-    m_main_sizer->Add(fw_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
-
-    m_btn_firmware_update->Bind(wxEVT_BUTTON, &MakerbotDevicePanel::on_firmware_update_clicked, this);
-}
 
 // -----------------------------------------------------------------------------------------
 // 6. STATIC INFO SECTION (legacy ONLY)
@@ -1007,8 +990,8 @@ void MakerbotDevicePanel::build_legacy_static_info_section() {
         wxString::Format(_L("Extruders: %d"), extruders));
     auto* lbl_note = new wxStaticText(this, wxID_ANY,
         _L("This printer connects via USB/serial only. Live status, camera and\n"
-           "remote control are not available for this generation - use the\n"
-           "firmware tool below or your printer's own display panel."));
+           "remote control are not available for this generation - use your\n"
+           "printer's own display panel."));
 
     info_sizer->Add(lbl_model, 0, wxALL, FromDIP(2));
     info_sizer->Add(lbl_ext, 0, wxALL, FromDIP(2));
@@ -1230,50 +1213,7 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     m_kaiten_worker->push(job);
 }
 
-// -----------------------------------------------------------------------------------------
-// Firmware Updater (Legacy only, via avrdude)
-// -----------------------------------------------------------------------------------------
-void MakerbotDevicePanel::on_firmware_update_clicked(wxCommandEvent& event) {
-    if (!m_active_config) {
-        wxMessageDialog(this, _L("No active printer configuration found."), _L("Error"), wxOK | wxICON_ERROR).ShowModal();
-        return;
-    }
 
-    std::string fw_base_dir = resources_dir() + "/firmware/makerbot/";
-
-    wxArrayString choices;
-    choices.Add(_L("MakerBot Original Firmware (Latest)"));
-    choices.Add(_L("Sailfish Custom Firmware"));
-
-    wxSingleChoiceDialog dialog(this,
-        _L("Select the firmware version to flash to the connected printer.\nWarning: Do not disconnect the USB cable during this process."),
-        _L("Firmware Selection"), choices);
-
-    if (dialog.ShowModal() == wxID_OK) {
-        std::string selected = dialog.GetStringSelection().ToStdString();
-        std::string hex_path;
-
-        if (selected.find("Original") != std::string::npos) {
-            hex_path = fw_base_dir + "legacy/MightyBoard_RevE_v7.5.hex";
-        } else {
-            hex_path = fw_base_dir + "sailfish/sailfish_v7.7.hex";
-        }
-
-        std::string serial_port = m_active_config->opt_string("serial_port");
-        if (serial_port.empty()) {
-            wxMessageDialog(this, _L("No serial port configured. Please check your connection settings before flashing."), _L("Connection Error"), wxOK | wxICON_ERROR).ShowModal();
-            return;
-        }
-
-        std::string flash_log;
-
-        if (DevFirmware::flash_via_usb(hex_path, serial_port, flash_log)) {
-            wxMessageDialog(this, _L("Firmware successfully flashed to the printer!"), _L("Success"), wxOK | wxICON_INFORMATION).ShowModal();
-        } else {
-            wxMessageDialog(this, wxString::Format(_L("Firmware flash failed. Details:\n\n%s"), flash_log), _L("Flash Error"), wxOK | wxICON_ERROR).ShowModal();
-        }
-    }
-}
 
 // -----------------------------------------------------------------------------------------
 // Telemetry & MJPEG polling logic (only Birdwing/Lava/UltiMaker)
