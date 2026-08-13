@@ -15,7 +15,7 @@ Lade das Build für dein Betriebssystem von der **[Releases](../../releases)**-S
 
 - **Windows:** das `…_x64.exe`- (oder `…_arm64.exe`-)Installationsprogramm oder das portable `.zip`
 - **macOS:** das universelle `.dmg`
-- **Linux:** das `.AppImage` (`chmod +x`, dann ausführen) oder das Flatpak-Bundle
+- **Linux:** das `.AppImage` (`chmod +x`, dann ausführen)
 
 > **Die Binaries sind nicht signiert.** Windows SmartScreen und macOS Gatekeeper warnen beim ersten Start:
 > - **Windows:** *Weitere Informationen* → *Trotzdem ausführen*.

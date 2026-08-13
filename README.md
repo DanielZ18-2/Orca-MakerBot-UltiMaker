@@ -15,7 +15,7 @@ Download the build for your operating system from the **[Releases](../../release
 
 - **Windows:** the `…_x64.exe` (or `…_arm64.exe`) installer, or the portable `.zip`
 - **macOS:** the universal `.dmg`
-- **Linux:** the `.AppImage` (`chmod +x` then run), or the Flatpak bundle
+- **Linux:** the `.AppImage` (`chmod +x` then run)
 
 > **The binaries are not code-signed.** Windows SmartScreen and macOS Gatekeeper will warn you the first time you run it:
 > - **Windows:** click *More info* → *Run anyway*.
