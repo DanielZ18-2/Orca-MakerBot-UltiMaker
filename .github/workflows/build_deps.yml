@@ -131,6 +131,13 @@ jobs:
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}
         run: |
+            # Disable Windows Error Reporting / the postmortem (JIT) debugger so a
+            # crashing build tool fails fast instead of launching devenv and hanging
+            # the headless runner forever (observed hanging the arm64 deps build).
+            reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v Disabled /t REG_DWORD /d 1 /f 2>$null
+            reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v DontShowUI /t REG_DWORD /d 1 /f 2>$null
+            reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" /v Auto /t REG_SZ /d 0 /f 2>$null
+            reg add "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\AeDebug" /v Auto /t REG_SZ /d 0 /f 2>$null
             if (-not "${{ vars.SELF_HOSTED }}") {
               choco install strawberryperl
             }
