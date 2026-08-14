@@ -1,7 +1,7 @@
 {
     "type": "filament",
-    "setting_id": "Generic PETG @MakerBot Sketch",
-    "name": "Generic PETG @MakerBot Sketch",
+    "setting_id": "Generic PETG @MakerBot Replicator Original",
+    "name": "Generic PETG @MakerBot Replicator Original",
     "inherits": "fdm_filament_pet",
     "from": "system",
     "instantiation": "true",
@@ -13,13 +13,23 @@
         "0.03"
     ],
     "compatible_printers": [
-        "MakerBot Sketch 0.4 nozzle"
+        "MakerBot Replicator Original 0.2 nozzle",
+        "MakerBot Replicator Original 0.4 nozzle",
+        "MakerBot Replicator Original 0.6 nozzle",
+        "MakerBot Replicator Original 0.8 nozzle",
+        "MakerBot Replicator Original 1 nozzle"
     ],
     "nozzle_temperature": [
         "240"
     ],
     "nozzle_temperature_initial_layer": [
         "240"
+    ],
+    "filament_diameter": [
+        "1.75"
+    ],
+    "filament_max_volumetric_speed": [
+        "5.9"
     ],
     "cool_plate_temp": [
         "0"
@@ -39,12 +49,6 @@
     "textured_plate_temp_initial_layer": [
         "70"
     ],
-    "filament_diameter": [
-        "1.75"
-    ],
-    "filament_max_volumetric_speed": [
-        "5.0"
-    ],
     "fan_min_speed": [
         "50"
     ],
@@ -58,6 +62,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "8"
+        "12"
     ]
 }

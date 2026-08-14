@@ -1,7 +1,7 @@
 {
     "type": "filament",
-    "setting_id": "Generic PETG @MakerBot Sketch",
-    "name": "Generic PETG @MakerBot Sketch",
+    "setting_id": "Generic PETG @UltiMaker 2",
+    "name": "Generic PETG @UltiMaker 2",
     "inherits": "fdm_filament_pet",
     "from": "system",
     "instantiation": "true",
@@ -13,13 +13,19 @@
         "0.03"
     ],
     "compatible_printers": [
-        "MakerBot Sketch 0.4 nozzle"
+        "UltiMaker 2 0.25 nozzle",
+        "UltiMaker 2 0.4 nozzle",
+        "UltiMaker 2 0.6 nozzle",
+        "UltiMaker 2 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "240"
     ],
     "nozzle_temperature_initial_layer": [
         "240"
+    ],
+    "filament_diameter": [
+        "2.85"
     ],
     "cool_plate_temp": [
         "0"
@@ -39,11 +45,8 @@
     "textured_plate_temp_initial_layer": [
         "70"
     ],
-    "filament_diameter": [
-        "1.75"
-    ],
     "filament_max_volumetric_speed": [
-        "5.0"
+        "6.5"
     ],
     "fan_min_speed": [
         "50"
@@ -58,6 +61,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "8"
+        "9"
     ]
 }

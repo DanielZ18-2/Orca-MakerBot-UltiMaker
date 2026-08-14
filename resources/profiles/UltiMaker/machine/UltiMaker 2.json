@@ -1,10 +1,10 @@
 {
     "type": "machine_model",
     "name": "UltiMaker 2",
-    "model_id": "UltiMaker-2",
+    "model_id": "UltiMaker 2",
     "nozzle_diameter": "0.25;0.4;0.6;0.8",
     "machine_tech": "FFF",
-    "family": "UltiMaker",
+    "family": "Classic",
     "bed_model": "ultimaker_2_buildplate_model.stl",
     "bed_texture": "ultimaker_2_buildplate_texture.png",
     "hotend_model": "ultimaker_hotend.stl",

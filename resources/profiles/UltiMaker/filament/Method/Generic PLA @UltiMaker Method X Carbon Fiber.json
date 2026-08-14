@@ -62,5 +62,8 @@
     ],
     "slow_down_min_speed": [
         "8"
+    ],
+    "filament_diameter": [
+        "1.75"
     ]
 }

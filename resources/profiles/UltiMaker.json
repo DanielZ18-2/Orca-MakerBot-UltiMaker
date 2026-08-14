@@ -1964,6 +1964,26 @@
         {
             "name": "fdm_filament_pla_silk",
             "sub_path": "filament/fdm_filament_pla_silk.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic Silk PLA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic ABS @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2.json"
         }
     ],
     "machine_list": [

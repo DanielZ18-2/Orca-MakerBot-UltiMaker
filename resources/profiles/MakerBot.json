@@ -1696,6 +1696,22 @@
         {
             "name": "Generic ABS @MakerBot Method",
             "sub_path": "filament/Lava/Generic ABS @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic Acrylic.json"
         }
     ],
     "machine_list": [
