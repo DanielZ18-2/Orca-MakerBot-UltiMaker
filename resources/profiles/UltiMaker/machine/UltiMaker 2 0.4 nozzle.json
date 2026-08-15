@@ -6,6 +6,7 @@
     "setting_id": "Jl8sUeuACVyrnrst",
     "instantiation": "true",
     "printer_model": "UltiMaker 2",
+    "printer_variant": "0.4",
     "default_print_profile": "0.18mm Standard @UltiMaker 2",
     "nozzle_diameter": [
         "0.4"

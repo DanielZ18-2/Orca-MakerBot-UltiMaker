@@ -78,7 +78,7 @@
     "machine_start_gcode": "; makerbot_tool_type=[smart_extruder_type]\n; generated_by=Orca Slicer\n; --- MAKERBOT BIRDWING START (MakerBot Replicator+) ---\nM104 S[nozzle_temperature_initial_layer] T0\nM109 S[nozzle_temperature_initial_layer] T0\nG90 ; absolute coordinates\nG1 X245.5 Y7.5 Z5 F9000 ; move to prime start (front)\nG1 Z0.24 F600 ; lower to prime-line height\nM83 ; relative extrusion for prime line\nG1 E5 F200 ; set anchor\nG1 X49.5 Y7.5 E18 F1000 ; prime line across the front\nG1 E-0.5 F1500 ; short retract\nG1 Z2 F600 ; lift nozzle\nG1 X147.5 Y97.5 F9000 ; move to center\nG1 Z[first_layer_height] F600 ; to first layer height\nG1 E0.5 F1200 ; Unretract",
     "machine_end_gcode": "; ===== MB BIRDWING END (MakerBot Replicator+) =====\nM400 ; wait for all moves to finish\nG92 E0 ; reset E\nG1 E-5.0 F2400 ; retract (snaps the filament string)\nG1 Z{max(112, max_layer_z)} F180 ; lower bed; capped so firmware +50mm stays under the Z axis limit\nM104 S0 T0 ; heater off\nM141 S0 ; chamber off\nM107 ; fan off\nM73 P100 ; progress 100%\n; firmware presents the plate itself (XY-park + relative +50mm Z), then shutdown\n; ===== END =====",
     "thumbnails": "320x200/PNG,110x80/PNG,55x40/PNG,640x640/PNG,320x320/PNG,120x120/PNG",
-    "smart_extruder_count": 1,
+    "smart_extruder_count": "1",
     "smart_extruder_type": [
         "mk13",
         "mk13_impla",

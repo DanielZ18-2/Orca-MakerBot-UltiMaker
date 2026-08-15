@@ -2,7 +2,7 @@
     "type": "machine_model",
     "name": "UltiMaker S8",
     "model_id": "UltiMaker S8",
-    "nozzle_diameter": "0.25;0.4;0.8",
+    "nozzle_diameter": "0.25;0.4;0.6;0.8",
     "machine_tech": "FFF",
     "family": "SSERIES",
     "vendor": "UltiMaker",
