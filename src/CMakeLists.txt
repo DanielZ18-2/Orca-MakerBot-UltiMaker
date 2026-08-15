@@ -11,6 +11,10 @@ add_subdirectory(dev-utils)
 
 find_package(libnoise REQUIRED)
 
+# GPX (markwal/GPX 2.6.8), eingebettet: G-code -> .x3g fuer die
+# MakerBot-Legacy-Linie. Muss vor libslic3r stehen, das dagegen linkt.
+add_subdirectory(gpx)
+
 add_subdirectory(libslic3r)
 
 if (SLIC3R_GUI)

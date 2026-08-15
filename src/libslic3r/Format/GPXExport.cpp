@@ -2,9 +2,11 @@
 
 #include "libslic3r/PrintConfig.hpp"
 
+// Embedded GPX (markwal/GPX 2.6.8), see src/gpx.
+#include "GPXConvert.hpp"
+
 #include <algorithm>
 #include <cstdlib>
-#include <sstream>
 #include <string>
 
 #include <boost/algorithm/string.hpp>
@@ -16,27 +18,6 @@ namespace fs = boost::filesystem;
 namespace Slic3r {
 namespace {
 
-std::string shell_quote(const std::string& s)
-{
-#ifdef _WIN32
-    std::string out = "\"";
-    for (char c : s) {
-        if (c == '"') out += "\\\"";
-        else out += c;
-    }
-    out += "\"";
-    return out;
-#else
-    std::string out = "'";
-    for (char c : s) {
-        if (c == '\'') out += "'\\''";
-        else out += c;
-    }
-    out += "'";
-    return out;
-#endif
-}
-
 std::string getenv_string(const char* name)
 {
     const char* value = std::getenv(name);
@@ -46,7 +27,7 @@ std::string getenv_string(const char* name)
 // Generic option access via the shared ConfigBase interface -
 // works identically for PrintConfig (StaticConfig) and DynamicPrintConfig
 // (DynamicConfig), unlike .has()/.opt_string(), which only exist on
-// DynamicConfig existieren.
+// DynamicConfig.
 std::string config_string_if_present(const PrintConfig& config, const std::string& key)
 {
     if (const auto* opt = config.option(key))
@@ -67,7 +48,7 @@ std::string printer_model_string(const PrintConfig& config)
 
 // Number of configured extruders (nozzle-diameter array length) - used to
 // distinguish single-/dual-extruder within the same product line
-// (z.B. Replicator 1 single vs. dual, TOM single vs. dual).
+// (e.g. Replicator 1 single vs. dual, TOM single vs. dual).
 int extruder_count(const PrintConfig& config)
 {
     if (const auto* opt = config.option("nozzle_diameter"))
@@ -83,25 +64,13 @@ bool contains(const std::string& haystack, const char* needle)
 
 } // namespace
 
-std::string GPXExport::find_gpx_binary()
-{
-    // Developer override, useful for AppImage / local dev builds.
-    if (std::string env = getenv_string("ORCA_GPX_BIN"); !env.empty())
-        return env;
-
-#ifdef _WIN32
-    return "gpx.exe";
-#else
-    return "gpx";
-#endif
-}
-
 // ── GPX-Maschinen-Zuordnung ──────────────────────────────────────────────────
 //
 // The short codes used here are taken 1:1 from the actual GPX source
 // and cross-checked against the official MakerBot Desktop "bot_type" values
-// (sources: github.com/markwal/GPX, src/shared/std_machines.h;
-// as well as Library/MakerBot/default_configs/*.json from the official
+// (sources: github.com/markwal/GPX, src/shared/std_machines.h - now embedded
+// at src/gpx/shared/std_machines.h; as well as
+// Library/MakerBot/default_configs/*.json from the official
 // MakerBot-Print-Installation):
 //
 //   bot_type (MakerBot)      Achsen/Tools (offiziell)        GPX -m
@@ -120,8 +89,12 @@ std::string GPXExport::gpx_machine_for_config(const PrintConfig& config)
 {
     // Optional future profile key. It is intentionally read defensively so old
     // profiles still load if the key does not exist in PrintConfig yet.
-    if (std::string explicit_machine = config_string_if_present(config, "gpx_machine_type"); !explicit_machine.empty())
-        return explicit_machine;
+    if (std::string explicit_machine = config_string_if_present(config, "gpx_machine_type"); !explicit_machine.empty()) {
+        if (GPX::is_known_machine(explicit_machine))
+            return explicit_machine;
+        BOOST_LOG_TRIVIAL(warning) << "GPXExport: profile requests unknown GPX machine '" << explicit_machine
+            << "', falling back to model detection. Known codes:\n" << GPX::known_machines();
+    }
 
     const std::string model = boost::algorithm::to_lower_copy(printer_model_string(config));
     const int extruders = extruder_count(config);
@@ -186,8 +159,7 @@ bool GPXExport::export_to_x3g(
     if (!fs::exists(gcode_filepath))
         return fail("Input G-code file does not exist: " + gcode_filepath);
 
-    const std::string gpx_binary = find_gpx_binary();
-    const std::string machine    = gpx_machine_for_config(config);
+    const std::string machine = gpx_machine_for_config(config);
 
     fs::path out_path(output_filepath);
     if (!out_path.parent_path().empty()) {
@@ -195,12 +167,14 @@ bool GPXExport::export_to_x3g(
         fs::create_directories(out_path.parent_path(), ec);
     }
 
-    std::ostringstream cmd;
-    // NOTE: deliberately NO "-g".
-    //
-    // GPX's -g switches reprapFlavor off, i.e. it reads the input as
-    // MakerBot/ReplicatorG G-code. Orca emits RepRap/Marlin conventions, so
-    // that flag mis-reads three things (gpx.c, markwal/GPX):
+    // Optional developer override: a tuned GPX .ini without exposing it as an
+    // Orca post script. The library does NOT read ~/.gpx.ini on its own - a
+    // stray ini must not silently change what we send to a printer.
+    const std::string ini_path = getenv_string("ORCA_GPX_INI");
+
+    // NOTE on G-code flavour: the library leaves GPX at reprapFlavor = 1, and
+    // the CLI's "-g" (MakerBot/ReplicatorG flavour) is deliberately NOT
+    // reproduced. With -g, GPX mis-reads three things (gpx.c, markwal/GPX):
     //
     //   * M106/M107 (gpx.c:5313/5356): reprap flavor routes them to set_valve()
     //     - the blower output the Replicator drives its PART cooling fan from.
@@ -214,27 +188,28 @@ bool GPXExport::export_to_x3g(
     //     parameter for the wait.
     //
     // GPX defaults to reprapFlavor = 1 (gpx.c:360), which is what Orca output
-    // needs. Leaving the flag off is the fix.
-    cmd << shell_quote(gpx_binary)
-        << " -v -m " << shell_quote(machine);
+    // needs.
+    BOOST_LOG_TRIVIAL(info) << "GPXExport: converting " << gcode_filepath
+        << " -> " << output_filepath << " (GPX " << GPX::version() << ", machine " << machine << ")";
 
-    // Optional developer overrides. These keep GPX native to Orca while allowing
-    // a tuned GPX .ini during development without exposing it as an Orca post script.
-    const std::string ini_env = getenv_string("ORCA_GPX_INI");
-    if (!ini_env.empty())
-        cmd << " -c " << shell_quote(ini_env);
-
-    cmd << " " << shell_quote(gcode_filepath)
-        << " " << shell_quote(output_filepath);
-
-    BOOST_LOG_TRIVIAL(info) << "GPXExport: running " << cmd.str();
-    const int rc = std::system(cmd.str().c_str());
-    if (rc != 0)
-        return fail("GPX returned non-zero exit code (" + std::to_string(rc) +
-                     "). Is gpx installed and on PATH? See ORCA_GPX_BIN to point at a specific binary.");
+    std::string error;
+    GPX::ConvertStats stats;
+    // Empty build name -> derived from the .x3g file name, which is what the
+    // user sees on the printer's LCD.
+    if (!GPX::convert_gcode_to_x3g(gcode_filepath, output_filepath, machine,
+                                   /* build_name */ {}, ini_path, &error, &stats)) {
+        // Do not leave a half-written .x3g behind - the firmware would happily
+        // start printing it and stop mid-object.
+        boost::system::error_code ec;
+        fs::remove(output_filepath, ec);
+        return fail(error);
+    }
 
     if (!fs::exists(output_filepath))
-        return fail("GPX completed but did not create output file: " + output_filepath);
+        return fail("GPX reported success but did not create output file: " + output_filepath);
+
+    BOOST_LOG_TRIVIAL(info) << "GPXExport: " << output_filepath << " written, "
+        << stats.filament_mm << " mm filament, " << stats.duration_s << " s estimated";
 
     return true;
 }

@@ -13,10 +13,11 @@
 // affect .x3g export, and vice versa. The only shared dependency across all
 // three vendor/format modules is Format/GCodeArchiveUtils.hpp.
 //
-// Unlike Birdwing/.makerbot or UltiMaker/.ufp, .x3g conversion is NOT done by
-// Orca itself: it shells out to the external "gpx" tool (markwal/GPX on
-// GitHub), which Orca does not bundle. gpx must be installed and reachable on
-// PATH (or pointed to via the ORCA_GPX_BIN environment variable).
+// The conversion itself is done by GPX (markwal/GPX 2.6.8), which is embedded
+// in this tree under src/gpx and linked statically. Orca used to shell out to
+// a `gpx` binary on PATH; that required a separate install, never worked in
+// the Windows/macOS packages, and reported failures as a bare exit code.
+// See src/gpx/README.orca.md.
 //
 // Output: gcfMakerBotLegacy → .x3g
 // The original .gcode file is removed after successful conversion.
@@ -44,7 +45,6 @@ public:
     // GPX's built-in machine ids (the strings GPX itself accepts via "-m").
     // See the .cpp for the verified alias table and its source.
     static std::string gpx_machine_for_config(const PrintConfig& config);
-    static std::string find_gpx_binary();
 
     // ── Dispatch-friendly wrapper, API-compatible with MakerBotExport:: and
     // UltimakerUFPExport::'s pack_to_archive() ──────────────────────────────
@@ -54,7 +54,8 @@ public:
     // config     : full print config
     // Returns the path of the created .x3g file on success, or an empty
     // string if conversion was not needed (flavor isn't gcfMakerBotLegacy) or
-    // failed (e.g. gpx not installed - check the log for the exact reason).
+    // failed - check the log for the exact reason, GPX's own diagnostics are
+    // forwarded there.
     static std::string pack_to_archive(const std::string& gcode_path,
                                         const PrintConfig& config);
 };

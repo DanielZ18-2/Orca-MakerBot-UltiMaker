@@ -605,6 +605,7 @@ target_link_libraries(libslic3r
         Clipper2
         draco::draco
         glu-libtess
+        gpx
         JPEG::JPEG
         libslic3r_cgal
         mcut
