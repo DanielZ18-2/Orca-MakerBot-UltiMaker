@@ -9,5 +9,5 @@
     "bed_model": "makerbot_replicator_2.stl",
     "bed_texture": "makerbot_replicator_2_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Replicator 2;Generic PETG @MakerBot Replicator 2"
+    "default_materials": "Generic PLA @MakerBot Replicator 2;Generic PETG @MakerBot Replicator 2;Generic ABS @MakerBot Replicator 2"
 }

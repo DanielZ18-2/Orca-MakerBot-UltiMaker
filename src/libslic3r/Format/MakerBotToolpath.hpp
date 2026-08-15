@@ -30,6 +30,13 @@ struct ToolpathStats {
     double extrusion[2] { 0.0, 0.0 };  // mm of filament per extruder axis
     int    tool_changes { 0 };
     bool   dual         { false };     // true once a real switch to T1 occurred
+    // Bounding box of the EXTRUDING moves, i.e. the printed object - in
+    // MakerBot coordinates (bed centre origin). meta.json's bounding_box used
+    // to carry the whole build volume instead, which the firmware reads.
+    double min_x { 0.0 }, max_x { 0.0 };
+    double min_y { 0.0 }, max_y { 0.0 };
+    double min_z { 0.0 }, max_z { 0.0 };
+    bool   has_bbox { false };
 };
 
 // Convert Orca G-code file to Birdwing JSON toolpath string.

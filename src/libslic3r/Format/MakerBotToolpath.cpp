@@ -312,6 +312,20 @@ std::string gcode_to_birdwing_jsontoolpath(
     int    pending_tool  = -1;
     int    toolchanges   = 0;
     double sum_axis[2]   = {0.0, 0.0};
+    // Bounding box of the printed object - only extruding moves count, so
+    // travels, purge lines and the brim-free approach do not inflate it.
+    double bb_min_x = 1e30, bb_max_x = -1e30;
+    double bb_min_y = 1e30, bb_max_y = -1e30;
+    double bb_min_z = 1e30, bb_max_z = -1e30;
+    bool   bb_valid = false;
+    // How much filament is currently retracted on each axis (positive = pulled
+    // back). Orca retracts the OUTGOING extruder by retraction_length plus
+    // retract_length_toolchange (default 10 mm) before a "Tn" and only primes it
+    // again when that extruder comes back. Without tracking this, the incoming
+    // extruder starts its first path with an empty melt zone - measured on a
+    // Method X dual export: 6 x 10 mm never returned, i.e. centimetres of
+    // missing extrusion after every change.
+    double axis_retracted[2] = {0.0, 0.0};
     // Per-tool target temperature, filled from M104/M109 (with or without T).
     double tool_temp[2]  = {-1.0, -1.0};
     // Standby temperature of the idle extruder. 180 C in the reference file;
@@ -606,6 +620,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                                 -TOOLCHANGE_RETRACT, TOOLCHANGE_FEEDRATE, old_tool),
                     {"Long Retract"}));
                 sum_axis[old_tool] -= TOOLCHANGE_RETRACT;
+                axis_retracted[old_tool] += TOOLCHANGE_RETRACT;
 
                 // 2) outgoing extruder to standby, its fan on
                 commands.push_back(make_command("set_toolhead_temperature",
@@ -650,11 +665,16 @@ std::string gcode_to_birdwing_jsontoolpath(
                 commands.push_back(make_command("move",
                     move_params(tx, ty, cur_z, 0.0, 250.0, new_tool),
                     {"Travel Move"}));
+                // Prime the incoming extruder by everything still retracted on its
+                // axis - that includes Orca's retract_length_toolchange from the
+                // previous switch. At minimum the reference value of 1.0 mm.
+                const double prime = std::max(TOOLCHANGE_RETRACT, axis_retracted[new_tool]);
                 commands.push_back(make_command("move",
-                    move_params(tx, ty, cur_z, TOOLCHANGE_RETRACT,
+                    move_params(tx, ty, cur_z, prime,
                                 TOOLCHANGE_FEEDRATE, new_tool),
                     {"Long Restart"}));
-                sum_axis[new_tool] += TOOLCHANGE_RETRACT;
+                sum_axis[new_tool] += prime;
+                axis_retracted[new_tool] = 0.0;
 
                 // The filament of the incoming extruder is primed, so the
                 // retract state of the outgoing one no longer applies.
@@ -679,6 +699,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                                 e_raw, cur_feedrate, active_tool),
                     {"Retract"}));
                 sum_axis[active_tool] += e_raw;
+                axis_retracted[active_tool] -= e_raw;   // e_raw < 0
                 retracted = true;
                 continue;
             }
@@ -691,6 +712,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                                 e_raw, cur_feedrate, active_tool),
                     {"Restart"}));
                 sum_axis[active_tool] += e_raw;
+                axis_retracted[active_tool] = std::max(0.0, axis_retracted[active_tool] - e_raw);
                 retracted = false;
                 continue;
             }
@@ -805,6 +827,12 @@ std::string gcode_to_birdwing_jsontoolpath(
                 move_params(json_x, json_y, nz, a_emit, cur_feedrate, active_tool),
                 {tag}));
             sum_axis[active_tool] += a_emit;
+            if (a_emit > 1e-9) {
+                bb_min_x = std::min(bb_min_x, json_x); bb_max_x = std::max(bb_max_x, json_x);
+                bb_min_y = std::min(bb_min_y, json_y); bb_max_y = std::max(bb_max_y, json_y);
+                bb_min_z = std::min(bb_min_z, nz);     bb_max_z = std::max(bb_max_z, nz);
+                bb_valid = true;
+            }
         }
     }
 
@@ -816,6 +844,12 @@ std::string gcode_to_birdwing_jsontoolpath(
         stats->extrusion[1] = sum_axis[1];
         stats->tool_changes = toolchanges;
         stats->dual         = dual_job;
+        stats->has_bbox     = bb_valid;
+        if (bb_valid) {
+            stats->min_x = bb_min_x; stats->max_x = bb_max_x;
+            stats->min_y = bb_min_y; stats->max_y = bb_max_y;
+            stats->min_z = bb_min_z; stats->max_z = bb_max_z;
+        }
     }
 
     BOOST_LOG_TRIVIAL(info)

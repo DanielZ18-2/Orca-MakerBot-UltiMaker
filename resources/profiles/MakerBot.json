@@ -1712,6 +1712,14 @@
         {
             "name": "Generic PETG @MakerBot Thing-O-Matic Acrylic",
             "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic ABS @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic ABS @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator 2.json"
         }
     ],
     "machine_list": [

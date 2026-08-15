@@ -757,8 +757,9 @@ static bool pack_makerbot_birdwing(const std::string& gcode_path,
     bv.layer_width = header.line_width > 0.01 ? header.line_width : 0.4;
 
     std::string tp_error;
+    ToolpathStats tp_stats;
     const std::string toolpath_json = gcode_to_birdwing_jsontoolpath(
-        gcode_path, bv, header.layer_height, tp_error);
+        gcode_path, bv, header.layer_height, tp_error, &tp_stats);
 
     if (toolpath_json.empty()) {
         BOOST_LOG_TRIVIAL(error) << "MakerBotExport: toolpath conversion failed: " << tp_error;
@@ -784,9 +785,20 @@ static bool pack_makerbot_birdwing(const std::string& gcode_path,
     }
 
     // 5. Build meta.json using header (all values from G-code settings block)
-    BBox bbox; // Birdwing's meta needs bounding box – use build volume as proxy
-    bbox.update(-bv.x/2, -bv.y/2, 0.0);
-    bbox.update( bv.x/2,  bv.y/2, header.layer_height * header.num_layers);
+    // bounding_box is one of the fields the firmware actually reads. It has to
+    // describe the PRINTED OBJECT, not the machine - the build volume was only
+    // ever a placeholder here (measured on a Z18 cube: 300 x 305 reported for a
+    // 30 mm part). The converter now returns the extent of the extruding moves.
+    BBox bbox;
+    if (tp_stats.has_bbox) {
+        bbox.update(tp_stats.min_x, tp_stats.min_y, tp_stats.min_z);
+        bbox.update(tp_stats.max_x, tp_stats.max_y, tp_stats.max_z);
+    } else {
+        // No extrusion found (empty plate) - fall back to the build volume so
+        // the field stays well-formed.
+        bbox.update(-bv.x/2, -bv.y/2, 0.0);
+        bbox.update( bv.x/2,  bv.y/2, header.layer_height * header.num_layers);
+    }
 
     const nlohmann::json meta = build_birdwing_meta(
         config, bot_type, header, bbox,
