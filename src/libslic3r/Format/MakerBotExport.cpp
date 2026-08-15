@@ -532,7 +532,8 @@ static nlohmann::json build_lava_meta(
     const std::string&  bot_type,
     const HeaderData&   h,
     double              total_extrusion,
-    const std::string&  project_name)
+    const std::string&  project_name,
+    const ToolpathStats* tp = nullptr)
 {
     const std::string mat_lo  = boost::algorithm::to_lower_copy(h.filament_type.empty() ? std::string("pla") : h.filament_type);
     const double      mass_g  = extrusion_mass_g(total_extrusion, h.filament_diameter, h.filament_density);
@@ -564,12 +565,43 @@ static nlohmann::json build_lava_meta(
     meta["duration_s"]              = h.duration_s;
     meta["extruder_temperature"]    = h.first_layer_temp;
     meta["extruder_temperatures"]   = nlohmann::json::array({h.first_layer_temp, h.temperature});
-    meta["extrusion_distance_mm"]   = total_extrusion;
-    meta["extrusion_distances_mm"]  = nlohmann::json::array({total_extrusion});
-    meta["extrusion_mass_g"]        = mass_g;
-    meta["extrusion_masses_g"]      = nlohmann::json::array({mass_g});
+    // Per-extruder figures. MakerBot Print writes extrusion_distances_mm and
+    // extrusion_masses_g as one entry PER EXTRUDER; the reference file
+    // method_dual_test.makerbot carries [950.633, 1104.029] there, matching the
+    // 'a' and 'b' axis sums of the toolpath exactly. The firmware reads these
+    // fields (see birdwing_makerbot_extrakte_befunde.md) and answers a mismatch
+    // with print_extruder_mismatch, so they must not stay single-valued on a
+    // dual-material job.
+    if (tp && tp->dual) {
+        const double m0 = extrusion_mass_g(tp->extrusion[0], h.filament_diameter, h.filament_density);
+        const double m1 = extrusion_mass_g(tp->extrusion[1], h.filament_diameter, h.filament_density);
+        meta["extrusion_distance_mm"]  = tp->extrusion[0] + tp->extrusion[1];
+        meta["extrusion_distances_mm"] = nlohmann::json::array({tp->extrusion[0], tp->extrusion[1]});
+        meta["extrusion_mass_g"]       = m0 + m1;
+        meta["extrusion_masses_g"]     = nlohmann::json::array({m0, m1});
+    } else {
+        meta["extrusion_distance_mm"]  = total_extrusion;
+        meta["extrusion_distances_mm"] = nlohmann::json::array({total_extrusion});
+        meta["extrusion_mass_g"]       = mass_g;
+        meta["extrusion_masses_g"]     = nlohmann::json::array({mass_g});
+    }
     meta["material"]                = mat_lo;
-    meta["materials"]               = nlohmann::json::array({mat_lo});
+    // materials mirrors tool_types: one material name per configured extruder.
+    {
+        nlohmann::json mats = nlohmann::json::array();
+        const auto* opt = config.option("filament_type");
+        if (opt) {
+            try {
+                const auto* ss = dynamic_cast<const ConfigOptionStrings*>(opt);
+                if (ss) for (const auto& v : ss->values)
+                    mats.push_back(boost::algorithm::to_lower_copy(v));
+            } catch (...) {}
+        }
+        if (mats.empty()) mats.push_back(mat_lo);
+        while (mats.size() < tools.size()) mats.push_back(mats.back());
+        while (mats.size() > tools.size() && mats.size() > 1) mats.erase(mats.end() - 1);
+        meta["materials"] = mats;
+    }
     meta["model_counts"]            = nlohmann::json::array({nlohmann::json{{"count",1},{"name","instance0"}}});
     meta["name"]                    = project_name;
     meta["platform_temperature"]    = h.bed_temperature; // was: hardcoded 0
@@ -581,7 +613,7 @@ static nlohmann::json build_lava_meta(
     meta["preferences"]["instance0"]["machineBounds"] = nullptr;
     meta["miracle_config"]["_bot"] = lava_bot;
     meta["miracle_config"]["_extruders"] = tools;
-    meta["miracle_config"]["_materials"] = nlohmann::json::array({mat_lo});
+    meta["miracle_config"]["_materials"] = meta["materials"];
     meta["miracle_config"]["gaggles"]["instance0"] = nlohmann::json::object();
     return meta;
 }
@@ -809,15 +841,78 @@ static bool pack_makerbot_lava(const std::string& gcode_path,
         if (bt) try { bot_type = dynamic_cast<const ConfigOptionString*>(bt)->value; } catch (...) {}
     }
 
+    // ── Sketch vs. Method: two different archive payloads ─────────────────
+    // Cura's MakerbotWriter (plugins/MakerbotWriter/MakerbotWriter.py) branches
+    // on the machine's file_formats MIME type:
+    //   application/x-makerbot-sketch  -> print.gcode
+    //   application/x-makerbot         -> print.jsontoolpath   (Method series)
+    //   ...-replicator_plus            -> print.jsontoolpath
+    // Both groups share meta version 3.0.0, so the version does NOT identify
+    // the payload. The fork routed Method and Sketch through this one packer
+    // and shipped raw G-code for both; MakerBot Print's own Method export
+    // (method_dual_test.makerbot, bot lava_f) contains print.jsontoolpath.
+    // Ultimaker owns MakerBot - Cura is the reference here.
+    std::string model_name;
+    {
+        const auto* opt = config.option("printer_model");
+        if (opt) try { model_name = dynamic_cast<const ConfigOptionString*>(opt)->value; } catch (...) {}
+    }
+    const bool is_sketch =
+        boost::algorithm::to_lower_copy(bot_type).find("sketch") != std::string::npos ||
+        boost::algorithm::to_lower_copy(model_name).find("sketch") != std::string::npos;
+
+    std::string toolpath_json;
+    ToolpathStats tp_stats;
+    if (!is_sketch) {
+        // Same derivation as the Birdwing packer: the toolpath origin is the
+        // bed centre, so the build volume must come from printable_area.
+        BirdwingBuildVolume bv;
+        bv.x = 152.0;  // Method fallback
+        bv.y = 190.0;
+        {
+            const auto* pa_opt = config.option("printable_area");
+            if (pa_opt) {
+                try {
+                    const auto* pts = dynamic_cast<const ConfigOptionPoints*>(pa_opt);
+                    if (pts && pts->values.size() >= 2) {
+                        double xmin=1e9, xmax=-1e9, ymin=1e9, ymax=-1e9;
+                        for (const auto& p : pts->values) {
+                            xmin = std::min(xmin, p.x()); xmax = std::max(xmax, p.x());
+                            ymin = std::min(ymin, p.y()); ymax = std::max(ymax, p.y());
+                        }
+                        const double W = (xmax - xmin) / 1000.0;
+                        const double H = (ymax - ymin) / 1000.0;
+                        if (W > 10.0 && H > 10.0) { bv.x = W; bv.y = H; }
+                    }
+                } catch (...) {}
+            }
+        }
+        bv.layer_width = header.line_width > 0.01 ? header.line_width : 0.4;
+
+        std::string tp_error;
+        toolpath_json = gcode_to_birdwing_jsontoolpath(
+            gcode_path, bv, header.layer_height, tp_error, &tp_stats,
+            /*lava_format=*/true);
+        if (toolpath_json.empty()) {
+            BOOST_LOG_TRIVIAL(error)
+                << "MakerBotExport: Lava toolpath conversion failed: " << tp_error;
+            return false;
+        }
+    }
+
     const nlohmann::json meta = build_lava_meta(
-        config, bot_type, header, header.total_filament_mm, project_name);
+        config, bot_type, header, header.total_filament_mm, project_name,
+        is_sketch ? nullptr : &tp_stats);
 
     nlohmann::json slicemeta;
     slicemeta["generator"] = "OrcaSlicer MakerBot Lava native export";
 
     std::vector<std::pair<std::string, std::string>> entries;
     entries.emplace_back("meta.json",          meta.dump(4));
-    entries.emplace_back("print.gcode",        gcode);
+    if (is_sketch)
+        entries.emplace_back("print.gcode",        gcode);
+    else
+        entries.emplace_back("print.jsontoolpath", toolpath_json);
     entries.emplace_back("slicemetadata.json", slicemeta.dump(4));
     add_thumbnail_entries(entries, thumbnails, {
         {"thumbnail_140x106.png",          {140,  106}},

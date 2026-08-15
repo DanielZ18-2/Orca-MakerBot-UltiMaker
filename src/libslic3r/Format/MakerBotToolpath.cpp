@@ -112,6 +112,23 @@ static bool parse_gcode_param(const std::string& token, char axis, double& out)
     return parse_double_locale_safe(token.substr(1), out);
 }
 
+// ── Dual-Extruder-Modus ──────────────────────────────────────────────────────
+// Set for the duration of one conversion. In dual mode every move carries BOTH
+// extruder axes ("a" and "b"), the inactive one at 0.0, and metadata.relative
+// lists "b" as well. Verified against method_dual_test.makerbot (MakerBot
+// Print, bot lava_f): all 6108 moves carry a and b, never both non-zero, and
+// the per-axis sums match meta.json's extrusion_distances_mm exactly.
+// File-local rather than a parameter because make_command() is called from a
+// dozen places; one conversion runs start to finish before the next begins.
+static bool g_dual_axes = false;
+
+// Lava (Method) writes format 3.0.0, Birdwing 1.2.0. The one structural
+// difference inside the toolpath: in 3.0.0 every NON-move command carries an
+// empty "metadata" object, while 1.2.0 repeats the relative block everywhere.
+// Verified against method_dual_test.makerbot (all 111 set_toolhead_temperature,
+// 100 toggle_fan, 191 fan_duty and 1129 comment entries have "metadata": {}).
+static bool g_lava_format = false;
+
 // ── Befehl als {"command":{...}} emittieren ───────────────────────────────────
 // CRITICAL: MakerBot Print ALWAYS expects the outer "command" wrapper!
 static nlohmann::json make_command(
@@ -122,16 +139,48 @@ static nlohmann::json make_command(
 {
     nlohmann::json cmd;
     cmd["function"] = function_name;
-    cmd["metadata"] = {
-        {"relative", {
+    if (g_lava_format && function_name != "move") {
+        cmd["metadata"] = nlohmann::json::object();
+    } else {
+        nlohmann::json rel = {
             {"a", relative_a},
             {"x", false},
             {"y", false},
             {"z", false}
-        }}
-    };
+        };
+        if (g_dual_axes) rel["b"] = relative_a;
+        cmd["metadata"] = {{"relative", rel}};
+    }
     cmd["parameters"] = parameters;
     cmd["tags"] = tags;
+    return {{"command", cmd}};
+}
+
+// Move parameters with the extrusion put on the axis of the active tool.
+// Single-extruder output is unchanged (only "a"), so Birdwing files stay
+// byte-identical to before.
+static nlohmann::json move_params(
+    double x, double y, double z, double e, double feedrate, int tool)
+{
+    nlohmann::json p = {{"x", x}, {"y", y}, {"z", z}};
+    if (g_dual_axes) {
+        p["a"] = (tool == 0) ? e : 0.0;
+        p["b"] = (tool == 1) ? e : 0.0;
+    } else {
+        p["a"] = e;
+    }
+    p["feedrate"] = feedrate;
+    return p;
+}
+
+// The empty command that MakerBot Print emits immediately before every
+// change_toolhead - present in all 49 tool changes of the reference file.
+static nlohmann::json make_empty_command()
+{
+    nlohmann::json cmd;
+    cmd["metadata"]   = nlohmann::json::object();
+    cmd["parameters"] = nlohmann::json::object();
+    cmd["tags"]       = nlohmann::json::array();
     return {{"command", cmd}};
 }
 
@@ -184,9 +233,39 @@ std::string gcode_to_birdwing_jsontoolpath(
     const std::string&        gcode_path,
     const BirdwingBuildVolume& bv,
     double                    layer_height,
-    std::string&              error)
+    std::string&              error,
+    ToolpathStats*            stats,
+    bool                      lava_format)
 {
     const ScopedCNumericLocale locale_guard; // see the comment at the class definition
+    g_lava_format = lava_format;
+
+    // ── Pre-pass: does this job switch tools at all? ──────────────────────────
+    // Only a real switch to T1+ makes it a dual job. Orca emits a single "T0"
+    // even for single-material prints on a dual machine, which must stay
+    // single-axis output.
+    bool dual_job = false;
+    {
+        std::ifstream pre(gcode_path);
+        if (!pre.is_open()) {
+            error = "Cannot open: " + gcode_path;
+            return "";
+        }
+        std::string l;
+        while (std::getline(pre, l)) {
+            const size_t s = l.find(';');
+            std::string body = (s != std::string::npos) ? l.substr(0, s) : l;
+            boost::trim(body);
+            if (body.size() >= 2 && (body[0] == 'T' || body[0] == 't') &&
+                std::isdigit(static_cast<unsigned char>(body[1])) &&
+                std::atoi(body.c_str() + 1) != 0) {
+                dual_job = true;
+                break;
+            }
+        }
+    }
+    g_dual_axes = dual_job;
+
     std::ifstream f(gcode_path);
     if (!f.is_open()) {
         error = "Cannot open: " + gcode_path;
@@ -221,6 +300,27 @@ std::string gcode_to_birdwing_jsontoolpath(
     // extruding print move (measured: 15.8 % of all extrusion, 1652 mm3, on a
     // Z18 temperature tower).
     bool   gcode_has_e   = false;
+
+    // ── Dual-extruder state ──────────────────────────────────────────────────
+    // active_tool addresses the axis: 0 -> "a", 1 -> "b".
+    // pending_tool holds a tool change until the next XY move is known: the
+    // reference file puts the purge-wall start point into change_toolhead's
+    // x/y, and that is exactly where the first move after the change goes.
+    // Deriving it instead of keeping a per-machine table avoids inventing
+    // coordinates the head would then travel to.
+    int    active_tool   = 0;
+    int    pending_tool  = -1;
+    int    toolchanges   = 0;
+    double sum_axis[2]   = {0.0, 0.0};
+    // Per-tool target temperature, filled from M104/M109 (with or without T).
+    double tool_temp[2]  = {-1.0, -1.0};
+    // Standby temperature of the idle extruder. 180 C in the reference file;
+    // MakerBot uses a fixed standby, Orca has no matching setting.
+    const int STANDBY_TEMP = 180;
+    // Tool-change retract/prime: 1.0 mm at 5 mm/s, both directions, measured
+    // over all 49 changes of the reference file (48 retracts, 49 primes).
+    const double TOOLCHANGE_RETRACT = 1.0;
+    const double TOOLCHANGE_FEEDRATE = 5.0;
 
     std::string current_tag = "Outline";
     double      layer_w     = bv.layer_width;
@@ -332,16 +432,26 @@ std::string gcode_to_birdwing_jsontoolpath(
         // set_toolhead_temperature abgebildet.
         if (cmd == "M104" || cmd == "M109") {
             double t = -1.0;
+            int    idx = -1;      // T parameter, if Orca addressed a tool
             for (size_t i = 1; i < tokens.size(); ++i) {
                 double v = 0;
-                if (parse_gcode_param(tokens[i], 'S', v)) { t = v; break; }
+                if (parse_gcode_param(tokens[i], 'S', v)) t = v;
+                if (parse_gcode_param(tokens[i], 'T', v)) idx = static_cast<int>(v);
             }
-            if (t >= 0.0 && std::abs(t - last_tool_temp) > 0.5) {
-                commands.push_back(make_command("set_toolhead_temperature",
-                    {{"index", 0}, {"temperature", static_cast<int>(t + 0.5)}},
-                    nlohmann::json::array(),
-                    false));
-                last_tool_temp = t;
+            const int target = (idx == 0 || idx == 1) ? idx : active_tool;
+            if (t >= 0.0) {
+                // Remember per tool - the tool-change sequence needs the target
+                // temperature of the extruder being switched to.
+                tool_temp[target] = t;
+                // A temperature for the *other* extruder is only remembered, not
+                // emitted: the change sequence sets it at the right moment.
+                if (target == active_tool && std::abs(t - last_tool_temp) > 0.5) {
+                    commands.push_back(make_command("set_toolhead_temperature",
+                        {{"index", target}, {"temperature", static_cast<int>(t + 0.5)}},
+                        nlohmann::json::array(),
+                        false));
+                    last_tool_temp = t;
+                }
             }
             continue;
         }
@@ -387,14 +497,17 @@ std::string gcode_to_birdwing_jsontoolpath(
         if (!cmd.empty() && (cmd[0] == 'T' || cmd[0] == 't') && cmd.size() >= 2 &&
             std::isdigit(static_cast<unsigned char>(cmd[1]))) {
             const int tool_id = std::atoi(cmd.c_str() + 1);
-            if (tool_id != 0) {
-                error = "Dual-extruder jobs are not supported by the MakerBot "
-                        "toolpath export yet (tool change to T" +
-                        std::to_string(tool_id) + " found). Assign all objects "
-                        "to the first extruder and slice again.";
+            if (tool_id < 0 || tool_id > 1) {
+                error = "The MakerBot toolpath format addresses two extruders "
+                        "(axes a and b); the G-code selects T" +
+                        std::to_string(tool_id) + ".";
                 BOOST_LOG_TRIVIAL(error) << "MakerBotToolpath: " << error;
                 return {};
             }
+            // Defer: the change is emitted at the next XY move, whose
+            // coordinates go into change_toolhead.
+            if (tool_id != active_tool) pending_tool = tool_id;
+            else                        pending_tool = -1;
             continue;
         }
 
@@ -476,6 +589,78 @@ std::string gcode_to_birdwing_jsontoolpath(
             // No XY move -> pure retract / unretract / Z-hop -> handled separately
             const bool has_xy = has_x || has_y;
 
+            // ── Deferred tool change ──────────────────────────────────────────
+            // Emitted here, at the first XY move after "Tn", because
+            // change_toolhead carries the coordinates the head moves to next.
+            // Sequence and values taken 1:1 from method_dual_test.makerbot
+            // (49 changes, all identical in structure).
+            if (pending_tool >= 0 && has_xy && in_print_area) {
+                const int old_tool = active_tool;
+                const int new_tool = pending_tool;
+                const double tx = nx - x_offset;
+                const double ty = ny - y_offset;
+
+                // 1) long retract on the outgoing extruder
+                commands.push_back(make_command("move",
+                    move_params(cur_x - x_offset, cur_y - y_offset, cur_z,
+                                -TOOLCHANGE_RETRACT, TOOLCHANGE_FEEDRATE, old_tool),
+                    {"Long Retract"}));
+                sum_axis[old_tool] -= TOOLCHANGE_RETRACT;
+
+                // 2) outgoing extruder to standby, its fan on
+                commands.push_back(make_command("set_toolhead_temperature",
+                    {{"index", old_tool}, {"temperature", STANDBY_TEMP}},
+                    nlohmann::json::array(), false));
+                commands.push_back(make_command("toggle_fan",
+                    {{"index", old_tool}, {"value", true}},
+                    nlohmann::json::array(), false));
+                commands.push_back(make_command("fan_duty",
+                    {{"index", old_tool}, {"value", 1.0}},
+                    nlohmann::json::array(), false));
+
+                // 3) incoming extruder to its printing temperature
+                if (tool_temp[new_tool] >= 0.0) {
+                    commands.push_back(make_command("set_toolhead_temperature",
+                        {{"index", new_tool},
+                         {"temperature", static_cast<int>(tool_temp[new_tool] + 0.5)}},
+                        nlohmann::json::array(), false));
+                    last_tool_temp = tool_temp[new_tool];
+                }
+
+                // 4) the empty command, then the change itself
+                commands.push_back(make_empty_command());
+                commands.push_back(make_command("change_toolhead",
+                    {{"index", new_tool}, {"x", tx}, {"y", ty}},
+                    nlohmann::json::array(), false));
+                commands.push_back(make_command("wait_for_temperature",
+                    {{"index", new_tool}}, nlohmann::json::array(), false));
+                commands.push_back(make_command("delay",
+                    {{"seconds", 5}}, nlohmann::json::array(), false));
+
+                // 5) outgoing extruder's fan off again
+                commands.push_back(make_command("toggle_fan",
+                    {{"index", old_tool}, {"value", false}},
+                    nlohmann::json::array(), false));
+
+                active_tool = new_tool;
+                pending_tool = -1;
+                ++toolchanges;
+
+                // 6) travel to the change position, then prime the new extruder
+                commands.push_back(make_command("move",
+                    move_params(tx, ty, cur_z, 0.0, 250.0, new_tool),
+                    {"Travel Move"}));
+                commands.push_back(make_command("move",
+                    move_params(tx, ty, cur_z, TOOLCHANGE_RETRACT,
+                                TOOLCHANGE_FEEDRATE, new_tool),
+                    {"Long Restart"}));
+                sum_axis[new_tool] += TOOLCHANGE_RETRACT;
+
+                // The filament of the incoming extruder is primed, so the
+                // retract state of the outgoing one no longer applies.
+                retracted = false;
+            }
+
             // E-Delta (in relativem Modus = raw E-Wert direkt)
             // Denn: ne = cur_e_alt + e_raw → e_delta = ne - cur_e_alt = e_raw
             const double e_raw = has_e ? [&]() -> double {
@@ -490,14 +675,10 @@ std::string gcode_to_birdwing_jsontoolpath(
             if (!has_xy && has_e && e_raw < -1e-4) {
                 // KORREKTES FORMAT: Tag="Retract", a=negative mm
                 commands.push_back(make_command("move",
-                    {
-                        {"x", nx - x_offset},
-                        {"y", ny - y_offset},
-                        {"z", nz},
-                        {"a", e_raw},          // negative! e.g. -0.5 or -0.8
-                        {"feedrate", cur_feedrate}
-                    },
+                    move_params(nx - x_offset, ny - y_offset, nz,
+                                e_raw, cur_feedrate, active_tool),
                     {"Retract"}));
+                sum_axis[active_tool] += e_raw;
                 retracted = true;
                 continue;
             }
@@ -506,14 +687,10 @@ std::string gcode_to_birdwing_jsontoolpath(
             if (!has_xy && has_e && e_raw > 1e-4 && retracted) {
                 // KORREKTES FORMAT: Tag="Restart", a=positive mm
                 commands.push_back(make_command("move",
-                    {
-                        {"x", nx - x_offset},
-                        {"y", ny - y_offset},
-                        {"z", nz},
-                        {"a", e_raw},          // positive! e.g. +0.5 or +0.6
-                        {"feedrate", cur_feedrate}
-                    },
+                    move_params(nx - x_offset, ny - y_offset, nz,
+                                e_raw, cur_feedrate, active_tool),
                     {"Restart"}));
+                sum_axis[active_tool] += e_raw;
                 retracted = false;
                 continue;
             }
@@ -522,8 +699,8 @@ std::string gcode_to_birdwing_jsontoolpath(
             if (!has_xy && !has_e) {
                 if (in_custom_block) {
                     commands.push_back(make_command("move",
-                        { {"x", cur_x - x_offset}, {"y", cur_y - y_offset},
-                          {"z", nz}, {"a", 0.0}, {"feedrate", cur_feedrate} },
+                        move_params(cur_x - x_offset, cur_y - y_offset, nz,
+                                    0.0, cur_feedrate, active_tool),
                         {"Travel Move"}));
                 }
                 continue;
@@ -625,23 +802,33 @@ std::string gcode_to_birdwing_jsontoolpath(
             // For everything else: a should be >= 0.
             const double a_emit = (tag == "Retract") ? a_val : std::max(0.0, a_val);
             commands.push_back(make_command("move",
-                {
-                    {"x",        json_x},
-                    {"y",        json_y},
-                    {"z",        nz},
-                    {"a",        a_emit},
-                    {"feedrate", cur_feedrate}
-                },
+                move_params(json_x, json_y, nz, a_emit, cur_feedrate, active_tool),
                 {tag}));
+            sum_axis[active_tool] += a_emit;
         }
     }
 
     // End-of-print Kommentar
     commands.push_back(make_comment("End of print"));
 
+    if (stats) {
+        stats->extrusion[0] = sum_axis[0];
+        stats->extrusion[1] = sum_axis[1];
+        stats->tool_changes = toolchanges;
+        stats->dual         = dual_job;
+    }
+
     BOOST_LOG_TRIVIAL(info)
         << "MakerBotToolpath: " << commands.size()
-        << " Befehle aus " << gcode_path;
+        << " Befehle aus " << gcode_path
+        << (dual_job ? (" (dual, " + std::to_string(toolchanges) +
+                        " tool changes, a=" + std::to_string(sum_axis[0]) +
+                        " b=" + std::to_string(sum_axis[1]) + ")")
+                     : std::string());
+
+    // Reset so a following conversion is not affected.
+    g_dual_axes  = false;
+    g_lava_format = false;
 
     return commands.dump();
 }

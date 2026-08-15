@@ -23,13 +23,27 @@ struct BirdwingBuildVolume {
     double layer_width { 0.4 };
 };
 
+// Per-conversion figures the caller needs for meta.json. In dual-extruder jobs
+// extrusion[0]/[1] are the 'a' and 'b' axis totals - they must match
+// meta.json's extrusion_distances_mm, which is how MakerBot Print writes them.
+struct ToolpathStats {
+    double extrusion[2] { 0.0, 0.0 };  // mm of filament per extruder axis
+    int    tool_changes { 0 };
+    bool   dual         { false };     // true once a real switch to T1 occurred
+};
+
 // Convert Orca G-code file to Birdwing JSON toolpath string.
-// Returns empty string on failure.
+// Returns empty string on failure. Pass `stats` to receive the figures above.
 std::string gcode_to_birdwing_jsontoolpath(
     const std::string&        gcode_path,
     const BirdwingBuildVolume& bv,
     double                    layer_height,
-    std::string&              error);
+    std::string&              error,
+    ToolpathStats*            stats = nullptr,
+    // true -> Lava/Method format 3.0.0 (empty metadata on non-move commands),
+    // false -> Birdwing 1.2.0. See MakerbotWriter.py in Cura: Method and
+    // Replicator+ get print.jsontoolpath, the Sketch line gets print.gcode.
+    bool                      lava_format = false);
 
 // Build the meta.json for a Birdwing .makerbot archive (no slip compensation).
 std::string make_birdwing_meta_json(
