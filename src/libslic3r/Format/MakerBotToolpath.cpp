@@ -213,6 +213,14 @@ std::string gcode_to_birdwing_jsontoolpath(
     bool   in_custom_block = false;
     bool   retracted     = false;
 
+    // True as soon as ONE G1 with an E parameter has been seen. Orca emits an E
+    // value for every extruding move, so from that point on "G1 with XY but
+    // without E" is unambiguously a travel move. The geometry-based fallback
+    // below must never fire in that case - it would turn every travel into an
+    // extruding print move (measured: 15.8 % of all extrusion, 1652 mm3, on a
+    // Z18 temperature tower).
+    bool   gcode_has_e   = false;
+
     std::string current_tag = "Outline";
     double      layer_w     = bv.layer_width;
 
@@ -361,6 +369,19 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
+        // ── G2 / G3 – Kreisbogen: nicht unterstützt ───────────────────────────
+        // The Birdwing toolpath format knows only linear moves. Silently
+        // dropping arcs would leave holes in the part, so refuse the export
+        // instead. Guard against a user enabling "Arc fitting" in the UI - the
+        // MakerBot profiles ship it disabled.
+        if (cmd == "G2" || cmd == "G3") {
+            error = "Arc fitting (G2/G3) is not supported by the MakerBot "
+                    "toolpath format. Disable 'Arc fitting' in Quality > "
+                    "Precision and slice again.";
+            BOOST_LOG_TRIVIAL(error) << "MakerBotToolpath: " << error;
+            return {};
+        }
+
         // ── G1 / G0 – Bewegungsbefehl ─────────────────────────────────────────
         if (cmd == "G1" || cmd == "G0") {
             double nx = cur_x, ny = cur_y, nz = cur_z, ne = cur_e, nf = -1.0;
@@ -382,6 +403,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                     // → ne = cur_e + e_raw, e_delta = e_raw
                     ne = absolute_ext ? v : cur_e + v;
                     has_e = true;
+                    gcode_has_e = true;
                 }
                 if (parse_gcode_param(tokens[i], 'F', v)) {
                     nf = v / 60.0; // mm/min → mm/s
@@ -511,22 +533,33 @@ std::string gcode_to_birdwing_jsontoolpath(
                 // Negative E on an XY move -> retract during motion (rare)
                 tag = "Retract";
                 retracted = true;
-            } else if (!has_e && has_xy && in_print_area &&
+            } else if (!has_e && has_xy && in_print_area && !gcode_has_e &&
                        current_tag != "Travel Move" &&
                        current_tag != "Leaky Travel Move") {
-                // ── No E in the G-code, but a print TYPE is active ──────────────────────
-                // The Birdwing profile in Orca produces G-code WITHOUT inline E values
-                // (e.g. 'G1 X120 Y117 F3000' without E). The extrusion must be
-                // computed from the geometry:
+                // ── Fallback: G-code entirely WITHOUT inline E values ──────────
+                // Only reachable when not a single E parameter has appeared so
+                // far. Extrusion is then derived from the geometry:
                 //   a = L × layer_height × line_width / (π × (d_fil/2)²)
-                // With d_fil=1.77mm, A_fil=2.4606mm², layer_height and line_width
-                // from the profile.
                 //
-                // IMPORTANT: only when current_tag is a real print tag
-                // (Outline, Inset, Infill, Support, Bridge) - not Travel.
+                // WARNING - this branch used to run unconditionally. Orca DOES
+                // emit E for every extruding move, and a travel move ("G1 X.. Y..
+                // F9000" without E) kept the last print TYPE, so every travel was
+                // written out as an extruding Infill/Inset/Outline move with a
+                // computed a-value. Measured on a Z18 ABS tower: 5131 moves at
+                // travel feedrate 150 mm/s carrying 671 mm of filament
+                // (1652 mm3 = 15.8 % of all extrusion) - stringing across the
+                // whole part. The reset of `retracted` below additionally caused
+                // the following de-retraction to be tagged "Trailing Extrusion
+                // Move" instead of "Restart".
                 tag = current_tag;
                 if (retracted) { tag = "Restart"; retracted = false; }
                 // a is computed below
+            } else if (!has_e && has_xy) {
+                // ── Travel move: XY without E ──────────────────────────────────
+                // `retracted` is deliberately NOT cleared here - the filament is
+                // still retracted during the travel and only comes back with the
+                // following "G1 E+x", which must be tagged "Restart".
+                tag = "Travel Move";
             } else {
                 // No / minimal E + no print TAG -> Travel
                 if (std::fabs(e_raw) < 1e-6) {
