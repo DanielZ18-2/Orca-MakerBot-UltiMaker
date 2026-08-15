@@ -26,6 +26,7 @@
 #include <vector>
 #include <cmath>
 #include <cctype>
+#include <cstdlib>
 #include <clocale>
 #include <locale>
 #include <algorithm>
@@ -365,6 +366,34 @@ std::string gcode_to_birdwing_jsontoolpath(
                 // After G92 E0: reset retract state (critical for
                 // correct E-tracking accumulation after the purge line)
                 retracted = false;
+            }
+            continue;
+        }
+
+        // ── Tn – Werkzeugwechsel: noch nicht übersetzt ────────────────────────
+        // The Birdwing/Lava toolpath addresses the second extruder through its
+        // own axis ("b" instead of "a"); meta.json mirrors that with
+        // extrusion_distances_mm as a two-element array. That mapping is not
+        // implemented yet and must not be guessed - a wrong toolpath would
+        // drive the head into an undefined state.
+        //
+        // Refuse the export instead of silently producing a file in which the
+        // whole job runs off extruder 0. Affects the four Lava machines
+        // (Method, Method X, Method XL, Method X CF). Single-material jobs on
+        // those machines are unaffected: Orca emits "T0" once and no switch.
+        //
+        // Legacy machines (Replicator 2X, Original Dual) do NOT come through
+        // here - they export via GPX, which translates T0/T1 itself.
+        if (!cmd.empty() && (cmd[0] == 'T' || cmd[0] == 't') && cmd.size() >= 2 &&
+            std::isdigit(static_cast<unsigned char>(cmd[1]))) {
+            const int tool_id = std::atoi(cmd.c_str() + 1);
+            if (tool_id != 0) {
+                error = "Dual-extruder jobs are not supported by the MakerBot "
+                        "toolpath export yet (tool change to T" +
+                        std::to_string(tool_id) + " found). Assign all objects "
+                        "to the first extruder and slice again.";
+                BOOST_LOG_TRIVIAL(error) << "MakerBotToolpath: " << error;
+                return {};
             }
             continue;
         }

@@ -196,8 +196,27 @@ bool GPXExport::export_to_x3g(
     }
 
     std::ostringstream cmd;
+    // NOTE: deliberately NO "-g".
+    //
+    // GPX's -g switches reprapFlavor off, i.e. it reads the input as
+    // MakerBot/ReplicatorG G-code. Orca emits RepRap/Marlin conventions, so
+    // that flag mis-reads three things (gpx.c, markwal/GPX):
+    //
+    //   * M106/M107 (gpx.c:5313/5356): reprap flavor routes them to set_valve()
+    //     - the blower output the Replicator drives its PART cooling fan from.
+    //     With -g they go to set_fan() instead, the extruder HEATSINK fan. The
+    //     part fan then never turns on: overhangs droop, bridges sag.
+    //   * T0/T1 (gpx.c:4627): "Makerbot Tn is not sticky" - with -g the tool
+    //     selection reverts to the current extruder after every command, so
+    //     Orca's sticky tool changes are effectively ignored. Dual-material on
+    //     Replicator 2X / Original Dual would print entirely from one extruder.
+    //   * M109 (gpx.c:5438): takes the non-reprap path, ignoring the T
+    //     parameter for the wait.
+    //
+    // GPX defaults to reprapFlavor = 1 (gpx.c:360), which is what Orca output
+    // needs. Leaving the flag off is the fix.
     cmd << shell_quote(gpx_binary)
-        << " -v -g -m " << shell_quote(machine);
+        << " -v -m " << shell_quote(machine);
 
     // Optional developer overrides. These keep GPX native to Orca while allowing
     // a tuned GPX .ini during development without exposing it as an Orca post script.
