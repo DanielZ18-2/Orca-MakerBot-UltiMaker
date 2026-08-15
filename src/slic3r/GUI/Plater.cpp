@@ -3024,8 +3024,16 @@ void Sidebar::update_presets(Preset::Type preset_type)
         const auto *_mb_f = printer_preset.config.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
         const bool _is_mb_lava_dual = _mb_f &&
             _mb_f->value == gcfMakerBotLava && is_dual_extruder;
-        p->layout_printer(preset_bundle.use_bbl_network(),
-            (isBBL && is_dual_extruder) || _is_mb_lava_dual);
+        // MakerBot / UltiMaker Fork: layout and content must agree. The dual
+        // extruder widget is only shown for Bambu printers and for the
+        // MakerBot Lava line; every other dual extruder (Replicator 2X,
+        // Replicator Original Dual, TOM dual, UltiMaker with two print cores)
+        // gets the single extruder layout with the unified nozzle combo. The
+        // code below used the raw is_dual_extruder for the content, so those
+        // printers filled the two hidden per-extruder combos and left the
+        // visible one empty - the nozzle diameter simply never appeared.
+        const bool show_dual_extruder_ui = (isBBL && is_dual_extruder) || _is_mb_lava_dual;
+        p->layout_printer(preset_bundle.use_bbl_network(), show_dual_extruder_ui);
         auto diameters = wxGetApp().preset_bundle->printers.diameters_of_selected_printer();
         auto diameter = printer_preset.config.opt_string("printer_variant");
         auto update_extruder_diameter = [&diameters, &diameter, &nozzle_diameter](int extruder_index,ExtruderGroup & extruder) {
@@ -3050,7 +3058,7 @@ void Sidebar::update_presets(Preset::Type preset_type)
             extruder.diameter = nozzle_dia;
         };
         auto image_path = get_cur_select_bed_image();
-        if (is_dual_extruder) {
+        if (show_dual_extruder_ui) {
             std::string printer_type = printer_preset.get_printer_type(wxGetApp().preset_bundle);
             p->left_extruder->SetTitle(_L(DevPrinterConfigUtil::get_toolhead_display_name(printer_type, DEPUTY_EXTRUDER_ID, ToolHeadComponent::Nozzle, ToolHeadNameCase::TitleCase)));
             p->right_extruder->SetTitle(_L(DevPrinterConfigUtil::get_toolhead_display_name(printer_type, MAIN_EXTRUDER_ID, ToolHeadComponent::Nozzle, ToolHeadNameCase::TitleCase)));
