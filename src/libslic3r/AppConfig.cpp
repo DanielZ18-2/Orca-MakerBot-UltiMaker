@@ -45,6 +45,7 @@ static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.
 static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
+const std::string AppConfig::SECTION_DEFAULT_MATERIALS = "default_materials_seeded";
 const std::string AppConfig::SECTION_MATERIALS = "sla_materials";
 const std::string AppConfig::SECTION_EMBOSS_STYLE = "font";
 

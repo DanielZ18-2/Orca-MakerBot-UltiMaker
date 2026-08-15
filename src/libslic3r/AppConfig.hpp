@@ -368,6 +368,9 @@ public:
 		{ return get_3dmouse_device_numeric_value(name, "invert_roll", invert); }
 
 	static const std::string SECTION_FILAMENTS;
+    // Marker: which (vendor, printer model) already had its
+    // default_materials seeded, and at which vendor profile version.
+    static const std::string SECTION_DEFAULT_MATERIALS;
     static const std::string SECTION_MATERIALS;
     static const std::string SECTION_EMBOSS_STYLE;
 

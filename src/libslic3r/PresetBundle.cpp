@@ -2541,58 +2541,62 @@ void PresetBundle::save_changes_for_preset(const std::string& new_name, Preset::
 void PresetBundle::load_installed_filaments(AppConfig &config)
 {
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": enter, printer size %1%")%printers.size();
-    //if (! config.has_section(AppConfig::SECTION_FILAMENTS)
-    //    || config.get_section(AppConfig::SECTION_FILAMENTS).empty()) {
-        // Compatibility with the PrusaSlicer 2.1.1 and older, where the filament profiles were not installable yet.
-        // Find all filament profiles, which are compatible with installed printers, and act as if these filament profiles
-        // were installed.
-        std::unordered_set<const Preset*> compatible_filaments;
-        for (const Preset &printer : printers)
-            if (printer.is_visible && printer.printer_technology() == ptFFF && printer.vendor && (!printer.vendor->models.empty())) {
-                bool add_default_materials = true;
-                if (config.has_section(AppConfig::SECTION_FILAMENTS))
-                {
-                    const std::map<std::string, std::string>& installed_filament = config.get_section(AppConfig::SECTION_FILAMENTS);
-                    for (auto filament_iter : installed_filament)
-                    {
-                        Preset* filament = filaments.find_preset(filament_iter.first, false, true);
-                        if (filament && is_compatible_with_printer(PresetWithVendorProfile(*filament, filament->vendor), PresetWithVendorProfile(printer, printer.vendor)))
-                        {
 
-                            //already has compatible filament
-                            add_default_materials = false;
-                            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": printer %1% vendor %2% already has default filament %3%")%printer.name %printer.vendor %filament_iter.first;
-                            break;
-                        }
-                    }
-                }
+    // A printer model's default_materials are seeded into the list of installed
+    // filaments once per (vendor, model, vendor profile version).
+    //
+    // The previous implementation skipped a printer entirely as soon as ANY
+    // installed filament was compatible with it. Orca's own vendor-independent
+    // library ("Generic ABS @System" and friends) carries no
+    // compatible_printers restriction and is therefore compatible with every
+    // printer, so a single such preset in the list turned the whole
+    // default_materials block into dead code. Users never saw vendor filament
+    // profiles that were added after their printer had been set up, even though
+    // those profiles were installed and correctly indexed.
+    //
+    // Keying the marker on the vendor profile version means a profile update
+    // that adds materials seeds exactly the new ones, exactly once. Nothing is
+    // ever removed, and on an unchanged version nothing is re-added, so a
+    // filament the user deliberately unchecked stays unchecked.
+    std::unordered_set<const Preset*>  compatible_filaments;
+    std::map<std::string, std::string> seeded;
 
-                if (!add_default_materials)
-                    continue;
+    for (const Preset &printer : printers) {
+        if (! printer.is_visible || printer.printer_technology() != ptFFF ||
+            printer.vendor == nullptr || printer.vendor->models.empty())
+            continue;
 
-                const VendorProfile::PrinterModel *printer_model = PresetUtils::system_printer_model(printer);
-                if (!printer_model) {
-                    BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(": can not find printer_model for printer %1%")%printer.name;
-                    continue;
-                }
-                BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": printer %1% vendor %2% don't have filament visible, will add %3% default filaments")%printer.name %printer.vendor %printer_model->default_materials.size();
-                for (auto default_filament: printer_model->default_materials)
-                {
-                    Preset* filament = filaments.find_preset(default_filament, false, true);
-                    if (filament && filament->is_system)
-                        compatible_filaments.insert(filament);
-                }
-                //const PresetWithVendorProfile printer_with_vendor_profile = printers.get_preset_with_vendor_profile(printer);
-                //for (const Preset &filament : filaments)
-                //  if (filament.is_system && is_compatible_with_printer(filaments.get_preset_with_vendor_profile(filament), printer_with_vendor_profile))
-                //      compatible_filaments.insert(&filament);
-            }
-        // and mark these filaments as installed, therefore this code will not be executed at the next start of the application.
-        for (const auto &filament: compatible_filaments) {
-            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": set filament %1% to visible by default")%filament->name;
-            config.set(AppConfig::SECTION_FILAMENTS, filament->name, "true");
+        const VendorProfile::PrinterModel *printer_model = PresetUtils::system_printer_model(printer);
+        if (printer_model == nullptr) {
+            BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(": can not find printer_model for printer %1%")%printer.name;
+            continue;
         }
-    //}
+
+        const std::string key     = printer.vendor->id + ":" + printer_model->id;
+        const std::string version = printer.vendor->config_version.to_string();
+
+        // Compared for inequality rather than order, so that a profile
+        // downgrade seeds as well and a malformed version cannot wedge this.
+        if (config.get(AppConfig::SECTION_DEFAULT_MATERIALS, key) == version)
+            continue;
+
+        for (const std::string &default_filament : printer_model->default_materials) {
+            Preset *filament = filaments.find_preset(default_filament, false, true);
+            if (filament != nullptr && filament->is_system)
+                compatible_filaments.insert(filament);
+        }
+        seeded[key] = version;
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": seeding %1% default filaments for printer %2% (%3%, profile %4%)")%printer_model->default_materials.size() %printer.name %key %version;
+    }
+
+    for (const Preset *filament : compatible_filaments) {
+        if (! config.has(AppConfig::SECTION_FILAMENTS, filament->name)) {
+            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": set filament %1% to visible by default")%filament->name;
+            config.set(AppConfig::SECTION_FILAMENTS, filament->name, std::string("true"));
+        }
+    }
+    for (const auto &kvp : seeded)
+        config.set(AppConfig::SECTION_DEFAULT_MATERIALS, kvp.first, kvp.second);
 
     for (auto &preset : filaments)
         preset.set_visible_from_appconfig(config);
