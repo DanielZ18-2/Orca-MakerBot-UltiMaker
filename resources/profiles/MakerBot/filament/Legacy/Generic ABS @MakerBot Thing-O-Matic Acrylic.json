@@ -47,18 +47,24 @@
         "105"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
     ],
     "slow_down_min_speed": [
         "9"
+    ],
+    "additional_cooling_fan_speed": [
+        "0"
+    ],
+    "enable_overhang_bridge_fan": [
+        "0"
     ]
 }
