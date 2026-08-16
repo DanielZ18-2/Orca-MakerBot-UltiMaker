@@ -38,10 +38,10 @@
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [
-        "0x0",
-        "150x0",
-        "150x150",
-        "0x150"
+        "-75x-75",
+        "75x-75",
+        "75x75",
+        "-75x75"
     ],
     "printable_height": "150",
     "min_layer_height": [
