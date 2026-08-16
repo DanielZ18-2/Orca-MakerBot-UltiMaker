@@ -2881,6 +2881,62 @@ void PresetBundle::load_selections(AppConfig &config, const PresetPreferences& p
         }
     }
 
+    // MakerBot / UltiMaker Fork: guard against a remembered filament whose
+    // diameter contradicts the printer.
+    //
+    // Orca has no printer-side filament diameter. In Cura, material_diameter is
+    // a machine setting and materials are filtered by it; here the diameter is
+    // purely a property of the filament profile. A 1.75 mm profile is therefore
+    // formally "compatible" with a 2.85 mm machine, and Orca's
+    // vendor-independent library ("Generic PLA @System" and friends) carries an
+    // empty compatible_printers, i.e. it matches every printer.
+    //
+    // Restoring such a selection on an UltiMaker leaves the user one click away
+    // from slicing 2.85 mm filament with a 1.75 mm profile: (1.75/2.85)^2 =
+    // 0.377, so Orca emits 2.65 times the required filament length - a 165 %
+    // over-extrusion that jams the head within the first layers. Nothing in the
+    // UI warns about it, and the selection only corrects itself once the user
+    // happens to switch printers, which is what makes it easy to miss.
+    //
+    // The printer's own default_filament_profile is the only diameter signal
+    // available at this point. If the restored filament disagrees with it, fall
+    // back to that default. A difference of up to 0.1 mm is left alone so that a
+    // deliberate 2.85 vs 3.0 choice still survives.
+    {
+        const Preset &guard_printer = printers.get_selected_preset();
+        const auto   *guard_defaults = guard_printer.config.option<ConfigOptionStrings>("default_filament_profile");
+        auto guard_diameter_of = [this](const std::string &preset_name) -> double {
+            const Preset *p = filaments.find_preset(preset_name, false);
+            if (p == nullptr)
+                return 0.0;
+            const auto *d = p->config.option<ConfigOptionFloats>("filament_diameter");
+            return (d == nullptr || d->values.empty()) ? 0.0 : d->values.front();
+        };
+        if (guard_defaults != nullptr && ! guard_defaults->values.empty()) {
+            const std::string &guard_fallback = guard_defaults->values.front();
+            const double       guard_expected = guard_diameter_of(guard_fallback);
+            const Preset      *guard_preset   = filaments.find_preset(guard_fallback, false);
+            if (guard_expected > 0.0 && guard_preset != nullptr && guard_preset->is_visible && guard_preset->is_compatible) {
+                bool guard_changed = false;
+                for (std::string &fp : filament_presets) {
+                    const double guard_actual = guard_diameter_of(fp);
+                    // Written without std::abs so this needs no extra include.
+                    if (guard_actual > 0.0 &&
+                        (guard_actual - guard_expected > 0.1 || guard_expected - guard_actual > 0.1)) {
+                        BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << boost::format(
+                            ": filament %1% has diameter %2% mm but printer %3% expects %4% mm, "
+                            "falling back to %5%") % fp % guard_actual % guard_printer.name
+                            % guard_expected % guard_fallback;
+                        fp = guard_fallback;
+                        guard_changed = true;
+                    }
+                }
+                if (guard_changed && ! filament_presets.empty())
+                    filaments.select_preset_by_name_strict(filament_presets.front());
+            }
+        }
+    }
+
     const Preset& current_printer = printers.get_selected_preset();
     const Preset* base_printer = printers.get_preset_base(current_printer);
     bool use_default_nozzle_volume_type = true;
