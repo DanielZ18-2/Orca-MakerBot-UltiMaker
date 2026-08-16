@@ -4,11 +4,22 @@ extern "C" {
 #include "gpx.h"
 }
 
+#include <clocale>
 #include <cstdio>
 #include <cstring>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
+
+#if defined(_WIN32)
+#  include <locale.h>
+#elif defined(__APPLE__)
+#  include <xlocale.h>
+#else
+#  include <locale.h>
+#endif
+
 
 namespace Slic3r {
 namespace GPX {
@@ -18,6 +29,64 @@ namespace {
 // GPX keeps a handful of file-scope tables and, more importantly, was written
 // as a single-shot CLI. Orca can export several plates at once, so serialise.
 std::mutex g_gpx_mutex;
+
+// GPX parses every coordinate with strtod (gpx.c:4445 ff. for X/Y/Z/A/B/E/F).
+// strtod honours LC_NUMERIC, so in a locale with a decimal comma - German,
+// French, Spanish, most of continental Europe - it stops at the '.' and returns
+// only the integer part: "109.501" becomes 109, "0.2" becomes 0.
+//
+// As a standalone binary GPX never called setlocale(), so it always ran in the
+// "C" locale no matter what the environment said. Embedded in Orca it inherits
+// the locale wxWidgets set for the GUI, and every X, Y, Z and E value in the
+// G-code is silently truncated. The resulting .x3g looks plausible - correct
+// size, no errors, valid frame - but the layer height collapses to whole
+// millimetres and the extrusion is wrong. Reproduced byte-identically against
+// a user's export on a German desktop.
+//
+// Scope the numeric locale to "C" for the duration of the conversion, per
+// thread so a concurrent export in another thread is unaffected.
+class ScopedCNumericLocale
+{
+public:
+    ScopedCNumericLocale()
+    {
+#if defined(_WIN32)
+        m_prev_config = _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+        if (const char *p = std::setlocale(LC_NUMERIC, nullptr))
+            m_prev = p;
+        std::setlocale(LC_NUMERIC, "C");
+#else
+        m_c = newlocale(LC_NUMERIC_MASK, "C", static_cast<locale_t>(0));
+        if (m_c != static_cast<locale_t>(0))
+            m_prev = uselocale(m_c);
+#endif
+    }
+    ~ScopedCNumericLocale()
+    {
+#if defined(_WIN32)
+        if (! m_prev.empty())
+            std::setlocale(LC_NUMERIC, m_prev.c_str());
+        _configthreadlocale(m_prev_config);
+#else
+        if (m_prev != static_cast<locale_t>(0))
+            uselocale(m_prev);
+        if (m_c != static_cast<locale_t>(0))
+            freelocale(m_c);
+#endif
+    }
+    ScopedCNumericLocale(const ScopedCNumericLocale&)            = delete;
+    ScopedCNumericLocale& operator=(const ScopedCNumericLocale&) = delete;
+
+private:
+#if defined(_WIN32)
+    int         m_prev_config { 0 };
+    std::string m_prev;
+#else
+    locale_t m_c    { static_cast<locale_t>(0) };
+    locale_t m_prev { static_cast<locale_t>(0) };
+#endif
+};
+
 
 // RAII for the three FILE* the conversion needs.
 struct FileGuard
@@ -96,6 +165,8 @@ bool convert_gcode_to_x3g(const std::string& gcode_path,
                     "'. Known codes:\n" + known_machines(), nullptr);
 
     std::lock_guard<std::mutex> lock(g_gpx_mutex);
+    // Must cover the whole conversion: GPX parses numbers while reading.
+    ScopedCNumericLocale c_numeric;
 
     FileGuard in(std::fopen(gcode_path.c_str(), "r"));
     if (!in)
