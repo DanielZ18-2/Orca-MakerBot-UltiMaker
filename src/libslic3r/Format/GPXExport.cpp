@@ -269,7 +269,23 @@ std::string GPXExport::pack_to_archive(const std::string& gcode_path, const Prin
         return {};
     }
 
-    try { fs::remove(gcode_source); } catch (...) {}
+    // Diagnostics: keep the intermediate G-code next to the archive when
+    // ORCA_GPX_KEEP_GCODE is set. Chasing a conversion bug means comparing the
+    // input and the output of the SAME run - exporting them separately gives
+    // two slices that may differ in filament or process preset without anyone
+    // noticing.
+    if (! getenv_string("ORCA_GPX_KEEP_GCODE").empty()) {
+        const std::string kept = archive_path + ".gcode";
+        try {
+            fs::rename(gcode_source, kept);
+            BOOST_LOG_TRIVIAL(info) << "GPXExport: intermediate G-code kept at " << kept;
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(warning) << "GPXExport: could not keep intermediate G-code: " << e.what();
+            try { fs::remove(gcode_source); } catch (...) {}
+        }
+    } else {
+        try { fs::remove(gcode_source); } catch (...) {}
+    }
 
     BOOST_LOG_TRIVIAL(info) << "GPXExport: x3g archive created: " << archive_path;
     return archive_path;
