@@ -34,7 +34,7 @@
     "sparse_infill_density": "15%",
     "sparse_infill_pattern": "crosshatch",
     "initial_layer_acceleration": "20",
-    "skirt_distance": "1",
+    "skirt_distance": "5",
     "skirt_height": "2",
     "skirt_loops": "1",
     "minimum_sparse_infill_area": "25",
