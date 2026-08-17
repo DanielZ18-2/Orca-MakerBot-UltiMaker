@@ -12,6 +12,8 @@
 
 #include "MakerBotExport.hpp"
 #include "MakerBotToolpath.hpp"
+// Bed corner -> machine origin, see MakerBotCoords.hpp for the why.
+#include "MakerBotCoords.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/miniz_extension.hpp"
 #include "libslic3r/LocalesUtils.hpp"
@@ -872,6 +874,26 @@ static bool pack_makerbot_lava(const std::string& gcode_path,
     const bool is_sketch =
         boost::algorithm::to_lower_copy(bot_type).find("sketch") != std::string::npos ||
         boost::algorithm::to_lower_copy(model_name).find("sketch") != std::string::npos;
+
+    // Sketch executes print.gcode as-is, and MakerBot firmware puts the origin
+    // in the middle of the platform - Cura states it per machine as
+    // machine_center_is_zero: true (ultimaker_sketch*.def.json). Orca hands us
+    // corner coordinates, so translate before packing.
+    // The Method branch below needs nothing: gcode_to_birdwing_jsontoolpath
+    // already subtracts the bed centre while building the toolpath.
+    if (is_sketch) {
+        const MakerBotCoords::BedCentre centre = MakerBotCoords::bed_centre(config);
+        if (!centre.valid) {
+            BOOST_LOG_TRIVIAL(error)
+                << "MakerBotExport: printer profile has no usable printable_area - "
+                   "refusing to pack print.gcode in corner coordinates";
+            return false;
+        }
+        gcode = MakerBotCoords::to_machine_coordinates(gcode, centre);
+        BOOST_LOG_TRIVIAL(info)
+            << "MakerBotExport: print.gcode bed corner -> machine origin, shifted by "
+            << -centre.x << " / " << -centre.y << " mm";
+    }
 
     std::string toolpath_json;
     ToolpathStats tp_stats;

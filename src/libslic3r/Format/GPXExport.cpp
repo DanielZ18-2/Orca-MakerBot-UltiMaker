@@ -4,6 +4,8 @@
 
 // Embedded GPX (markwal/GPX 2.6.8), see src/gpx.
 #include "GPXConvert.hpp"
+// Bed corner -> machine origin, see MakerBotCoords.hpp for the why.
+#include "MakerBotCoords.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -192,12 +194,51 @@ bool GPXExport::export_to_x3g(
     BOOST_LOG_TRIVIAL(info) << "GPXExport: converting " << gcode_filepath
         << " -> " << output_filepath << " (GPX " << GPX::version() << ", machine " << machine << ")";
 
+    // Orca lays the plate out in corner coordinates; Sailfish expects the origin
+    // in the middle of the platform. Translate once, here, so the profiles -
+    // start block included - can stay in a single coordinate system. This pass
+    // also turns the "; MB_NATIVE " lines back into real commands. See
+    // MakerBotCoords.hpp for what went wrong while they did not.
+    const MakerBotCoords::BedCentre centre = MakerBotCoords::bed_centre(config);
+    if (!centre.valid)
+        return fail("printer profile has no usable printable_area - refusing to write "
+                    "an .x3g whose coordinates would land off the platform");
+
+    const std::string native_gcode = output_filepath + ".native.gcode";
+    size_t            native_lines = 0;
+    {
+        std::string shift_error;
+        if (!MakerBotCoords::file_to_machine_coordinates(gcode_filepath, native_gcode,
+                                                         centre, &shift_error, &native_lines)) {
+            boost::system::error_code ec;
+            fs::remove(native_gcode, ec);
+            return fail("could not translate to machine coordinates: " + shift_error);
+        }
+    }
+    BOOST_LOG_TRIVIAL(info) << "GPXExport: bed corner -> machine origin, shifted by "
+        << -centre.x << " / " << -centre.y << " mm, " << native_lines << " MB_NATIVE line(s)";
+    if (native_lines == 0)
+        BOOST_LOG_TRIVIAL(warning) << "GPXExport: not a single MB_NATIVE line in this G-code - "
+            "the printer will not be told its home offsets. The machine profile is older than "
+            "this build; re-sync resources/profiles.";
+
     std::string error;
     GPX::ConvertStats stats;
     // Empty build name -> derived from the .x3g file name, which is what the
     // user sees on the printer's LCD.
-    if (!GPX::convert_gcode_to_x3g(gcode_filepath, output_filepath, machine,
-                                   /* build_name */ {}, ini_path, &error, &stats)) {
+    const bool converted = GPX::convert_gcode_to_x3g(native_gcode, output_filepath, machine,
+                                                     /* build_name */ {}, ini_path, &error, &stats);
+
+    // ORCA_GPX_KEEP_GCODE keeps what GPX actually read, not what Orca wrote -
+    // that is the file to hold against the .x3g when a conversion misbehaves.
+    if (getenv_string("ORCA_GPX_KEEP_GCODE").empty()) {
+        boost::system::error_code ec;
+        fs::remove(native_gcode, ec);
+    } else {
+        BOOST_LOG_TRIVIAL(info) << "GPXExport: machine-coordinate G-code kept at " << native_gcode;
+    }
+
+    if (!converted) {
         // Do not leave a half-written .x3g behind - the firmware would happily
         // start printing it and stop mid-object.
         boost::system::error_code ec;

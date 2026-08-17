@@ -38,10 +38,10 @@
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [
-        "-50x-50",
-        "50x-50",
-        "50x50",
-        "-50x50"
+        "0x0",
+        "100x0",
+        "100x100",
+        "0x100"
     ],
     "printable_height": "100",
     "min_layer_height": [
@@ -75,7 +75,7 @@
         "60",
         "60"
     ],
-    "machine_start_gcode": "G162 X Y F2000 ; home XY axes maximum\nG161 Z F900 ; home Z axis minimum\nG92 Z-5 ; set Z to -5\nG1 Z0.0 F900 ; move Z to '0'\nG161 Z F100 ; home Z axis minimum\nM132 X Y Z A B ; Recall stored home offsets\nG1 X-40 Y-40 Z6 F3300.0 ; move to waiting position\nG130 X20 Y20 A20 B20 ; Lower stepper Vrefs while heating\nM135 T0 ; Load right Toolhead\nM104 S[nozzle_temperature_initial_layer] T0\nM133 T0 ; Wait for Toolhead to heat\nG130 X127 Y127 A127 B127 ; Set Stepper motor Vref to defaults\n; Anker Extruder (MiracleGrue anchorExtrusionAmount/anchorWidth)\nM135 T0\nG1 X-37.4 Y-48 Z0.2 F3300\nG92 E0\nG1 E10 F120 ; Blob, 10 mm bei 2 mm/s\nG1 X32.6 Y-48 E21.641 F900\nG92 E0",
+    "machine_start_gcode": "; Koordinaten: Bettecke (Exporter verschiebt um -50 / -50)\nG161 X Y F2500 ; home XY axes minimum\nG161 Z F900 ; home Z axis minimum\n; MB_NATIVE G92 Z-5 ; set Z to -5\nG1 Z0.0 F900 ; move Z to '0'\nG161 Z F100 ; home Z axis minimum\nM132 X Y Z A B ; Recall stored home offsets\nG1 X10 Y10 Z6 F3300.0 ; move to waiting position\nG130 X20 Y20 A20 B20 ; Lower stepper Vrefs while heating\nM135 T0 ; Load right Toolhead\nM104 S[nozzle_temperature_initial_layer] T0\nM133 T0 ; Wait for Toolhead to heat\nG130 X127 Y127 A127 B127 ; Set Stepper motor Vref to defaults\n; Anker Extruder (MiracleGrue anchorExtrusionAmount/anchorWidth)\nM135 T0\nG1 X12.6 Y2 Z0.2 F3300\nG92 E0\nG1 E10 F120 ; Blob, 10 mm bei 2 mm/s\nG1 X82.6 Y2 E21.641 F900\nG92 E0",
     "machine_end_gcode": "M18 A B ; Turn off A and B Steppers\nG1 Z155 F900\nG162 X Y F2000\nM18 X Y Z ; Turn off steppers after a build\nM140 S0 T0\nM104 S0 T0\nM70 P5 ; We <3 Making Things!\nM72 P1 ; Play Ta-Da song",
     "use_relative_e_distances": "0",
     "default_bed_type": "1",

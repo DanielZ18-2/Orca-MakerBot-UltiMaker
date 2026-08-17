@@ -195,6 +195,8 @@ set(lisbslic3r_sources
     Format/MakerBotToolpath.hpp
     Format/GPXExport.cpp
     Format/GPXExport.hpp
+    Format/MakerBotCoords.cpp
+    Format/MakerBotCoords.hpp
     Format/MakerbotTranslator.cpp
     Format/MakerbotTranslator.hpp
     Format/UltimakerUFPExport.cpp

@@ -91,3 +91,6 @@ machine_config_*.json
 __pycache__/
 *.pyc
 >>>>>>> v2.4.2
+
+# Sicherungen der Werkzeug-Skripte
+*.bak_*
