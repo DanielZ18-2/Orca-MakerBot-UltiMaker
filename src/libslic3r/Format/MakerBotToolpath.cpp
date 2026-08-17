@@ -749,13 +749,26 @@ std::string gcode_to_birdwing_jsontoolpath(
                     tag = "Restart";
                     retracted = false;
                 } else {
-                    // FIX: prev_x/prev_y instead of cur_x/cur_y (cur was already updated!)
-                    const double dx   = nx - prev_x;
-                    const double dy   = ny - prev_y;
-                    const double dist = std::sqrt(dx*dx + dy*dy);
-                    tag = (dist < 0.5 && current_tag != "Support")
-                          ? "Trailing Extrusion Move"
-                          : current_tag;
+                    // A short extruding segment still belongs to its feature.
+                    //
+                    // This used to re-tag every extruding move below 0.5 mm as
+                    // "Trailing Extrusion Move". That tag means something else
+                    // to MakerBot: in their own export (method_dual_test.makerbot,
+                    // bot lava_f) it carries 181 moves and not one of them
+                    // extrudes - it is the trailing move AFTER extrusion stops.
+                    //
+                    // The heuristic cost the classification of 30271 of 79265
+                    // extruding moves (38 %) on a Z18 tower. No material was
+                    // lost - net extrusion matched meta.json exactly - but
+                    // MiracleGrue drives speed and fan from the extrusion
+                    // profile (insetsExtrusionProfile, infillsExtrusionProfile,
+                    // outlinesExtrusionProfile ...), so an untagged move runs on
+                    // defaults instead of its own profile.
+                    //
+                    // "Trailing Extrusion Move" stays reserved for moves that do
+                    // NOT extrude; Orca marks those with ";TYPE:Wipe", which the
+                    // tag table above already maps.
+                    tag = current_tag;
                 }
             } else if (e_raw < -1e-4) {
                 // Negative E on an XY move -> retract during motion (rare)
