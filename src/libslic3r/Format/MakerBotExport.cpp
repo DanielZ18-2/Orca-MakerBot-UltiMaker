@@ -59,6 +59,17 @@ std::string get_archive_extension(GCodeFlavor flavor)
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
 
+
+// Splits a comma separated per-extruder list from the G-code settings block.
+static std::vector<std::string> split_list(const std::string& value)
+{
+    std::vector<std::string> out;
+    boost::algorithm::split(out, value, boost::is_any_of(","));
+    for (std::string& s : out)
+        boost::algorithm::trim(s);
+    return out;
+}
+
 // All settings read from the G-code settings block in a single pass
 struct HeaderData
 {
@@ -67,6 +78,10 @@ struct HeaderData
     int         first_layer_temp             = 215;
     int         temperature                  = 215;
     int         chamber_temp                 = 0;
+    // Orca writes the value and the switch separately; without the switch we
+    // would heat a chamber the profile has turned off. See below.
+    bool        chamber_active               = true;
+    bool        saw_chamber_active           = false;
     double      layer_height                 = 0.20;
     double      first_layer_height           = 0.20;
     int         wall_loops                   = 2;
@@ -272,6 +287,15 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key == "nozzle_temperature" || key == "temperature")
                                                 h.temperature                  = parse_int_safe(val, h.temperature);
         else if (key == "chamber_temperature") h.chamber_temp                  = parse_int_safe(val, h.chamber_temp);
+        else if (key == "activate_chamber_temp_control") {
+            // Per-extruder list, e.g. "0,0" or "1,0". Orca treats the chamber as
+            // active when ANY extruder asks for it (GCode.cpp:3019 ORs them), and
+            // only then emits the heating commands (GCode.cpp:3138 / 3518).
+            h.saw_chamber_active = true;
+            h.chamber_active     = false;
+            for (const std::string& part : split_list(val))
+                if (parse_int_safe(part, 0) != 0) { h.chamber_active = true; break; }
+        }
         else if (key == "total layer number")  h.num_layers                    = parse_int_safe(val, h.num_layers);
         else if (key == "layer_height")        h.layer_height                  = parse_double_safe(val, h.layer_height);
         else if (key == "first_layer_height")  h.first_layer_height            = parse_double_safe(val, h.first_layer_height);
@@ -322,6 +346,19 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key.find("estimated printing time") != std::string::npos)
                                                h.duration_s                    = std::max(h.duration_s, hms_to_seconds(val));
     }
+
+    // The chamber is only heated when the profile asks for it.
+    //
+    // parse_header() used to read chamber_temperature alone and pass it
+    // straight into meta.json, so a profile with the switch turned off still
+    // produced a heated chamber. Measured on a Z18 PLA tower: the filament
+    // profile carried activate_chamber_temp_control = 0 and the file still
+    // said chamber_temperature = 40.
+    //
+    // If the key is absent - older files, a different slicer - keep the old
+    // behaviour rather than silently disabling a chamber someone may need.
+    if (h.saw_chamber_active && !h.chamber_active)
+        h.chamber_temp = 0;
 
     // select the plate temperature matching the chosen build plate.
     // Without this, hot_plate_temp always ends up in meta.json, even if the
