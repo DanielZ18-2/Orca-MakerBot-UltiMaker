@@ -32,7 +32,7 @@
     "top_surface_speed": "32",
     "support_speed": "21",
     "initial_layer_speed": "22",
-    "initial_layer_travel_speed": "60",
+    "initial_layer_travel_speed": "45",
     "default_acceleration": "500",
     "outer_wall_acceleration": "500",
     "inner_wall_acceleration": "500",
