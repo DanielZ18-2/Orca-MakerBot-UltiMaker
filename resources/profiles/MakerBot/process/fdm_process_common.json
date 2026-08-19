@@ -28,7 +28,7 @@
     "infill_wall_overlap": "25%",
     "sparse_infill_speed": "50",
     "interface_shells": "0",
-    "detect_overhang_wall": "0",
+    "detect_overhang_wall": "1",
     "reduce_infill_retraction": "0",
     "wall_loops": "3",
     "inner_wall_line_width": "0.45",
@@ -46,5 +46,10 @@
     "enable_support": "0",
     "support_filament": "0",
     "support_line_width": "0.42",
-    "support_interface_filament": "0"
+    "support_interface_filament": "0",
+    "role_based_wipe_speed": "0",
+    "wipe_speed": "22",
+    "overhang_2_4_speed": "75%",
+    "overhang_3_4_speed": "50%",
+    "overhang_4_4_speed": "30%"
 }
