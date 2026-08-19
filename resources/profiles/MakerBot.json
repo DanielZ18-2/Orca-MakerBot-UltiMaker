@@ -1,6 +1,6 @@
 {
     "name": "MakerBot",
-    "version": "01.00.01.00",
+    "version": "01.00.02.00",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "MakerBot configurations",
