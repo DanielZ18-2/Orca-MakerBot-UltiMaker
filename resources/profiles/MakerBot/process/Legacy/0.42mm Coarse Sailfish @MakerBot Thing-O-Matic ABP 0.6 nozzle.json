@@ -1,0 +1,14 @@
+{
+    "type": "process",
+    "setting_id": "0.42mm Coarse Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+    "name": "0.42mm Coarse Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+    "inherits": "0.42mm Coarse @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+    "from": "system",
+    "instantiation": "true",
+    "description": "Nur fuer Drucker mit Sailfish-Firmware. Das Grundprofil ohne \"Sailfish\" im Namen ist auf die Werksfirmware ausgelegt, die keine Beschleunigungssteuerung besitzt und oberhalb von 50 mm/s Schritte verlieren kann. Vor der Wahl einmal die Firmware auslesen (eeprom_2x_lesen.gcode) - steht dort Version 7.x mit Variante 0x80, ist es Sailfish.",
+    "compatible_printers": [
+        "MakerBot Thing-O-Matic ABP 0.6 nozzle"
+    ],
+    "initial_layer_travel_speed": "80",
+    "default_acceleration": "800"
+}

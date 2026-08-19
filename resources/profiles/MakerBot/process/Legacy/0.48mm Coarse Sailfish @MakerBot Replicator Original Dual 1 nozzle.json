@@ -1,0 +1,15 @@
+{
+    "type": "process",
+    "setting_id": "0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+    "name": "0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+    "inherits": "0.48mm Coarse @MakerBot Replicator Original Dual 1 nozzle",
+    "from": "system",
+    "instantiation": "true",
+    "description": "Nur fuer Drucker mit Sailfish-Firmware. Das Grundprofil ohne \"Sailfish\" im Namen ist auf die Werksfirmware ausgelegt, die keine Beschleunigungssteuerung besitzt und oberhalb von 50 mm/s Schritte verlieren kann. Vor der Wahl einmal die Firmware auslesen (eeprom_2x_lesen.gcode) - steht dort Version 7.x mit Variante 0x80, ist es Sailfish.",
+    "compatible_printers": [
+        "MakerBot Replicator Original Dual 1 nozzle"
+    ],
+    "travel_speed": "100",
+    "initial_layer_travel_speed": "100",
+    "default_acceleration": "1000"
+}

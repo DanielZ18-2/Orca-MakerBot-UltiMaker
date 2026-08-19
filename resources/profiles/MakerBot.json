@@ -1338,6 +1338,734 @@
         {
             "name": "0.16mm Optimal @MakerBot Method 0.4 nozzle",
             "sub_path": "process/Lava/0.16mm Optimal @MakerBot Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.04mm Ultra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle",
+            "sub_path": "process/Legacy/0.04mm Ultra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle.json"
+        },
+        {
+            "name": "0.04mm Ultra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle",
+            "sub_path": "process/Legacy/0.04mm Ultra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle.json"
+        },
+        {
+            "name": "0.04mm Ultra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle",
+            "sub_path": "process/Legacy/0.04mm Ultra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle.json"
+        },
+        {
+            "name": "0.04mm Ultra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle",
+            "sub_path": "process/Legacy/0.04mm Ultra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle",
+            "sub_path": "process/Legacy/0.06mm Ultra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle",
+            "sub_path": "process/Legacy/0.06mm Ultra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle",
+            "sub_path": "process/Legacy/0.06mm Ultra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle",
+            "sub_path": "process/Legacy/0.06mm Ultra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.08mm Extra Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle",
+            "sub_path": "process/Legacy/0.10mm Extra Fine Sailfish @MakerBot Replicator 2 0.2 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle",
+            "sub_path": "process/Legacy/0.10mm Extra Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle",
+            "sub_path": "process/Legacy/0.10mm Extra Fine Sailfish @MakerBot Replicator Original 0.2 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle",
+            "sub_path": "process/Legacy/0.10mm Extra Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2 0.2 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2 0.2 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2X 0.2 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original 0.2 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original 0.2 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.2 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.12mm Fine Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.16mm Optimal Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.20mm Standard Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.24mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Cupcake CNC 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Cupcake CNC 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2X 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.28mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.32mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.36mm Draft Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.40mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Cupcake CNC 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Cupcake CNC 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Replicator 2 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Replicator 2 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Replicator 2X 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Replicator 2X 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Replicator Original 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Replicator Original 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Replicator Original Dual 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Replicator Original Dual 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Thing-O-Matic ABP 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle",
+            "sub_path": "process/Legacy/0.42mm Coarse Sailfish @MakerBot Thing-O-Matic Acrylic 0.6 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.48mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.56mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle",
+            "sub_path": "process/Legacy/0.56mm Coarse Sailfish @MakerBot Replicator 2 0.8 nozzle.json"
+        },
+        {
+            "name": "0.56mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle",
+            "sub_path": "process/Legacy/0.56mm Coarse Sailfish @MakerBot Replicator 2X 0.8 nozzle.json"
+        },
+        {
+            "name": "0.56mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle",
+            "sub_path": "process/Legacy/0.56mm Coarse Sailfish @MakerBot Replicator Original 0.8 nozzle.json"
+        },
+        {
+            "name": "0.56mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle",
+            "sub_path": "process/Legacy/0.56mm Coarse Sailfish @MakerBot Replicator Original Dual 0.8 nozzle.json"
+        },
+        {
+            "name": "0.60mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.60mm Coarse Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.60mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.60mm Coarse Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.60mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.60mm Coarse Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.60mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.60mm Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
+        },
+        {
+            "name": "0.72mm Extra Coarse Sailfish @MakerBot Replicator 2 1 nozzle",
+            "sub_path": "process/Legacy/0.72mm Extra Coarse Sailfish @MakerBot Replicator 2 1 nozzle.json"
+        },
+        {
+            "name": "0.72mm Extra Coarse Sailfish @MakerBot Replicator 2X 1 nozzle",
+            "sub_path": "process/Legacy/0.72mm Extra Coarse Sailfish @MakerBot Replicator 2X 1 nozzle.json"
+        },
+        {
+            "name": "0.72mm Extra Coarse Sailfish @MakerBot Replicator Original 1 nozzle",
+            "sub_path": "process/Legacy/0.72mm Extra Coarse Sailfish @MakerBot Replicator Original 1 nozzle.json"
+        },
+        {
+            "name": "0.72mm Extra Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle",
+            "sub_path": "process/Legacy/0.72mm Extra Coarse Sailfish @MakerBot Replicator Original Dual 1 nozzle.json"
         }
     ],
     "filament_list": [
