@@ -45,5 +45,7 @@
     "top_surface_acceleration": "500",
     "initial_layer_infill_speed": "30",
     "travel_speed_z": "3.0",
-    "sparse_infill_density": "10%"
+    "sparse_infill_density": "10%",
+    "max_volumetric_extrusion_rate_slope": "24",
+    "max_volumetric_extrusion_rate_slope_segment_length": "2.5"
 }
