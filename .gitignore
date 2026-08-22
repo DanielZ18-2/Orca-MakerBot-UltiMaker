@@ -94,3 +94,7 @@ __pycache__/
 
 # Sicherungen der Werkzeug-Skripte
 *.bak_*
+
+# Lokale Analyseartefakte, bei Bedarf neu erzeugen
+cleanup_report/
+fork_delta_inventory.txt
