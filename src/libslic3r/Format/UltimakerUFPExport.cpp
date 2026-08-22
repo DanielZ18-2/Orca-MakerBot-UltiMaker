@@ -66,7 +66,10 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
                 const size_t semi = line.find(';');
                 if (semi == std::string::npos || semi > e_pos) {
                     const double e = parse_double_safe(line.substr(e_pos + 1), 0.0);
-                    if (e > 0.0) d.total_filament_mm += e;
+                    // Relatives E: Retraktionen (negativ) muessen gegengerechnet werden,
+                    // sonst zaehlt jede Prime-Bewegung als zusaetzliches Filament.
+                    // Belegt an spielpruefer_40mm_ABS: 3680.82 mm gemeldet, 976.82 mm real.
+                    d.total_filament_mm += e;
                 }
             }
             continue;
