@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cctype>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <limits>
@@ -40,6 +41,19 @@
 
 namespace Slic3r {
 namespace MakerBotExport {
+
+namespace {
+
+// Same helper as GPXExport.cpp - std::getenv returns a raw pointer that may
+// be null; wrapping it keeps the call sites readable.
+std::string getenv_string(const char* name)
+{
+    const char* value = std::getenv(name);
+    return value ? std::string(value) : std::string();
+}
+
+} // namespace
+
 
 // ── Public: archive extension helper ────────────────────────────────────────
 
@@ -1070,11 +1084,27 @@ std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& co
         return {};
     }
 
-    // Remove the source .gcode file (user got the archive). gcode_source is
-    // now GUARANTEED to differ from archive_path - either it was already a
-    // distinct path, or it is our temp staging file - so this can never
-    // remove the archive we just wrote.
-    try { fs::remove(gcode_source); } catch (...) {}
+    // Diagnostics: keep the intermediate G-code next to the archive when
+    // ORCA_MAKERBOT_KEEP_GCODE is set. Mirrors ORCA_GPX_KEEP_GCODE in
+    // GPXExport.cpp. Chasing a conversion bug means comparing the input and
+    // the output of the SAME run - exporting them separately gives two slices
+    // that may differ in filament or process preset without anyone noticing.
+    //
+    // gcode_source is GUARANTEED to differ from archive_path here - either it
+    // was already a distinct path, or it is our temp staging file - so neither
+    // branch can touch the archive we just wrote.
+    if (! getenv_string("ORCA_MAKERBOT_KEEP_GCODE").empty()) {
+        const std::string kept = archive_path + ".gcode";
+        try {
+            fs::rename(gcode_source, kept);
+            BOOST_LOG_TRIVIAL(info) << "MakerBotExport: intermediate G-code kept at " << kept;
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(warning) << "MakerBotExport: could not keep intermediate G-code: " << e.what();
+            try { fs::remove(gcode_source); } catch (...) {}
+        }
+    } else {
+        try { fs::remove(gcode_source); } catch (...) {}
+    }
 
     BOOST_LOG_TRIVIAL(info) << "MakerBotExport: archive at " << archive_path;
     return archive_path;
