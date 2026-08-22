@@ -107,5 +107,6 @@
         "Standard",
         "Standard"
     ],
-    "gpx_machine_type": ""
+    "gpx_machine_type": "",
+    "single_extruder_multi_material": "0"
 }

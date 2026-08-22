@@ -96,5 +96,6 @@
     ],
     "retraction_speed": [
         "45"
-    ]
+    ],
+    "single_extruder_multi_material": "0"
 }
