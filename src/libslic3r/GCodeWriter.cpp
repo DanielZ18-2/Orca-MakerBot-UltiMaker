@@ -93,7 +93,14 @@ std::string GCodeWriter::preamble()
         FLAVOR_IS(gcfTeacup) ||
         FLAVOR_IS(gcfRepetier) ||
         FLAVOR_IS(gcfSmoothie) ||
-        FLAVOR_IS(gcfKlipper))
+        FLAVOR_IS(gcfKlipper) ||
+        // Ohne diese vier steht im erzeugten G-Code keine Ansage des
+        // E-Modus. GCodeProcessor nimmt dann "absolut" an und verliert
+        // beim Aufbau der Vorschau den groessten Teil der Wandsegmente.
+        FLAVOR_IS(gcfMakerBotLegacy) ||
+        FLAVOR_IS(gcfMakerBotBirdwing) ||
+        FLAVOR_IS(gcfMakerBotLava) ||
+        FLAVOR_IS(gcfUltiGCode))
     {
         if (this->config.use_relative_e_distances) {
             gcode << "M83 ; use relative distances for extrusion\n";
