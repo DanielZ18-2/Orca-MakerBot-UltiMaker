@@ -91,16 +91,16 @@ static std::string orca_type_to_birdwing_tag(const std::string& orca_type)
     if (orca_type == "Internal solid infill")  return "Infill";
     if (orca_type == "Top surface")            return "Infill";
     if (orca_type == "Bottom surface")         return "Infill";
-    if (orca_type == "Bridge infill")          return "Bridge";
-    if (orca_type == "Internal Bridge infill") return "Bridge";
+    if (orca_type == "Bridge")                 return "Bridge";
+    if (orca_type == "Internal Bridge")        return "Bridge";
     if (orca_type == "Support")                return "Support";
     if (orca_type == "Support interface")      return "Support";
     if (orca_type == "Overhang wall")          return "Outline";
     if (orca_type == "Skirt")                  return "Outline";
     if (orca_type == "Brim")                   return "Outline";
-    if (orca_type == "Raft")                   return "Infill";
+    if (orca_type == "Support transition")     return "Support";
     if (orca_type == "Custom")                 return ""; // start/end gcode → skip
-    if (orca_type == "Wipe")                   return "Trailing Extrusion Move";
+    if (orca_type == "Ironing")                return "Infill";
     return "Infill"; // sicherer Default
 }
 
