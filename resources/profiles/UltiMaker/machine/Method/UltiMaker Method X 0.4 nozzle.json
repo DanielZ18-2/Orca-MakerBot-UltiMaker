@@ -95,13 +95,13 @@
         "0.5"
     ],
     "deretraction_speed": [
-        "30"
+        "5"
     ],
     "retract_restart_extra": [
         "0.1"
     ],
     "retraction_speed": [
-        "50"
+        "5"
     ],
     "default_nozzle_volume_type": [
         "Standard",

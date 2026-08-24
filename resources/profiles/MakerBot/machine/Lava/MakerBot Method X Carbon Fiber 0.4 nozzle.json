@@ -100,13 +100,13 @@
         "0.5"
     ],
     "deretraction_speed": [
-        "30"
+        "5"
     ],
     "retract_restart_extra": [
         "0"
     ],
     "retraction_speed": [
-        "50"
+        "5"
     ],
     "single_extruder_multi_material": "0"
 }
