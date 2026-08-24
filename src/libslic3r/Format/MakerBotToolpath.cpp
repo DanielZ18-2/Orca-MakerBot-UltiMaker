@@ -244,6 +244,33 @@ std::string gcode_to_birdwing_jsontoolpath(
     // Only a real switch to T1+ makes it a dual job. Orca emits a single "T0"
     // even for single-material prints on a dual machine, which must stay
     // single-axis output.
+    // ── Einstellungen je Extruder aus dem G-Code-Fuss ──────────────────────
+    // Ohne sie bleibt tool_temp[1] in Dualauftraegen auf -1, und der
+    // eintretende Extruder erhaelt nie seine Drucktemperatur. Gemessen an
+    // 3DBenchy_ABS_3h9m.makerbot (Method X, ABS + PETG): 75x Ruhetemperatur
+    // 180 fuer Werkzeug 1, kein einziges Mal die eingestellten 240, bei
+    // 95893 Extrusionsbewegungen auf der b-Achse.
+    std::vector<double> cfg_nozzle_temp;         // nozzle_temperature = 245,240
+    std::vector<double> cfg_nozzle_temp_first;   // nozzle_temperature_initial_layer
+    std::vector<double> cfg_idle_temp;           // idle_temperature, coInts je Extruder
+    double              cfg_standby_delta = -5.0;
+
+    auto parse_num_list = [](const std::string& s) {
+        std::vector<double> out;
+        std::string cur;
+        for (char c : s) {
+            if (c == ',' || c == ';') {
+                if (!cur.empty()) out.push_back(std::atof(cur.c_str()));
+                cur.clear();
+            } else {
+                cur.push_back(c);
+            }
+        }
+        if (!cur.empty()) out.push_back(std::atof(cur.c_str()));
+        return out;
+    };
+
+
     bool dual_job = false;
     {
         std::ifstream pre(gcode_path);
@@ -256,11 +283,31 @@ std::string gcode_to_birdwing_jsontoolpath(
             const size_t s = l.find(';');
             std::string body = (s != std::string::npos) ? l.substr(0, s) : l;
             boost::trim(body);
+
+            // Einstellungsblock am Dateiende: nur reine Kommentarzeilen
+            if (s == 0) {
+                std::string cline = l.substr(1);
+                boost::trim(cline);
+                const size_t eqp = cline.find('=');
+                if (eqp != std::string::npos) {
+                    std::string ckey = cline.substr(0, eqp);
+                    std::string cval = cline.substr(eqp + 1);
+                    boost::trim(ckey);
+                    boost::trim(cval);
+                    if (ckey == "nozzle_temperature")
+                        cfg_nozzle_temp = parse_num_list(cval);
+                    else if (ckey == "nozzle_temperature_initial_layer")
+                        cfg_nozzle_temp_first = parse_num_list(cval);
+                    else if (ckey == "idle_temperature")
+                        cfg_idle_temp = parse_num_list(cval);
+                    else if (ckey == "standby_temperature_delta")
+                        cfg_standby_delta = std::atof(cval.c_str());
+                }
+            }
             if (body.size() >= 2 && (body[0] == 'T' || body[0] == 't') &&
                 std::isdigit(static_cast<unsigned char>(body[1])) &&
                 std::atoi(body.c_str() + 1) != 0) {
                 dual_job = true;
-                break;
             }
         }
     }
@@ -328,9 +375,36 @@ std::string gcode_to_birdwing_jsontoolpath(
     double axis_retracted[2] = {0.0, 0.0};
     // Per-tool target temperature, filled from M104/M109 (with or without T).
     double tool_temp[2]  = {-1.0, -1.0};
+
+    // Vorbelegung aus dem Einstellungsblock. M104/M109 ueberschreiben sie
+    // spaeter, falls vorhanden - fuer Werkzeug 1 gibt es sie aber nicht,
+    // weil der Start-G-Code nur T0 heizt.
+    for (int ti = 0; ti < 2; ++ti) {
+        if (static_cast<int>(cfg_nozzle_temp.size()) > ti && cfg_nozzle_temp[ti] > 0.0)
+            tool_temp[ti] = cfg_nozzle_temp[ti];
+        else if (static_cast<int>(cfg_nozzle_temp_first.size()) > ti && cfg_nozzle_temp_first[ti] > 0.0)
+            tool_temp[ti] = cfg_nozzle_temp_first[ti];
+    }
     // Standby temperature of the idle extruder. 180 C in the reference file;
     // MakerBot uses a fixed standby, Orca has no matching setting.
     const int STANDBY_TEMP = 180;
+
+    // Ruhetemperatur des ruhenden Extruders, in dieser Reihenfolge:
+    //   1) idle_temperature[n], falls der Anwender sie gesetzt hat
+    //   2) 180 als Vorgabe - MakerBots gemessener Wert; auf den eintretenden
+    //      Extruder wird ohnehin gewartet (wait_for_temperature), ein kaltes
+    //      Ruhen kostet also Zeit, aber keine Qualitaet
+    //   3) liegt die Drucktemperatur UNTER 180, waere die Vorgabe zu heiss;
+    //      dann Drucktemperatur plus standby_temperature_delta
+    auto standby_for = [&](int tool) -> int {
+        if (tool >= 0 && tool < 2) {
+            if (static_cast<int>(cfg_idle_temp.size()) > tool && cfg_idle_temp[tool] > 0.0)
+                return static_cast<int>(cfg_idle_temp[tool] + 0.5);
+            if (tool_temp[tool] > 0.0 && tool_temp[tool] < static_cast<double>(STANDBY_TEMP))
+                return static_cast<int>(tool_temp[tool] + cfg_standby_delta + 0.5);
+        }
+        return STANDBY_TEMP;
+    };
     // Tool-change retract/prime: 1.0 mm at 5 mm/s, both directions, measured
     // over all 49 changes of the reference file (48 retracts, 49 primes).
     const double TOOLCHANGE_RETRACT = 1.0;
@@ -624,7 +698,7 @@ std::string gcode_to_birdwing_jsontoolpath(
 
                 // 2) outgoing extruder to standby, its fan on
                 commands.push_back(make_command("set_toolhead_temperature",
-                    {{"index", old_tool}, {"temperature", STANDBY_TEMP}},
+                    {{"index", old_tool}, {"temperature", standby_for(old_tool)}},
                     nlohmann::json::array(), false));
                 commands.push_back(make_command("toggle_fan",
                     {{"index", old_tool}, {"value", true}},
