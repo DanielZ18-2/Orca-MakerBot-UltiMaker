@@ -47,7 +47,34 @@ struct GriffinSourceData
     int    duration_s         = 0;
     int    num_layers         = 0;
     double total_filament_mm  = 0.0;
+    // Per extruder instead of one scalar for every train. Measured on a
+    // Method X dual export: nozzle_temperature_initial_layer = 245,240 yet
+    // train 1 received 245; filament used [cm3] = 9.36, 9.10 yet train 1
+    // received 0.0.
+    std::vector<double> first_layer_temps;   // fallback, see build_griffin_header
+    std::vector<double> volume_used_mm3;     // from "filament used [cm3]", x1000
 };
+
+// Splits "245,240" or "9.36, 9.10" into a list. Orca writes multi-value
+// settings comma- or semicolon-separated into the G-code footer.
+static std::vector<double> parse_double_list(const std::string& s)
+{
+    std::vector<double> out;
+    std::string cur;
+    for (char c : s) {
+        if (c == ',' || c == ';') {
+            boost::algorithm::trim(cur);
+            if (!cur.empty()) out.push_back(parse_double_safe(cur, 0.0));
+            cur.clear();
+        } else {
+            cur.push_back(c);
+        }
+    }
+    boost::algorithm::trim(cur);
+    if (!cur.empty()) out.push_back(parse_double_safe(cur, 0.0));
+    return out;
+}
+
 
 static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path)
 {
@@ -101,13 +128,33 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
         boost::algorithm::to_lower(key);
 
         if      (key == "nozzle_temperature_initial_layer" || key == "first_layer_temperature")
-                                                d.first_layer_temp  = parse_double_safe(val, d.first_layer_temp);
+                                                {
+            d.first_layer_temp  = parse_double_safe(val, d.first_layer_temp);
+            {
+                std::vector<double> lst = parse_double_list(val);
+                if (!lst.empty()) d.first_layer_temps = lst;
+            }
+        }
         else if (key == "layer_height")        d.layer_height       = parse_double_safe(val, d.layer_height);
         else if (key == "filament_diameter")   d.filament_diameter  = parse_double_safe(val, d.filament_diameter);
         else if (key == "filament_density")    d.filament_density   = parse_double_safe(val, d.filament_density);
         else if (key == "total layer number")  d.num_layers         = parse_int_safe(val, d.num_layers);
         else if (key.find("estimated printing time") != std::string::npos)
                                                 d.duration_s         = std::max(d.duration_s, hms_to_seconds(val));
+        else if (key == "nozzle_temperature") {
+            // Fallback only; the authoritative source is PrintConfig.
+            if (d.first_layer_temps.empty()) {
+                std::vector<double> lst = parse_double_list(val);
+                if (!lst.empty()) d.first_layer_temps = lst;
+            }
+        }
+        else if (key == "filament used [cm3]") {
+            // Orca already computed this per extruder - more accurate than
+            // deriving it from a single filament diameter.
+            std::vector<double> lst = parse_double_list(val);
+            d.volume_used_mm3.clear();
+            for (double v : lst) d.volume_used_mm3.push_back(v * 1000.0);
+        }
     }
     return d;
 }
@@ -187,13 +234,31 @@ static std::string build_griffin_header(
     hdr << ";PRINT.SIZE.MAX.Y:" << bbox.max_y << "\n";
     hdr << ";PRINT.SIZE.MAX.Z:" << bbox.max_z << "\n";
     hdr << ";BUILD_PLATE.INITIAL_TEMPERATURE:" << bed_temp << "\n";
+    // Initial temperature per extruder, straight from the configuration.
+    // The G-code settings block is NOT a reliable source here: the UFP
+    // packer reads the file before Orca appends CONFIG_BLOCK_START, so
+    // nozzle_temperature_initial_layer never arrives. Everything this
+    // header gets right comes from before that marker.
+    std::vector<int> cfg_first_temps;
+    if (const auto* opt = config.option("nozzle_temperature_initial_layer"))
+        if (const auto* v = dynamic_cast<const ConfigOptionInts*>(opt))
+            cfg_first_temps = v->values;
+    if (cfg_first_temps.empty())
+        if (const auto* opt = config.option("nozzle_temperature"))
+            if (const auto* v = dynamic_cast<const ConfigOptionInts*>(opt))
+                cfg_first_temps = v->values;
+
     for (size_t i = 0; i < nozzle_d.size(); ++i) {
-        hdr << ";EXTRUDER_TRAIN." << i << ".INITIAL_TEMPERATURE:" << d.first_layer_temp << "\n";
-        // Without tool-change tracking in parse_griffin_source_data(),
-        // the entire filament usage is attributed to extruder 0 (a deliberate,
-        // documented simplification; 0.0 for tool 1+ is still a
-        // value valid per the spec, isAPositiveNumber() allows >= 0).
-        hdr << ";EXTRUDER_TRAIN." << i << ".MATERIAL.VOLUME_USED:" << (i == 0 ? volume_used_mm3 : 0.0) << "\n";
+        double t_i = d.first_layer_temp;
+        if (i < cfg_first_temps.size() && cfg_first_temps[i] > 0)
+            t_i = static_cast<double>(cfg_first_temps[i]);
+        else if (i < d.first_layer_temps.size() && d.first_layer_temps[i] > 0.0)
+            t_i = d.first_layer_temps[i];
+        double v_i = (i == 0) ? volume_used_mm3 : 0.0;
+        if (i < d.volume_used_mm3.size())
+            v_i = d.volume_used_mm3[i];
+        hdr << ";EXTRUDER_TRAIN." << i << ".INITIAL_TEMPERATURE:" << t_i << "\n";
+        hdr << ";EXTRUDER_TRAIN." << i << ".MATERIAL.VOLUME_USED:" << v_i << "\n";
         hdr << ";EXTRUDER_TRAIN." << i << ".NOZZLE.DIAMETER:" << nozzle_d[i] << "\n";
     }
     hdr << ";END_OF_HEADER\n";
