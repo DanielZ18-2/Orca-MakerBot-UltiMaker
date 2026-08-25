@@ -272,6 +272,9 @@ std::string gcode_to_birdwing_jsontoolpath(
 
 
     bool dual_job = false;
+    // Highest tool index the job addresses. The toolpath format has two
+    // extruder axes, so anything above 1 cannot be represented.
+    int max_tool_seen = 0;
     {
         std::ifstream pre(gcode_path);
         if (!pre.is_open()) {
@@ -305,13 +308,26 @@ std::string gcode_to_birdwing_jsontoolpath(
                 }
             }
             if (body.size() >= 2 && (body[0] == 'T' || body[0] == 't') &&
-                std::isdigit(static_cast<unsigned char>(body[1])) &&
-                std::atoi(body.c_str() + 1) != 0) {
-                dual_job = true;
+                std::isdigit(static_cast<unsigned char>(body[1]))) {
+                const int tn = std::atoi(body.c_str() + 1);
+                if (tn != 0) dual_job = true;
+                if (tn > max_tool_seen) max_tool_seen = tn;
             }
         }
     }
     g_dual_axes = dual_job;
+
+    // A tool index beyond 1 would silently lose all its extrusion:
+    // make_move_params() puts 0.0 on both axes for an unknown tool, so the
+    // moves are written as travels and the object prints as air. Refuse.
+    if (max_tool_seen > 1) {
+        error = "This job uses extruder T" + std::to_string(max_tool_seen) +
+                ", but the MakerBot toolpath format supports two extruders "
+                "(T0 and T1) only. A project file may have brought more "
+                "filaments than this printer has extruders. Load the objects "
+                "individually and assign filaments 1 and 2 only.";
+        return "";
+    }
 
     std::ifstream f(gcode_path);
     if (!f.is_open()) {
