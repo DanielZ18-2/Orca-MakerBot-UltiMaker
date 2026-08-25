@@ -80,7 +80,7 @@
     "use_relative_e_distances": "0",
     "default_bed_type": "1",
     "retraction_length": [
-        "0.0"
+        "1.3"
     ],
     "deretraction_speed": [
         "25"
