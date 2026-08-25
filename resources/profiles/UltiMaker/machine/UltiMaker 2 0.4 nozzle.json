@@ -94,16 +94,16 @@
         "70%"
     ],
     "retraction_length": [
-        "4.5"
+        "6.5"
     ],
     "retract_length_toolchange": [
         "10"
     ],
     "retraction_speed": [
-        "35"
+        "25"
     ],
     "deretraction_speed": [
-        "0"
+        "25"
     ],
     "wipe_distance": [
         "0.2"

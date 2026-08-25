@@ -79,12 +79,12 @@
         "6.5"
     ],
     "deretraction_speed": [
-        "45"
+        "25"
     ],
     "retract_restart_extra": [
         "0"
     ],
     "retraction_speed": [
-        "45"
+        "25"
     ]
 }
