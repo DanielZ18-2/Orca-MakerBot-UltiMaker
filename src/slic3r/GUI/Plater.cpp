@@ -400,16 +400,48 @@ smart_extruder_sidebar_items_for_config(const DynamicPrintConfig& cfg, int slot)
         };
     }
     if (is_lava_method || printer_model_looks_like_method(id)) {
-        if (slot == 0) return {
-            {"mk14",          _L("Model Extruder (1A)"),   "method mk14_cover.png"},
-            {"mk14_hot",      _L("Model Extruder 1XA"),    "method mk14 hot_cover.png"},
-            {"mk14_c",        _L("Composite Extruder 1C"), "method mk14 c_cover.png"},
-            {"labs_extruder", _L("LABS Gen 2 Extruder"),   "method labs_cover.png"}
+        // Which extruders a machine accepts is stated by its own firmware, in
+        // printer_settings.json, key supported_tool_types.<bay>.<type>.pairs_with:
+        //
+        //   Method    (bot_type fire_e)   bay A: mk14, mk14_c, mk14_e
+        //                                 bay B: mk14, mk14_s
+        //   Method X  (bot_type lava_f)   bay A: additionally mk14_hot, mk14_hot_e
+        //   Method XL (bot_type lava_f)   bay B: additionally mk14_hot_s
+        //
+        // MakerBot Print 4.10.1 (fire_e / lava_f supported_extruders), Cura
+        // (variants 1XA and 2XA exist for methodx and methodxl only) and
+        // MakerBot's own Extruder Compatibility Guide all agree: the plain
+        // Method does not take the high temperature extruders.
+        //
+        // Deliberately omitted:
+        //   mk14_hot_e   known to the firmware, but it has no display name in
+        //                Cura, no entry in MakerBot Print and not one of the
+        //                628 shipped profiles.
+        //   mk14 in bay B  allowed by the firmware, but the Compatibility
+        //                Guide does not list it as a support extruder and no
+        //                shipped profile puts it there.
+        const bool is_method_x = id.find("method x") != std::string::npos;
+
+        if (slot == 0) {
+            if (is_method_x) return {
+                {"mk14",     _L("Model Extruder (1A)"),   "method mk14_cover.png"},
+                {"mk14_hot", _L("Model Extruder 1XA"),    "method mk14 hot_cover.png"},
+                {"mk14_c",   _L("Composite Extruder 1C"), "method mk14 c_cover.png"},
+                {"mk14_e",   _L("LABS Gen 2 Extruder"),   "method labs_cover.png"}
+            };
+            return {
+                {"mk14",   _L("Model Extruder (1A)"),   "method mk14_cover.png"},
+                {"mk14_c", _L("Composite Extruder 1C"), "method mk14 c_cover.png"},
+                {"mk14_e", _L("LABS Gen 2 Extruder"),   "method labs_cover.png"}
+            };
+        }
+
+        if (is_method_x) return {
+            {"mk14_s",     _L("Support Extruder (2A)"), "method mk14 s_cover.png"},
+            {"mk14_hot_s", _L("Support Extruder 2XA"),  "method mk14 hot s_cover.png"}
         };
         return {
-            {"mk14_s",     _L("Support Extruder (2A)"),    "method mk14 s_cover.png"},
-            {"mk14_hot_s", _L("Support Extruder 2XA"),     "method mk14 hot s_cover.png"},
-            {"mk14_p",     _L("Support Extruder (SR-30)"), "method mk14 s_cover.png"}
+            {"mk14_s", _L("Support Extruder (2A)"), "method mk14 s_cover.png"}
         };
     }
     return {};
@@ -876,7 +908,7 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
     std::vector<std::string> _sv;
     if (const auto* o = cfg.opt<ConfigOptionStrings>("smart_extruder_type")) _sv = o->values;
     if (_is_birdwing) {
-        if (_sv.empty() || _sv[0].empty() || _sv[0] == "none") _sv = {"mk13_experimental"};
+        if (_sv.empty() || _sv[0].empty() || _sv[0] == "none") _sv = {"mk13"};
         _populate_se(combo_smart_extruder_1, image_smart_extruder_1, 0, _sv[0]);
     } else if (_is_lava) {
         if (_sv.size() < 2) _sv = {"mk14", "mk14_s"};
