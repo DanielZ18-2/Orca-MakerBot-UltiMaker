@@ -290,17 +290,34 @@ static std::string smart_extruder_identity_from_config(const DynamicPrintConfig&
     return boost::algorithm::to_lower_copy(identity);
 }
 
-static bool printer_model_looks_like_method(const std::string& m) { return m.find("method") != std::string::npos; }
+// The identity is a lower-cased concatenation of printer_model, model_id,
+// printer_notes and printer_vendor. Substring tests on it are cheap but
+// greedy, so every model test below is gated on the vendor first: "mini"
+// alone also matches a Bambu Lab A1 mini, a Prusa MINI, a Cubicon
+// xCeler-Mini and a RatRig V-Minion, and "method" is an ordinary English
+// word that can appear in any vendor's printer_notes.
+static bool printer_is_makerbot_or_ultimaker(const std::string& m)
+{
+    return m.find("makerbot")  != std::string::npos ||
+           m.find("ultimaker") != std::string::npos;
+}
+
+static bool printer_model_looks_like_method(const std::string& m)
+{
+    return printer_is_makerbot_or_ultimaker(m) &&
+           m.find("method") != std::string::npos;
+}
 static bool printer_model_looks_like_z18   (const std::string& m) { return m.find("z18")    != std::string::npos; }
 static bool printer_model_looks_like_sketch(const std::string& m) { return m.find("sketch")  != std::string::npos; }
 static bool printer_model_looks_like_birdwing(const std::string& m)
 {
+    if (!printer_is_makerbot_or_ultimaker(m)) return false;
     return printer_model_looks_like_z18(m) ||
-           m.find("replicator+")   != std::string::npos ||
-           m.find("replicator 5th") != std::string::npos ||
-           m.find("5th gen")       != std::string::npos ||
-           m.find("mini+")         != std::string::npos ||
-           m.find("mini")          != std::string::npos;
+           m.find("replicator+")     != std::string::npos ||
+           m.find("replicator 5th")  != std::string::npos ||
+           m.find("5th gen")         != std::string::npos ||
+           // covers the Mini and the Mini+, which contains it
+           m.find("replicator mini") != std::string::npos;
 }
 
 static bool smart_extruder_is_birdwing(const DynamicPrintConfig& cfg)
@@ -453,10 +470,14 @@ static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg)
     // gcfMakerBotLava + "method"-Name = MakerBot Method/X/XL
     // gcfUltiGCode  + "method"-Name   = UltiMaker Method X CF
     // gcfUltiGCode  without "method"   = UltiMaker Classic/S/Factor -> NO smart extruder
+    // The vendor check now lives in printer_model_looks_like_method, so the
+    // name test alone is enough. The flavor stays as a second, independent
+    // path: a printer on gcfMakerBotLava is a Lava machine whatever it is
+    // called. The previous condition ended in "|| name_is_method", which made
+    // the whole parenthesis always true and left the other two tests inert.
     const bool name_is_method = printer_model_looks_like_method(id);
     const bool flavor_is_lava = gcf && gcf->value == gcfMakerBotLava;
-    const bool is_makerbot    = id.find("makerbot")  != std::string::npos;
-    return name_is_method && (flavor_is_lava || is_makerbot || name_is_method);
+    return name_is_method || flavor_is_lava;
 }
 
 static int smart_extruder_count_from_config(const DynamicPrintConfig& cfg)
