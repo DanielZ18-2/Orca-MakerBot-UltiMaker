@@ -9,6 +9,9 @@
     "filament_type": [
         "PA-CF"
     ],
+    "filament_retraction_length": [
+        "0.5"
+    ],
     "pressure_advance": [
         "0.03"
     ],

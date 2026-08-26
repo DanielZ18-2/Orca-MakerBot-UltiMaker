@@ -9,6 +9,9 @@
     "filament_type": [
         "PLA"
     ],
+    "filament_retraction_length": [
+        "0.75"
+    ],
     "pressure_advance": [
         "0.02"
     ],
