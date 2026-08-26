@@ -2146,6 +2146,10 @@
             "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator 2X.json"
         },
         {
+            "name": "Generic PETG @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator 2X.json"
+        },
+        {
             "name": "Generic HIPS @MakerBot Thing-O-Matic Acrylic",
             "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic Acrylic.json"
         },
@@ -2444,6 +2448,14 @@
         {
             "name": "Generic ABS @MakerBot Cupcake CNC",
             "sub_path": "filament/Legacy/Generic ABS @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator 2.json"
         },
         {
             "name": "Generic ABS @MakerBot Replicator 2",
