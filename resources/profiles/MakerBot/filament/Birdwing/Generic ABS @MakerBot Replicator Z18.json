@@ -70,9 +70,6 @@
     "slow_down_min_speed": [
         "12"
     ],
-    "filament_retraction_length": [
-        "1.023"
-    ],
     "filament_retraction_speed": [
         "50"
     ],
