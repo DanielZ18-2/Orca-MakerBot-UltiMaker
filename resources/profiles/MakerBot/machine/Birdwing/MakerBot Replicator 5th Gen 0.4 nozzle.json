@@ -80,9 +80,7 @@
     "thumbnails": "320x200/PNG,110x80/PNG,55x40/PNG,640x640/PNG,320x320/PNG,120x120/PNG",
     "smart_extruder_count": "1",
     "smart_extruder_type": [
-        "mk13",
-        "mk13_impla",
-        "mk13_experimental"
+        "mk13"
     ],
     "machine_max_speed_z": [
         "18.0"
