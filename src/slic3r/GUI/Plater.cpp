@@ -499,8 +499,23 @@ static void mb_show_material_hint(size_t slot)
         host = ppc->opt_string("print_host");
     wxString hint;
     switch (mb_material_hint(pcfg, fila_type, host, slot)) {
-    case MbMaterialHint::BirdwingPla:
-        hint = _L("MakerBot Birdwing printers (Replicator Z18/+/5th Gen/Mini/Mini+) are officially PLA-only on stock firmware. Other materials are unofficial and may need the Experimental Extruder and/or custom firmware."); break;
+    case MbMaterialHint::BirdwingPla: {
+        // Name the machine, not the extruder. One string serves all five
+        // Birdwing models, so a fixed model name would be wrong on four of
+        // them. The missing part is the build platform, which belongs to
+        // the machine; after O35 the extruder is not a prerequisite.
+        wxString model = _L("MakerBot Birdwing printer");
+        if (const auto* opt = pcfg.option<ConfigOptionString>("printer_model"))
+            if (!opt->value.empty())
+                model = wxString::FromUTF8(opt->value.c_str());
+        hint = wxString::Format(
+            _L("The MakerBot slicer lists PLA as the only material for the %s, and the "
+               "machine has no heated build platform. For other materials a retrofitted "
+               "heated build platform is recommended. The values in this profile already "
+               "assume one is fitted."),
+            model);
+        break;
+    }
     case MbMaterialHint::LegacyRep2Pla:
         hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
     case MbMaterialHint::LegacyRep2xAbs:
@@ -585,7 +600,7 @@ smart_extruder_sidebar_items_for_config(const DynamicPrintConfig& cfg, int slot)
         return {
             {"mk13",              _L("Smart Extruder+"),       z18 ? "z18 mk13_cover.png"              : "5th gen mk13_cover.png"},
             {"mk13_impla",        _L("Tough Smart Extruder+"), z18 ? "z18 mk13 impla_cover.png"        : "5th gen mk13 impla_cover.png"},
-            {"mk13_experimental", _L("Experimental / LABS"),   "5th gen z18 mk13 experimental_cover.png"}
+            {"mk13_experimental", _L("Experimental / LABS Smart Extruder"),   "5th gen z18 mk13 experimental_cover.png"}
         };
     }
     if (is_lava_method || printer_model_looks_like_method(id)) {
