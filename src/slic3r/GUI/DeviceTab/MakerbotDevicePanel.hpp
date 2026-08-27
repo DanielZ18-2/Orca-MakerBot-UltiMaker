@@ -89,7 +89,6 @@ private:
     // closed in stop_telemetry_polling()/destructor.
     std::shared_ptr<KaitenSession> m_kaiten_session;
     std::string m_firmware_version;          // last reported firmware version
-    bool m_firmware_is_custom = false;       // >= custom threshold -> suppress hints
     bool m_capability_checked = false;      // reset whenever a new session opens
 
     // tool_id from the last telemetry (toolheads.extruder[0].tool_id),
@@ -131,7 +130,6 @@ private:
     void apply_z_offset_range(double max_mm); // slider limit per model (B1)
     void apply_z_offset_value(double value_mm); // mirror the firmware value into the UI
     void apply_firmware_version(const std::string& version); // cache version + report change
-    bool firmware_is_custom() const { return m_firmware_is_custom; }
     void set_telemetry_error(const std::string& error);
     void set_extruder_info(const wxString& type_text, const wxString& status_text);
     void set_z_offset_controls_enabled(bool enabled);

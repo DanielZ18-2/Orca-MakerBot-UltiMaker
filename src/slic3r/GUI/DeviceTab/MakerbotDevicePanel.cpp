@@ -1290,27 +1290,12 @@ void MakerbotDevicePanel::apply_z_offset_value(double value_mm) {
 // ---------------------------------------------------------------------------
 // Cache the firmware version per DEVICE (print_host) in AppConfig - not in the preset:
 // PhysicalPrinter has a key whitelist, and a preset can be shared by
-// several devices. Notify once on change. From the
-// custom threshold the firmware counts as custom -> material hints drop out.
+// several devices. Notify once on change.
 // ---------------------------------------------------------------------------
-static const int MAKERBOT_CUSTOM_FW_MIN_MAJOR = 2;   // <== adjust custom threshold
-static const int MAKERBOT_CUSTOM_FW_MIN_MINOR = 7;   // <== (here: from 2.7.x)
-
-static bool makerbot_fw_is_custom(const std::string& v)
-{
-    int major = 0, minor = 0;
-    if (std::sscanf(v.c_str(), "%d.%d", &major, &minor) != 2)
-        return false;
-    if (major != MAKERBOT_CUSTOM_FW_MIN_MAJOR)
-        return major > MAKERBOT_CUSTOM_FW_MIN_MAJOR;
-    return minor >= MAKERBOT_CUSTOM_FW_MIN_MINOR;
-}
-
 void MakerbotDevicePanel::apply_firmware_version(const std::string& version)
 {
     if (version.empty())
         return;
-    m_firmware_is_custom = makerbot_fw_is_custom(version);
     if (version == m_firmware_version)
         return;                       // already handled in this session
     m_firmware_version = version;
