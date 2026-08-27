@@ -473,10 +473,19 @@ static void mb_show_material_hint(size_t slot)
 {
     const DynamicPrintConfig& pcfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
     std::string fila_type;
+    // A generic profile from Orca's own library carries an empty
+    // compatible_printers, which in Orca means "fits every printer". Nobody
+    // has tuned it for this machine, and that is what level 3 means. Testing
+    // the binding rather than the name also keeps a user profile that
+    // inherits from ours out of the warning: it inherits the binding too.
+    bool library_only = false;
     const auto& fnames = wxGetApp().preset_bundle->filament_presets;
     if (slot < fnames.size())
-        if (const Preset* fp = wxGetApp().preset_bundle->filaments.find_preset(fnames[slot]))
+        if (const Preset* fp = wxGetApp().preset_bundle->filaments.find_preset(fnames[slot])) {
             fila_type = fp->config.opt_string("filament_type", 0);
+            const auto* cp = fp->config.opt<ConfigOptionStrings>("compatible_printers");
+            library_only = !cp || cp->values.empty();
+        }
     std::string host;
     if (const DynamicPrintConfig* ppc = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config())
         host = ppc->opt_string("print_host");
@@ -492,6 +501,19 @@ static void mb_show_material_hint(size_t slot)
         hint = mb_lava_material_hint_text(pcfg, fila_type, slot); break;
     default: break;
     }
+    // Level 3 is orthogonal to the device hint: a generic PP on a
+    // Replicator 2 is both, no heated build plate and no values from
+    // anyone. Both are shown, as two paragraphs of one notification.
+    if (library_only &&
+        printer_is_makerbot_or_ultimaker(smart_extruder_identity_from_config(pcfg))) {
+        if (!hint.empty()) hint += "\n\n";
+        hint += wxString::Format(
+            _L("There are no MakerBot or UltiMaker values for %s on this machine, and no "
+               "related material to derive any from. Orca's generic values apply. Expect "
+               "to tune them."),
+            wxString::FromUTF8(fila_type.c_str()));
+    }
+
     if (!hint.empty())
         if (auto* nm = wxGetApp().plater()->get_notification_manager())
             nm->push_notification(NotificationType::CustomNotification,
