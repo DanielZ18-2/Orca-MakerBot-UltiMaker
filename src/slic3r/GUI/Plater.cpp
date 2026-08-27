@@ -329,93 +329,7 @@ static bool smart_extruder_is_birdwing(const DynamicPrintConfig& cfg)
 }
 
 // Model-dependent material hint (hint only, NO blocking).
-// Forward declaration: the Lava check below needs it, the definition follows
-// further down in this file.
-static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg);
-
-// Which extruder is currently selected in a given bay.
-static std::string mb_selected_extruder(const DynamicPrintConfig& cfg, size_t slot)
-{
-    if (const auto* o = cfg.opt<ConfigOptionStrings>("smart_extruder_type"))
-        if (slot < o->values.size()) return o->values[slot];
-    return std::string();
-}
-
-// Which materials MakerBot recommends for which Method extruder.
-//
-// Source: MakerBot's "Extruder Compatibility Guide", cross-checked against
-// machine_config/extruder.json (values per extruder and material) and the 628
-// shipped profiles of MakerBot Print 4.10.1.
-//
-//   1A   mk14      PLA, Tough PLA, PETG, Nylon
-//   1XA  mk14_hot  ABS, ABS-R, ASA, PC-ABS, PC-ABS FR
-//   1C   mk14_c    everything 1A and 1XA carry, plus Nylon Carbon Fiber
-//   LABS mk14_e    open materials -- never warn
-//
-// This is a hint, never a restriction. The user may print anything.
-static bool mb_lava_material_is_recommended(const std::string& extruder,
-                                            const std::string& filament_type)
-{
-    // The LABS extruder is sold for open materials, so it stays silent.
-    if (extruder == "mk14_e") return true;
-    // Nothing selected or nothing known: say nothing rather than something wrong.
-    if (extruder.empty() || extruder == "none") return true;
-    // Support bays carry support material only and are not judged here.
-    if (extruder == "mk14_s" || extruder == "mk14_hot_s") return true;
-
-    const std::string ft = boost::algorithm::to_lower_copy(filament_type);
-    const bool is_pla  = ft.find("pla")    != std::string::npos;
-    const bool is_petg = ft.find("pet")    != std::string::npos;
-    const bool is_abs  = ft.find("abs")    != std::string::npos;
-    const bool is_asa  = ft.find("asa")    != std::string::npos;
-    const bool is_cf   = ft.find("cf")     != std::string::npos ||
-                         ft.find("carbon") != std::string::npos;
-
-    if (extruder == "mk14_c")   return true;   // 1C carries every model material we ship
-    if (extruder == "mk14")     return (is_pla || is_petg) && !is_cf;
-    if (extruder == "mk14_hot") return (is_abs || is_asa) && !is_cf;
-    return true;                               // unknown id: stay silent
-}
-
-// Display name and recommended materials, worded as in MakerBot's guide.
-static void mb_lava_extruder_info(const std::string& extruder,
-                                  wxString& label, wxString& materials)
-{
-    if (extruder == "mk14") {
-        label = _L("Model Extruder (1A)");
-        materials = _L("PLA, Tough PLA, PETG, Nylon");
-    } else if (extruder == "mk14_hot") {
-        label = _L("Model Extruder 1XA");
-        materials = _L("ABS, ABS-R, ASA, PC-ABS, PC-ABS FR");
-    } else if (extruder == "mk14_c") {
-        label = _L("Composite Extruder 1C");
-        materials = _L("all model materials, including Nylon Carbon Fiber");
-    } else if (extruder == "mk14_s") {
-        label = _L("Support Extruder (2A)");
-        materials = _L("PVA");
-    } else if (extruder == "mk14_hot_s") {
-        label = _L("Support Extruder 2XA");
-        materials = _L("SR-30, Rapid Rinse");
-    } else {
-        label = wxString::FromUTF8(extruder.c_str());
-        materials = wxString();
-    }
-}
-
-static wxString mb_lava_material_hint_text(const DynamicPrintConfig& cfg,
-                                           const std::string& filament_type,
-                                           size_t slot)
-{
-    wxString label, materials;
-    mb_lava_extruder_info(mb_selected_extruder(cfg, slot), label, materials);
-    return wxString::Format(
-        _L("MakerBot does not recommend %s for the %s. Recommended here: %s. "
-           "The print is still generated."),
-        wxString::FromUTF8(filament_type.c_str()), label, materials);
-}
-
 enum class MbMaterialHint { None, BirdwingPla, LegacyRep2Pla, LegacyRep2xAbs,
-                            LavaExtruderMaterial,
                             LegacyCupcakeTom };
 
 static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
@@ -444,9 +358,6 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
     // Birdwing (all): PLA; suppress when cached FW for this host >= 2.7 (custom FW).
     if (smart_extruder_is_birdwing(printer_cfg)) {
         if (is_pla_like) return MbMaterialHint::None;
-        // The Experimental Extruder is the one meant for open materials.
-        if (mb_selected_extruder(printer_cfg, 0) == "mk13_experimental")
-            return MbMaterialHint::None;
         if (!host.empty()) {
             if (AppConfig* cfg = wxGetApp().app_config) {
                 const std::string ver = cfg->get("makerbot_firmware", host);
@@ -460,12 +371,6 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
             }
         }
         return MbMaterialHint::BirdwingPla;
-    }
-    // Method / Lava: the guide ties each material to an extruder.
-    if (smart_extruder_is_lava_or_method(printer_cfg)) {
-        const std::string ex = mb_selected_extruder(printer_cfg, slot);
-        if (!mb_lava_material_is_recommended(ex, filament_type))
-            return MbMaterialHint::LavaExtruderMaterial;
     }
     return MbMaterialHint::None;   // UltiMaker, Sketch, other legacy
 }
@@ -525,8 +430,6 @@ static void mb_show_material_hint(size_t slot)
                   "build platform. Printing anything other than PLA needs a heated build "
                   "platform and Sailfish firmware. The values in this profile already assume "
                   "both are fitted."); break;
-    case MbMaterialHint::LavaExtruderMaterial:
-        hint = mb_lava_material_hint_text(pcfg, fila_type, slot); break;
     default: break;
     }
     // Level 3 is orthogonal to the device hint: a generic PP on a
