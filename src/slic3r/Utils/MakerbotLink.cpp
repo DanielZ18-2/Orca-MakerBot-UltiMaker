@@ -874,45 +874,6 @@ std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& er
 }
 
 
-// ── Smart Extruder Detection ─────────────────────────────────────────────────
-// Query the printer's kaiten RPC to detect which Smart Extruder is attached.
-// Called after successful handshake.
-// Maps kaiten "type_name" to our smart_extruder_type strings.
-std::string MakerbotLink::get_toolhead_type(std::string& error) const
-{
-    nlohmann::json resp;
-    // Use a short timeout – this is a quick info query
-    if (!birdwing_rpc("get_system_information", nlohmann::json::object(), resp, error, 10))
-        return "";
-
-    // Response: {"result": {"toolheads": [{"type_name": "mk13", ...}], ...}}
-    try {
-        const auto& result = resp["result"];
-        if (result.contains("toolheads") && !result["toolheads"].empty()) {
-            const auto& th = result["toolheads"][0];
-            if (th.contains("type_name")) {
-                const std::string type_name = th["type_name"].get<std::string>();
-                BOOST_LOG_TRIVIAL(info)
-                    << "MakerbotLink: detected Smart Extruder type: " << type_name;
-                // Normalize to our known types
-                if (type_name == "mk13_impla")       return "mk13_impla";
-                if (type_name == "mk13_experimental")return "mk13_experimental";
-                if (type_name == "mk12")             return "mk12";
-                if (type_name.rfind("mk13", 0) == 0) return "mk13"; // mk13, mk13_plus, etc.
-                return type_name; // pass through unknown types
-            }
-        }
-        // Older firmware: check "machine_info" or similar
-        if (result.contains("machine_info")) {
-            const auto& mi = result["machine_info"];
-            if (mi.contains("toolhead_model"))
-                return mi["toolhead_model"].get<std::string>();
-        }
-    } catch (const std::exception& e) {
-        error = std::string("toolhead parse error: ") + e.what();
-    }
-    return "mk13"; // safe default for Birdwing printers
-}
 
 // ── Birdwing Auth Flow ────────────────────────────────────────────────────────
 

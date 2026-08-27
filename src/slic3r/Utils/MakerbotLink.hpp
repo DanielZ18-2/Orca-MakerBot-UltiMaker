@@ -123,17 +123,6 @@ public:
                                  const std::string& local_path,
                                  ProgressFn prg_fn, std::string& error) const;
 
-    // Query connected Smart Extruder type via kaiten get_system_information
-    // Returns: "mk13", "mk13_impla", "mk13_experimental", "mk12" or ""
-    // KNOWN ISSUE (found 2026-06 via packet capture, not yet fixed): real
-    // kaiten responses have toolheads as an OBJECT {"chamber":[...],
-    // "extruder":[...]}, not a flat array of {"type_name":...} entries as
-    // assumed below - this currently always falls through to the "mk13"
-    // fallback on real hardware. The real type requires correlating
-    // toolheads.extruder[].tool_id against get_machine_config's
-    // extruder_profiles.supported_extruders[tool_id] map. Left as-is here;
-    // flagged separately rather than fixed as part of the Device-tab work.
-    std::string get_toolhead_type(std::string& error) const;
 
     // Also try Desktop 3.10 HTTPS auth (port 443) as fallback
     BirdwingAuthResult birdwing_authorize_https(std::string& error_or_token,
