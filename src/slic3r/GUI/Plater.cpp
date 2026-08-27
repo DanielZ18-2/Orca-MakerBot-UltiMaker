@@ -415,7 +415,8 @@ static wxString mb_lava_material_hint_text(const DynamicPrintConfig& cfg,
 }
 
 enum class MbMaterialHint { None, BirdwingPla, LegacyRep2Pla, LegacyRep2xAbs,
-                            LavaExtruderMaterial };
+                            LavaExtruderMaterial,
+                            LegacyCupcakeTom };
 
 static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
                                        const std::string& filament_type,
@@ -432,6 +433,13 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
         return is_abs_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2xAbs;
     if (id.find("replicator 2") != std::string::npos)
         return is_pla_like ? MbMaterialHint::None : MbMaterialHint::LegacyRep2Pla;
+    // Cupcake and Thing-O-Matic: the heated build platform was an accessory,
+    // not equipment. ReplicatorG ships both variants side by side -- "Cupcake
+    // Basic" against "Cupcake w/ heated build platform", start+HBP.gcode
+    // against start-HBP.gcode -- and lists Sailfish as a separate variant too.
+    if (id.find("cupcake") != std::string::npos ||
+        id.find("thing-o-matic") != std::string::npos)
+        return is_pla_like ? MbMaterialHint::None : MbMaterialHint::LegacyCupcakeTom;
 
     // Birdwing (all): PLA; suppress when cached FW for this host >= 2.7 (custom FW).
     if (smart_extruder_is_birdwing(printer_cfg)) {
@@ -497,6 +505,11 @@ static void mb_show_material_hint(size_t slot)
         hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
     case MbMaterialHint::LegacyRep2xAbs:
         hint = _L("The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."); break;
+    case MbMaterialHint::LegacyCupcakeTom:
+        hint = _L("The MakerBot Cupcake and Thing-O-Matic left the factory without a heated "
+                  "build platform. Printing anything other than PLA needs a heated build "
+                  "platform and Sailfish firmware. The values in this profile already assume "
+                  "both are fitted."); break;
     case MbMaterialHint::LavaExtruderMaterial:
         hint = mb_lava_material_hint_text(pcfg, fila_type, slot); break;
     default: break;
