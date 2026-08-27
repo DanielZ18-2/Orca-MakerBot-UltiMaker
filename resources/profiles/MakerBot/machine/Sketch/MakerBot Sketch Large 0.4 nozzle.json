@@ -6,6 +6,8 @@
     "from": "system",
     "instantiation": "true",
     "gcode_flavor": "makerbot_lava",
+    "smart_extruder_type": ["sketch_extruder"],
+    "smart_extruder_count": "1",
     "printer_model": "MakerBot Sketch Large",
     "model_id": "MakerBot Sketch Large",
     "printer_variant": "0.4",
