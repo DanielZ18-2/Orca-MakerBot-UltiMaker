@@ -462,6 +462,43 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
     return MbMaterialHint::None;   // UltiMaker, Sketch, other legacy
 }
 
+// Shows the material hint for one extruder slot, if there is one to show.
+// Called both when the filament changes and when the Smart Extruder changes:
+// the pairing can go wrong from either side, and swapping the extruder while
+// the material stays put is the more likely of the two.
+//
+// The body was moved here unchanged from the filament combo handler, so the
+// translated strings keep their identity.
+static void mb_show_material_hint(size_t slot)
+{
+    const DynamicPrintConfig& pcfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
+    std::string fila_type;
+    const auto& fnames = wxGetApp().preset_bundle->filament_presets;
+    if (slot < fnames.size())
+        if (const Preset* fp = wxGetApp().preset_bundle->filaments.find_preset(fnames[slot]))
+            fila_type = fp->config.opt_string("filament_type", 0);
+    std::string host;
+    if (const DynamicPrintConfig* ppc = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config())
+        host = ppc->opt_string("print_host");
+    wxString hint;
+    switch (mb_material_hint(pcfg, fila_type, host, slot)) {
+    case MbMaterialHint::BirdwingPla:
+        hint = _L("MakerBot Birdwing printers (Replicator Z18/+/5th Gen/Mini/Mini+) are officially PLA-only on stock firmware. Other materials are unofficial and may need the Experimental Extruder and/or custom firmware."); break;
+    case MbMaterialHint::LegacyRep2Pla:
+        hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
+    case MbMaterialHint::LegacyRep2xAbs:
+        hint = _L("The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."); break;
+    case MbMaterialHint::LavaExtruderMaterial:
+        hint = mb_lava_material_hint_text(pcfg, fila_type, slot); break;
+    default: break;
+    }
+    if (!hint.empty())
+        if (auto* nm = wxGetApp().plater()->get_notification_manager())
+            nm->push_notification(NotificationType::CustomNotification,
+                                  NotificationManager::NotificationLevel::RegularNotificationLevel,
+                                  std::string(hint.ToUTF8().data()));
+}
+
 static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg)
 {
     const auto* gcf = cfg.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
@@ -2364,6 +2401,8 @@ Sidebar::Sidebar(Plater *parent)
                             tab->update_dirty();
                         }
                     }
+                    // The pairing can go wrong from this side too.
+                    mb_show_material_hint(size_t(slot));
                 }
                 e.Skip();
             });
@@ -10096,32 +10135,7 @@ void Plater::priv::on_select_preset(wxCommandEvent &evt)
         q->on_filament_change(idx);
 
         // MakerBot/legacy material hint (non-blocking).
-        {
-            const DynamicPrintConfig& pcfg = wxGetApp().preset_bundle->printers.get_edited_preset().config;
-            std::string fila_type;
-            if (const Preset* fp = wxGetApp().preset_bundle->filaments.find_preset(preset_name))
-                fila_type = fp->config.opt_string("filament_type", 0);
-            std::string host;
-            if (const DynamicPrintConfig* ppc = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config())
-                host = ppc->opt_string("print_host");
-            wxString hint;
-            switch (mb_material_hint(pcfg, fila_type, host, size_t(idx))) {
-            case MbMaterialHint::BirdwingPla:
-                hint = _L("MakerBot Birdwing printers (Replicator Z18/+/5th Gen/Mini/Mini+) are officially PLA-only on stock firmware. Other materials are unofficial and may need the Experimental Extruder and/or custom firmware."); break;
-            case MbMaterialHint::LegacyRep2Pla:
-                hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
-            case MbMaterialHint::LegacyRep2xAbs:
-                hint = _L("The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."); break;
-            case MbMaterialHint::LavaExtruderMaterial:
-                hint = mb_lava_material_hint_text(pcfg, fila_type, size_t(idx)); break;
-            default: break;
-            }
-            if (!hint.empty())
-                if (auto* nm = wxGetApp().plater()->get_notification_manager())
-                    nm->push_notification(NotificationType::CustomNotification,
-                                          NotificationManager::NotificationLevel::RegularNotificationLevel,
-                                          std::string(hint.ToUTF8().data()));
-        }
+        mb_show_material_hint(size_t(idx));
     }
     bool select_preset = !combo->selection_is_changed_according_to_physical_printers();
     // TODO: ?
