@@ -603,13 +603,26 @@ static nlohmann::json build_lava_meta(
             } catch (...) {}
         }
     }
-    if (tools.empty()) tools = {"mk14"};
-
     std::string lava_bot = bot_type;
     if (lava_bot.empty()) {
         const auto* opt = config.option("printer_model");
         if (opt) try { lava_bot = dynamic_cast<const ConfigOptionString*>(opt)->value; } catch (...) {}
         if (lava_bot.empty()) lava_bot = "method";
+    }
+
+    // Only reached when the printer preset carries no smart_extruder_type.
+    // This function serves the Method series and the Sketch series, and
+    // MakerBot Print declares sketch.supported_extruders = sketch_extruder -
+    // so a single hard-coded mk14 names an extruder the machine does not
+    // have. The printer refuses such a job while preparing it, which is why
+    // the fallback follows the machine and reports that it fired.
+    if (tools.empty()) {
+        const bool is_sketch =
+            boost::algorithm::to_lower_copy(lava_bot).find("sketch") != std::string::npos;
+        tools.push_back(is_sketch ? "sketch_extruder" : "mk14");
+        BOOST_LOG_TRIVIAL(warning)
+            << "MakerBotExport: no smart_extruder_type for bot_type '" << lava_bot
+            << "', falling back to '" << tools.front() << "'";
     }
 
     nlohmann::json meta;
