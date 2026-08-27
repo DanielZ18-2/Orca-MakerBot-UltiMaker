@@ -334,7 +334,6 @@ enum class MbMaterialHint { None, BirdwingPla, LegacyRep2Pla, LegacyRep2xAbs,
 
 static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
                                        const std::string& filament_type,
-                                       const std::string& host,
                                        size_t slot)
 {
     const std::string ft  = boost::algorithm::to_lower_copy(filament_type);
@@ -355,23 +354,9 @@ static MbMaterialHint mb_material_hint(const DynamicPrintConfig& printer_cfg,
         id.find("thing-o-matic") != std::string::npos)
         return is_pla_like ? MbMaterialHint::None : MbMaterialHint::LegacyCupcakeTom;
 
-    // Birdwing (all): PLA; suppress when cached FW for this host >= 2.7 (custom FW).
-    if (smart_extruder_is_birdwing(printer_cfg)) {
-        if (is_pla_like) return MbMaterialHint::None;
-        if (!host.empty()) {
-            if (AppConfig* cfg = wxGetApp().app_config) {
-                const std::string ver = cfg->get("makerbot_firmware", host);
-                const size_t dot = ver.find('.');
-                if (dot != std::string::npos) {
-                    const int mj = atoi(ver.substr(0, dot).c_str());
-                    const int mn = atoi(ver.substr(dot + 1).c_str());
-                    if (mj > 2 || (mj == 2 && mn >= 7))
-                        return MbMaterialHint::None;   // custom FW -> suppress hint
-                }
-            }
-        }
-        return MbMaterialHint::BirdwingPla;
-    }
+    // Birdwing (all): PLA is the only material the factory extruder is rated for.
+    if (smart_extruder_is_birdwing(printer_cfg))
+        return is_pla_like ? MbMaterialHint::None : MbMaterialHint::BirdwingPla;
     return MbMaterialHint::None;   // UltiMaker, Sketch, other legacy
 }
 
@@ -399,11 +384,8 @@ static void mb_show_material_hint(size_t slot)
             const auto* cp = fp->config.opt<ConfigOptionStrings>("compatible_printers");
             library_only = !cp || cp->values.empty();
         }
-    std::string host;
-    if (const DynamicPrintConfig* ppc = wxGetApp().preset_bundle->physical_printers.get_selected_printer_config())
-        host = ppc->opt_string("print_host");
     wxString hint;
-    switch (mb_material_hint(pcfg, fila_type, host, slot)) {
+    switch (mb_material_hint(pcfg, fila_type, slot)) {
     case MbMaterialHint::BirdwingPla: {
         // Name the machine, not the extruder. One string serves all five
         // Birdwing models, so a fixed model name would be wrong on four of
