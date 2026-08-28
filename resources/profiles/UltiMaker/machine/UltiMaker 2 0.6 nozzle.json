@@ -119,5 +119,6 @@
         "Bowden"
     ],
     "default_bed_type": "3",
-    "printer_variant": "0.6"
+    "printer_variant": "0.6",
+    "support_multi_bed_types": "1"
 }

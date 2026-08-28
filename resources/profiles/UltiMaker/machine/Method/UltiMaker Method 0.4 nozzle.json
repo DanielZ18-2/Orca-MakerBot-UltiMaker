@@ -38,7 +38,7 @@
     "printer_vendor": "UltiMaker",
     "makerbot_bot_type": "method",
     "printer_structure": "corexy",
-    "support_multi_bed_types": "1",
+    "support_multi_bed_types": "0",
     "printable_area": [
         "0x0",
         "152x0",
@@ -90,7 +90,7 @@
         "mk14",
         "mk14_s"
     ],
-    "default_bed_type": "3",
+    "default_bed_type": "1",
     "retraction_length": [
         "0.75"
     ],

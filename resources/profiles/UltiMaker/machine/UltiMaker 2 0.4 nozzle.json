@@ -119,5 +119,7 @@
     "scan_first_layer": "0",
     "extruder_type": [
         "Bowden"
-    ]
+    ],
+    "default_bed_type": "3",
+    "support_multi_bed_types": "1"
 }

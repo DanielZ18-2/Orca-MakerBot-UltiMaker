@@ -32,7 +32,7 @@
     "printer_vendor": "UltiMaker",
     "makerbot_bot_type": "",
     "printer_structure": "corexy",
-    "support_multi_bed_types": "1",
+    "support_multi_bed_types": "0",
     "printable_area": [
         "0x0",
         "120x0",
@@ -74,7 +74,7 @@
     ],
     "machine_start_gcode": "G28 ; Home all axes\nG1 Z15.0 F6000 ; Move the platform down 15mm\nG92 E0\nG1 F200 E3\nG92 E0",
     "machine_end_gcode": "M104 S0 ; extruder off\nM140 S0 ; heated bed off\nG91 ; relative positioning\nG1 E-1 F300\nG1 Z+0.5 E-5 X-20 Y-20 F9000\nG28 X0 Y0\nM84\nG90",
-    "default_bed_type": "3",
+    "default_bed_type": "1",
     "retraction_length": [
         "6.5"
     ],
