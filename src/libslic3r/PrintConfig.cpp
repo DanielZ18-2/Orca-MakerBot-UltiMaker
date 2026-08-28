@@ -7389,16 +7389,16 @@ void PrintConfigDef::init_fff_params()
                          L("LABS Gen 2 Extruder") };
     def->set_default_value(new ConfigOptionStrings{ "none" });
 
-    // --- MakerBot / UltiMaker Fork: Export-Kennungen ---
+    // --- MakerBot / UltiMaker Fork: identifiers read at export time ---
     // Both keys are read during export, so they must be registered,
     // otherwise Orca removes them when loading the machine profiles.
     //   makerbot_bot_type -> MakerBotExport.cpp (bot_type in meta.json)
-    //   gpx_machine_type  -> GPXExport.cpp (x3g-Maschinenkennung)
+    //   gpx_machine_type  -> GPXExport.cpp (x3g machine identifier)
     def = this->add("makerbot_bot_type", coString);
     def->label   = L("MakerBot bot type");
     def->tooltip = L("Internal MakerBot machine identifier written into the "
                      "meta.json of a .makerbot print file "
-                     "(e.g. z18_6, replicator_plus, method_x). "
+                     "(e.g. z18_6, replicator_b, lava_f). "
                      "Leave empty to let the exporter derive it.");
     def->category = L("Machine");
     def->mode    = comDevelop;
