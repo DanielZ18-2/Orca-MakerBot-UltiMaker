@@ -36,7 +36,7 @@
     "gpx_machine_type": "",
     "makerbot_bot_type": "z18_6",
     "printer_structure": "corexy",
-    "support_multi_bed_types": "1",
+    "support_multi_bed_types": "0",
     "printable_area": [
         "0x0",
         "300x0",
