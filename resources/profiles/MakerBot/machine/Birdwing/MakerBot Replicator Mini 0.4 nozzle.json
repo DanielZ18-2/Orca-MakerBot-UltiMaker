@@ -34,7 +34,7 @@
     "host_type": "makerbotlink",
     "printer_vendor": "MakerBot",
     "gpx_machine_type": "",
-    "makerbot_bot_type": "mini",
+    "makerbot_bot_type": "mini_4",
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [
