@@ -4770,7 +4770,10 @@ LayerResult GCode::process_layer(
             DynamicConfig _cfg;
             _cfg.set_key_value("retraction_length", new ConfigOptionFloats{_length});
             writer().config.apply(_cfg);
-            sprintf(buf, "; Calib_Retraction_tower: Z_HEIGHT: %g, length:%g\n", print_z, _length);
+            // ORCA: snprintf -- the fixed part is 46 characters and two %g
+            // conversions can add 13 each, which the compiler rightly reports
+            // as "between 49 and 73 bytes into a destination of size 64".
+            snprintf(buf, sizeof(buf), "; Calib_Retraction_tower: Z_HEIGHT: %g, length:%g\n", print_z, _length);
             gcode += buf;
             break;
         }
