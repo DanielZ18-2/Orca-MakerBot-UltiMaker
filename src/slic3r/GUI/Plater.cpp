@@ -399,12 +399,14 @@ static void mb_show_material_hint(size_t slot)
             _L("The MakerBot slicer lists PLA as the only material for the %s, and the "
                "machine has no heated build platform. For other materials a retrofitted "
                "heated build platform is recommended. The values in this profile already "
-               "assume one is fitted."),
+               "assume one is fitted. To reach them, switch on \"Support multi bed types\" "
+               "in the printer settings and select the High Temp Plate; without a heated "
+               "platform the printer keeps the plate at 0 degrees."),
             model);
         break;
     }
     case MbMaterialHint::LegacyRep2Pla:
-        hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware."); break;
+        hint = _L("The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware. After the modification, switch on \"Support multi bed types\" in the printer settings and select the High Temp Plate to reach the bed temperatures in the material profiles."); break;
     case MbMaterialHint::LegacyRep2xAbs:
         hint = _L("The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."); break;
     case MbMaterialHint::LegacyCupcakeTom:
