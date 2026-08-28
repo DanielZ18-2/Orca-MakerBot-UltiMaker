@@ -20439,3 +20439,431 @@ msgstr ""
 #: resources/data/hints.ini: [hint:Avoid warping]
 msgid "Avoid warping\nDid you know that when printing materials that are prone to warping such as ABS, appropriately increasing the heatbed temperature can reduce the probability of warping?"
 msgstr ""
+
+# --- MakerBot / UltiMaker fork ---
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "%d °C"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ", heating to %d °C"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "-- °C"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Build plate is clear - Start Print"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Cancel Print"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Cancel command sent to the printer."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Cancel the current print? This cannot be undone."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"Caution: the Z-offset can only be adjusted while the printer is powered on and connected, and not during a print.\n"
+"Incorrect values (too small a gap between nozzle and build plate) can damage the printer!"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Check Build Plate"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Command failed: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Could not start print: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Current Nozzle temperature:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Current Printer Chamber temperature:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Current printer operation status:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Current progress"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "DEVICE"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Digital Zoom:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Elapsed: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Extruder 1 (Model): Syncing..."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Extruder 2 (Support): Syncing..."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Extruders: %d"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Filament loaded"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Global Z-Offset Calibration"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Live Camera"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"Make sure the build plate is completely empty.\n"
+"\n"
+"WARNING: If any object or residual material is still on the plate, the print head can be damaged or the print will fail."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Model: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "New printer name:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"No sliced file found for this printer yet.\n"
+"\n"
+"Slice a model and use \"Print\" first, then start the print here."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Not available for this printer"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Nothing to print"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Pause command sent to the printer."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"Positive = less distance between nozzle and build plate; negative = more distance."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Preheat"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Print started."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Printer Info"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Printer Status & Hardware"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Progress: %d%%"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Progress: --"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Remaining: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Rename Printer"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Resume command sent to the printer."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Smart Extruder Type installed:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Smart Extruder status:"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Start Print"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Status: %s"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Status: Live telemetry not yet implemented for this printer family"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Syncing..."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"This control has only been confirmed for Birdwing (Z18/Replicator+) printers so far. No command was sent."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"This printer connects via USB/serial only. Live status, camera and\n"
+"remote control are not available for this generation - use your\n"
+"printer's own display panel."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "Unload Filament"
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid ""
+"Uses nozzle and chamber/bed temperature from the active filament profile (Filament Settings). Heats the chamber (Z18) or bed (other Birdwing models) too, so it doesn't need to heat up later at print start."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "You can also type the Z-offset value directly here."
+msgstr ""
+
+#: src/slic3r/GUI/DeviceTab/MakerbotDevicePanel.cpp
+msgid "no filament"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Discover MakerBot & UltiMaker Printers"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Discover MakerBot Printers"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Discover UltiMaker Printers"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Found %d printer(s). Select one and click Select."
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "IP Address"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "No printers found. Check network and try Rescan."
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Printer Name"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Protocol"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Rescan"
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Scanning network for MakerBot and UltiMaker printers..."
+msgstr ""
+
+#: src/slic3r/GUI/MakerbotDiscoveryDialog.cpp
+msgid "Scanning network..."
+msgstr ""
+
+#: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
+msgid "MakerBot Birdwing – Authorize Connection"
+msgstr ""
+
+#: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
+msgid ""
+"Please press the controller wheel on your MakerBot printer\n"
+"to authorize the connection with Orca Slicer."
+msgstr ""
+
+#: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
+msgid ""
+"Timeout – the printer did not respond.\n"
+"Please try again and press the controller wheel within 120 seconds."
+msgstr ""
+
+#: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
+msgid "seconds remaining"
+msgstr ""
+
+#: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
+msgid ""
+"✅  Connection authorized!\n"
+"Orca Slicer is now paired with your MakerBot."
+msgstr ""
+
+#: src/slic3r/GUI/PhysicalPrinterDialog.cpp
+msgid ""
+"MakerBot Birdwing paired successfully! The authorization token has been saved."
+msgstr ""
+
+#: src/slic3r/GUI/PhysicalPrinterDialog.cpp
+msgid "MakerBot Birdwing paired successfully! The token has been saved."
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Composite Extruder 1C"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "GPX machine type"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Machine identifier used by GPX when converting G-code to x3g for legacy MakerBot printers (e.g. c3, r1, r1d, r2, r2x, t7). Leave empty to fall back to the exporter default."
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Internal MakerBot machine identifier written into the meta.json of a .makerbot print file (e.g. z18_6, replicator_b, lava_f). Leave empty to let the exporter derive it."
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "MakerBot Birdwing (.makerbot)"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "MakerBot Lava / Method (.makerbot)"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "MakerBot Legacy (.x3g)"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "MakerBot bot type"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Number of active Smart Extruders: 0 = none, 1 = Birdwing single, 2 = Lava/Method dual. Set automatically by the printer discovery / handshake dialog."
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Per-extruder Smart Extruder type for MakerBot and UltiMaker Method printers. Set automatically by the printer discovery / handshake dialog."
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder Count"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder Types"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder+"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Tough Smart Extruder+"
+msgstr ""
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "UltiGCode (.ufp)"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Experimental / LABS Smart Extruder"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "MakerBot Archive (*.makerbot)|*.makerbot|G-code (*.gcode)|*.gcode"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "MakerBot Birdwing printer"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save MakerBot archive as:"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save UltiMaker file as:"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save X3G file as:"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Cupcake and Thing-O-Matic left the factory without a heated build platform. Printing anything other than PLA needs a heated build platform and Sailfish firmware. The values in this profile already assume both are fitted."
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"There are no MakerBot or UltiMaker values for %s on this machine, and no related material to derive any from. Orca's generic values apply. Expect to tune them."
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "UltiMaker File Package (*.ufp)|*.ufp|G-code (*.gcode)|*.gcode"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "X3G File (*.x3g)|*.x3g|G-code (*.gcode)|*.gcode"
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware. After the modification, switch on \"Support multi bed types\" in the printer settings and select the High Temp Plate to reach the bed temperatures in the material profiles."
+msgstr ""
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot slicer lists PLA as the only material for the %s, and the machine has no heated build platform. For other materials a retrofitted heated build platform is recommended. The values in this profile already assume one is fitted. To reach them, switch on \"Support multi bed types\" in the printer settings and select the High Temp Plate; without a heated platform the printer keeps the plate at 0 degrees."
+msgstr ""

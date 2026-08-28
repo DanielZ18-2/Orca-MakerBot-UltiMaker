@@ -22132,3 +22132,118 @@ msgstr ""
 #~ msgstr ""
 #~ "Stil und Form der Stützstruktur. Bei normalem Stützen führt die Projektion in ein regelmäßiges Raster zu stabileren Stützen (Standardeinstellung), während eng anliegende Stütztürme Material sparen und die Narbenbildung am Objekt verringern.\n"
 #~ "Bei Baumstützen führt der schlanke Stil zu einer aggressiveren Zusammenführung der Äste und spart viel Material (Standard), während der Hybridmodus bei großen überhängenden Flächen eine ähnliche Struktur wie bei normalen Stützstrukturen erzeugt."
+
+# --- MakerBot / UltiMaker fork ---
+
+#: src/slic3r/GUI/PhysicalPrinterDialog.cpp
+msgid ""
+"MakerBot Birdwing paired successfully! The authorization token has been saved."
+msgstr ""
+"MakerBot Birdwing erfolgreich gekoppelt! Das Berechtigungstoken wurde gespeichert."
+
+#: src/slic3r/GUI/PhysicalPrinterDialog.cpp
+msgid "MakerBot Birdwing paired successfully! The token has been saved."
+msgstr ""
+"MakerBot Birdwing erfolgreich gekoppelt! Das Token wurde gespeichert."
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Composite Extruder 1C"
+msgstr "Composite Extruder 1C"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "GPX machine type"
+msgstr "GPX-Maschinentyp"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Internal MakerBot machine identifier written into the meta.json of a .makerbot print file (e.g. z18_6, replicator_b, lava_f). Leave empty to let the exporter derive it."
+msgstr ""
+"Interne MakerBot-Gerätekennung, die in die meta.json einer .makerbot-Druckdatei geschrieben wird (z. B. z18_6, replicator_b, lava_f). Leer lassen, damit der Exporter sie selbst ermittelt."
+
+#: src/libslic3r/PrintConfig.cpp
+msgid ""
+"Number of active Smart Extruders: 0 = none, 1 = Birdwing single, 2 = Lava/Method dual. Set automatically by the printer discovery / handshake dialog."
+msgstr ""
+"Anzahl der aktiven Smart Extruder: 0 = keiner, 1 = Birdwing einfach, 2 = Lava/Method doppelt. Wird vom Dialog zur Druckersuche beziehungsweise Kopplung selbsttätig gesetzt."
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder Count"
+msgstr "Anzahl Smart Extruder"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder Types"
+msgstr "Smart-Extruder-Typen"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Smart Extruder+"
+msgstr "Smart Extruder+"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "Tough Smart Extruder+"
+msgstr "Tough Smart Extruder+"
+
+#: src/libslic3r/PrintConfig.cpp
+msgid "UltiGCode (.ufp)"
+msgstr "UltiGCode (.ufp)"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Experimental / LABS Smart Extruder"
+msgstr "Experimental / LABS Smart Extruder"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "MakerBot Archive (*.makerbot)|*.makerbot|G-code (*.gcode)|*.gcode"
+msgstr "MakerBot-Archiv (*.makerbot)|*.makerbot|G-Code (*.gcode)|*.gcode"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "MakerBot Birdwing printer"
+msgstr "MakerBot-Birdwing-Drucker"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save MakerBot archive as:"
+msgstr "MakerBot-Archiv speichern unter:"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save UltiMaker file as:"
+msgstr "UltiMaker-Datei speichern unter:"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "Save X3G file as:"
+msgstr "X3G-Datei speichern unter:"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Cupcake and Thing-O-Matic left the factory without a heated build platform. Printing anything other than PLA needs a heated build platform and Sailfish firmware. The values in this profile already assume both are fitted."
+msgstr ""
+"MakerBot Cupcake und Thing-O-Matic verließen das Werk ohne beheizte Bauplattform. Für andere Materialien als PLA sind eine beheizte Bauplattform und die Sailfish-Firmware nötig. Die Werte in diesem Profil setzen beides bereits voraus."
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Replicator 2X is a factory ABS printer (no part-cooling fan). Printing PLA or other materials requires a part-cooling fan modification and Sailfish firmware."
+msgstr ""
+"Der MakerBot Replicator 2X ist ab Werk ein ABS-Drucker (ohne Bauteillüfter). Für PLA oder andere Materialien sind ein nachgerüsteter Bauteillüfter und die Sailfish-Firmware nötig."
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"There are no MakerBot or UltiMaker values for %s on this machine, and no related material to derive any from. Orca's generic values apply. Expect to tune them."
+msgstr ""
+"Für %s gibt es auf dieser Maschine keine MakerBot- oder UltiMaker-Werte und kein verwandtes Material, aus dem sich welche ableiten ließen. Es gelten Orcas allgemeine Werte. Rechnen Sie damit, sie nachjustieren zu müssen."
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "UltiMaker File Package (*.ufp)|*.ufp|G-code (*.gcode)|*.gcode"
+msgstr "UltiMaker-Dateipaket (*.ufp)|*.ufp|G-Code (*.gcode)|*.gcode"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid "X3G File (*.x3g)|*.x3g|G-code (*.gcode)|*.gcode"
+msgstr "X3G-Datei (*.x3g)|*.x3g|G-Code (*.gcode)|*.gcode"
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot Replicator 2 is a factory PLA-only printer (no heated build plate). Printing ABS or other materials requires a heated-bed hardware modification and Sailfish firmware. After the modification, switch on \"Support multi bed types\" in the printer settings and select the High Temp Plate to reach the bed temperatures in the material profiles."
+msgstr ""
+"Der MakerBot Replicator 2 ist ab Werk ein reiner PLA-Drucker (ohne beheizte Bauplattform). Für ABS oder andere Materialien sind ein nachgerüstetes Heizbett und die Sailfish-Firmware nötig. Schalten Sie nach dem Umbau im Druckerprofil „Support multi bed types“ ein und wählen Sie die High Temp Plate, damit die Betttemperaturen aus den Materialprofilen greifen."
+
+#: src/slic3r/GUI/Plater.cpp
+msgid ""
+"The MakerBot slicer lists PLA as the only material for the %s, and the machine has no heated build platform. For other materials a retrofitted heated build platform is recommended. The values in this profile already assume one is fitted. To reach them, switch on \"Support multi bed types\" in the printer settings and select the High Temp Plate; without a heated platform the printer keeps the plate at 0 degrees."
+msgstr ""
+"Der MakerBot-Slicer führt für den %s PLA als einziges Material, und die Maschine hat keine beheizte Bauplattform. Für andere Materialien wird eine nachgerüstete beheizte Bauplattform empfohlen. Die Werte in diesem Profil setzen eine solche bereits voraus. Damit sie greifen, schalten Sie im Druckerprofil „Support multi bed types“ ein und wählen Sie die High Temp Plate; ohne beheizte Plattform hält der Drucker die Plattform auf 0 Grad."
