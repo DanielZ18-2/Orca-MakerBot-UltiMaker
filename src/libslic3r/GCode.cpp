@@ -2152,12 +2152,21 @@ void GCode::do_export(Print* print, const char* path, GCodeProcessorResult* resu
     m_processor.result().long_retraction_when_cut = activate_long_retraction_when_cut;
    
     {   //BBS:check bed and filament compatible
-        const ConfigOptionInts *bed_temp_opt = m_config.option<ConfigOptionInts>(get_bed_temp_1st_layer_key(m_config.curr_bed_type));
+        // ORCA: ask this only where the bed type is a real choice, the same
+        // guard Print::validate() uses. A machine without a heated platform
+        // keeps its plate at 0 degrees on purpose; without the guard every
+        // filament of the first layer is reported as unprintable while the
+        // slice itself is correct. The result is still always assigned:
+        // FilamentPrintableResult::has_value() reads the list, not the
+        // assignment, so an empty list means "no warning".
         std::vector<int> conflict_filament;
-        for(auto extruder_id : m_initial_layer_extruders){
-            int cur_bed_temp = bed_temp_opt->get_at(extruder_id);
-            if (cur_bed_temp == 0) {
-                conflict_filament.push_back(extruder_id);
+        if (print->is_BBL_printer() || m_config.support_multi_bed_types.value) {
+            const ConfigOptionInts *bed_temp_opt = m_config.option<ConfigOptionInts>(get_bed_temp_1st_layer_key(m_config.curr_bed_type));
+            for(auto extruder_id : m_initial_layer_extruders){
+                int cur_bed_temp = bed_temp_opt->get_at(extruder_id);
+                if (cur_bed_temp == 0) {
+                    conflict_filament.push_back(extruder_id);
+                }
             }
         }
 
