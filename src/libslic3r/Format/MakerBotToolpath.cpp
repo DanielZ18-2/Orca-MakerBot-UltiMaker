@@ -584,7 +584,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── Tn – Werkzeugwechsel: noch nicht übersetzt ────────────────────────
+        // ── Tn – tool change: not converted yet ───────────────────────────────
         // The Birdwing/Lava toolpath addresses the second extruder through its
         // own axis ("b" instead of "a"); meta.json mirrors that with
         // extrusion_distances_mm as a two-element array. That mapping is not
@@ -615,7 +615,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── G2 / G3 – Kreisbogen: nicht unterstützt ───────────────────────────
+        // ── G2 / G3 – arc moves: not supported ────────────────────────────────
         // The Birdwing toolpath format knows only linear moves. Silently
         // dropping arcs would leave holes in the part, so refuse the export
         // instead. Guard against a user enabling "Arc fitting" in the UI - the

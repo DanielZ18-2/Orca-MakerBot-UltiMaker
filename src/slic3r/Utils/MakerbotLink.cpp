@@ -240,8 +240,8 @@ bool KaitenSession::call(const std::string& method, const nlohmann::json& params
                     if (std::chrono::steady_clock::now() - t_start
                             > std::chrono::seconds(timeout_s)) {
                         error = "Timeout reading from MakerBot (port 9999)";
-                        // Breath-1: Session NICHT schliessen. Ein langsamer/
-                        // a busy printer should not trigger a token+authenticate
+                        // Breath-1: do NOT close the session. A slow or
+                        // busy printer should not trigger a token+authenticate
                         // storm that jams the kaiten server.
                         // We catch late responses via req_id matching;
                         // real aborts (RST/EOF) close via the ec branch.

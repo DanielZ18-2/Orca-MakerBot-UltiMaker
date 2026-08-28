@@ -387,7 +387,7 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (bt.find("engineering")!= std::string::npos) sel = h.eng_plate_temp;
         else if (bt.find("high temp")  != std::string::npos) sel = h.hot_plate_temp;
         else if (bt.find("cool")       != std::string::npos) sel = h.cool_plate_temp;
-        if (sel < 0) sel = h.hot_plate_temp;          // Rueckfall wie bisher
+        if (sel < 0) sel = h.hot_plate_temp;          // fallback, unchanged
         if (sel >= 0) h.bed_temperature = sel;
     }
 
