@@ -1,6 +1,6 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.05.00",
+    "version": "01.00.06.00",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
@@ -1590,8 +1590,8 @@
             "sub_path": "filament/Classic/Generic PLA @UltiMaker 2.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2.json"
+            "name": "Generic PLA Silk @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2.json"
         },
         {
             "name": "Generic PETG @UltiMaker 2",
@@ -1670,40 +1670,40 @@
             "sub_path": "filament/Classic/Generic PLA @UltiMaker Original.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2 Extended+.json"
+            "name": "Generic PLA Silk @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended+.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2 Extended",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2 Extended.json"
+            "name": "Generic PLA Silk @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2 Go.json"
+            "name": "Generic PLA Silk @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Go.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2+ Connect.json"
+            "name": "Generic PLA Silk @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+ Connect.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 2+",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 2+.json"
+            "name": "Generic PLA Silk @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 3 Extended.json"
+            "name": "Generic PLA Silk @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3 Extended.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker 3",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker 3.json"
+            "name": "Generic PLA Silk @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker Original+.json"
+            "name": "Generic PLA Silk @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original+.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic Silk PLA @UltiMaker Original.json"
+            "name": "Generic PLA Silk @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original.json"
         },
         {
             "name": "Generic PETG @UltiMaker Factor 4",
@@ -1714,8 +1714,8 @@
             "sub_path": "filament/Factor/Generic PLA @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Factor 4",
-            "sub_path": "filament/Factor/Generic Silk PLA @UltiMaker Factor 4.json"
+            "name": "Generic PLA Silk @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PLA Silk @UltiMaker Factor 4.json"
         },
         {
             "name": "Generic PA-CF @UltiMaker Method X Carbon Fiber",
@@ -1762,20 +1762,20 @@
             "sub_path": "filament/Method/Generic PLA @UltiMaker Method.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic Silk PLA @UltiMaker Method X Carbon Fiber.json"
+            "name": "Generic PLA Silk @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X Carbon Fiber.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic Silk PLA @UltiMaker Method X.json"
+            "name": "Generic PLA Silk @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic Silk PLA @UltiMaker Method XL.json"
+            "name": "Generic PLA Silk @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method XL.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker Method",
-            "sub_path": "filament/Method/Generic Silk PLA @UltiMaker Method.json"
+            "name": "Generic PLA Silk @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method.json"
         },
         {
             "name": "Generic PETG @UltiMaker S3",
@@ -1810,20 +1810,20 @@
             "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S8.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker S3",
-            "sub_path": "filament/SSERIES/Generic Silk PLA @UltiMaker S3.json"
+            "name": "Generic PLA Silk @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S3.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker S5",
-            "sub_path": "filament/SSERIES/Generic Silk PLA @UltiMaker S5.json"
+            "name": "Generic PLA Silk @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S5.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker S7",
-            "sub_path": "filament/SSERIES/Generic Silk PLA @UltiMaker S7.json"
+            "name": "Generic PLA Silk @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S7.json"
         },
         {
-            "name": "Generic Silk PLA @UltiMaker S8",
-            "sub_path": "filament/SSERIES/Generic Silk PLA @UltiMaker S8.json"
+            "name": "Generic PLA Silk @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S8.json"
         },
         {
             "name": "fdm_filament_abs",

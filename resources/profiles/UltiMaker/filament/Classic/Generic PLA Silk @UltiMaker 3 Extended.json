@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @MakerBot Method X Carbon Fiber",
-    "name": "Generic Silk PLA @MakerBot Method X Carbon Fiber",
+    "setting_id": "Generic PLA Silk @UltiMaker 3 Extended",
+    "name": "Generic PLA Silk @UltiMaker 3 Extended",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,13 +13,18 @@
         "0.02"
     ],
     "compatible_printers": [
-        "MakerBot Method X Carbon Fiber 0.4 nozzle"
+        "UltiMaker 3 Extended 0.25 nozzle",
+        "UltiMaker 3 Extended 0.4 nozzle",
+        "UltiMaker 3 Extended 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "220"
     ],
     "nozzle_temperature_initial_layer": [
         "220"
+    ],
+    "filament_diameter": [
+        "2.85"
     ],
     "cool_plate_temp": [
         "0"
@@ -39,17 +44,8 @@
     "textured_plate_temp_initial_layer": [
         "60"
     ],
-    "filament_diameter": [
-        "1.75"
-    ],
     "filament_max_volumetric_speed": [
-        "9.8"
-    ],
-    "chamber_temperature": [
-        "40"
-    ],
-    "activate_chamber_temp_control": [
-        "1"
+        "7.0"
     ],
     "fan_min_speed": [
         "50"
@@ -64,9 +60,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "8"
-    ],
-    "filament_retraction_length": [
-        "0.75"
+        "6"
     ]
 }

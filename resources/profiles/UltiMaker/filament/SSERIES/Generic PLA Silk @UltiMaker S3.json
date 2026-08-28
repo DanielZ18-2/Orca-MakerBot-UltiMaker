@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @MakerBot Sketch Sprint",
-    "name": "Generic Silk PLA @MakerBot Sketch Sprint",
+    "setting_id": "Generic PLA Silk @UltiMaker S3",
+    "name": "Generic PLA Silk @UltiMaker S3",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,13 +13,18 @@
         "0.02"
     ],
     "compatible_printers": [
-        "MakerBot Sketch Sprint 0.4 nozzle"
+        "UltiMaker S3 0.25 nozzle",
+        "UltiMaker S3 0.4 nozzle",
+        "UltiMaker S3 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "220"
     ],
     "nozzle_temperature_initial_layer": [
         "220"
+    ],
+    "filament_diameter": [
+        "2.85"
     ],
     "cool_plate_temp": [
         "0"
@@ -39,11 +44,8 @@
     "textured_plate_temp_initial_layer": [
         "60"
     ],
-    "filament_diameter": [
-        "1.75"
-    ],
     "filament_max_volumetric_speed": [
-        "13.0"
+        "7.5"
     ],
     "fan_min_speed": [
         "50"
@@ -58,6 +60,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "18"
+        "6"
     ]
 }

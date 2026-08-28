@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @UltiMaker 3 Extended",
-    "name": "Generic Silk PLA @UltiMaker 3 Extended",
+    "setting_id": "Generic PLA Silk @UltiMaker S8",
+    "name": "Generic PLA Silk @UltiMaker S8",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,9 +13,9 @@
         "0.02"
     ],
     "compatible_printers": [
-        "UltiMaker 3 Extended 0.25 nozzle",
-        "UltiMaker 3 Extended 0.4 nozzle",
-        "UltiMaker 3 Extended 0.8 nozzle"
+        "UltiMaker S8 0.25 nozzle",
+        "UltiMaker S8 0.4 nozzle",
+        "UltiMaker S8 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "220"
@@ -45,7 +45,7 @@
         "60"
     ],
     "filament_max_volumetric_speed": [
-        "7.0"
+        "12.0"
     ],
     "fan_min_speed": [
         "50"
@@ -60,6 +60,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "6"
+        "18"
     ]
 }

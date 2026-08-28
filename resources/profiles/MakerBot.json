@@ -1,6 +1,6 @@
 {
     "name": "MakerBot",
-    "version": "01.00.08.00",
+    "version": "01.00.09.00",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "MakerBot configurations",
@@ -2186,16 +2186,16 @@
             "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch Sprint.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Sketch",
-            "sub_path": "filament/Sketch/Generic Silk PLA @MakerBot Sketch.json"
+            "name": "Generic PLA Silk @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch.json"
         },
         {
             "name": "Generic PETG @MakerBot Sketch",
             "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Sketch Large",
-            "sub_path": "filament/Sketch/Generic Silk PLA @MakerBot Sketch Large.json"
+            "name": "Generic PLA Silk @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Large.json"
         },
         {
             "name": "Generic PLA @MakerBot Sketch Large",
@@ -2214,8 +2214,8 @@
             "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch Large.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic Silk PLA @MakerBot Sketch Sprint.json"
+            "name": "Generic PLA Silk @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Sprint.json"
         },
         {
             "name": "Generic PLA @MakerBot Sketch Sprint",
@@ -2250,8 +2250,8 @@
             "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator+.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Replicator Mini",
-            "sub_path": "filament/Birdwing/Generic Silk PLA @MakerBot Replicator Mini.json"
+            "name": "Generic PLA Silk @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini.json"
         },
         {
             "name": "Generic PETG @MakerBot Replicator 5th Gen",
@@ -2278,12 +2278,12 @@
             "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator+.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic Silk PLA @MakerBot Replicator Mini+.json"
+            "name": "Generic PLA Silk @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini+.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic Silk PLA @MakerBot Replicator+.json"
+            "name": "Generic PLA Silk @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator+.json"
         },
         {
             "name": "Generic PETG @MakerBot Replicator Z18",
@@ -2298,8 +2298,8 @@
             "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator Z18.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Replicator Z18",
-            "sub_path": "filament/Birdwing/Generic Silk PLA @MakerBot Replicator Z18.json"
+            "name": "Generic PLA Silk @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Z18.json"
         },
         {
             "name": "Generic ASA @MakerBot Replicator Mini+",
@@ -2310,8 +2310,8 @@
             "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator 5th Gen.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Replicator 5th Gen",
-            "sub_path": "filament/Birdwing/Generic Silk PLA @MakerBot Replicator 5th Gen.json"
+            "name": "Generic PLA Silk @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator 5th Gen.json"
         },
         {
             "name": "Generic ABS @MakerBot Replicator Z18",
@@ -2358,8 +2358,8 @@
             "sub_path": "filament/Lava/Generic ASA @MakerBot Method X.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic Silk PLA @MakerBot Method XL.json"
+            "name": "Generic PLA Silk @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method XL.json"
         },
         {
             "name": "Generic ASA @MakerBot Method XL",
@@ -2370,8 +2370,8 @@
             "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method XL.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic Silk PLA @MakerBot Method X.json"
+            "name": "Generic PLA Silk @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X.json"
         },
         {
             "name": "Generic PETG @MakerBot Method X",
@@ -2382,8 +2382,8 @@
             "sub_path": "filament/Lava/Generic ABS @MakerBot Method X.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic Silk PLA @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic PLA Silk @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X Carbon Fiber.json"
         },
         {
             "name": "Generic PLA @MakerBot Method X Carbon Fiber",
@@ -2406,8 +2406,8 @@
             "sub_path": "filament/Lava/Generic ASA @MakerBot Method X Carbon Fiber.json"
         },
         {
-            "name": "Generic Silk PLA @MakerBot Method",
-            "sub_path": "filament/Lava/Generic Silk PLA @MakerBot Method.json"
+            "name": "Generic PLA Silk @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method.json"
         },
         {
             "name": "Generic ABS @MakerBot Method XL",

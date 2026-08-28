@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @UltiMaker Method XL",
-    "name": "Generic Silk PLA @UltiMaker Method XL",
+    "setting_id": "Generic PLA Silk @UltiMaker Method XL",
+    "name": "Generic PLA Silk @UltiMaker Method XL",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],

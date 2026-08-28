@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @MakerBot Replicator Mini",
-    "name": "Generic Silk PLA @MakerBot Replicator Mini",
+    "setting_id": "Generic PLA Silk @UltiMaker S5",
+    "name": "Generic PLA Silk @UltiMaker S5",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,13 +13,18 @@
         "0.02"
     ],
     "compatible_printers": [
-        "MakerBot Replicator Mini 0.4 nozzle"
+        "UltiMaker S5 0.25 nozzle",
+        "UltiMaker S5 0.4 nozzle",
+        "UltiMaker S5 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "220"
     ],
     "nozzle_temperature_initial_layer": [
         "220"
+    ],
+    "filament_diameter": [
+        "2.85"
     ],
     "cool_plate_temp": [
         "0"
@@ -39,11 +44,8 @@
     "textured_plate_temp_initial_layer": [
         "60"
     ],
-    "filament_diameter": [
-        "1.75"
-    ],
     "filament_max_volumetric_speed": [
-        "9.5"
+        "7.5"
     ],
     "fan_min_speed": [
         "50"
@@ -59,11 +61,5 @@
     ],
     "slow_down_min_speed": [
         "6"
-    ],
-    "filament_retraction_speed": [
-        "50"
-    ],
-    "filament_deretraction_speed": [
-        "30"
     ]
 }

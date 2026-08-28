@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @UltiMaker S3",
-    "name": "Generic Silk PLA @UltiMaker S3",
+    "setting_id": "Generic PLA Silk @MakerBot Replicator Z18",
+    "name": "Generic PLA Silk @MakerBot Replicator Z18",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,18 +13,17 @@
         "0.02"
     ],
     "compatible_printers": [
-        "UltiMaker S3 0.25 nozzle",
-        "UltiMaker S3 0.4 nozzle",
-        "UltiMaker S3 0.8 nozzle"
+        "MakerBot Replicator Z18 0.2 nozzle",
+        "MakerBot Replicator Z18 0.4 nozzle",
+        "MakerBot Replicator Z18 0.6 nozzle",
+        "MakerBot Replicator Z18 0.8 nozzle",
+        "MakerBot Replicator Z18 1 nozzle"
     ],
     "nozzle_temperature": [
         "220"
     ],
     "nozzle_temperature_initial_layer": [
         "220"
-    ],
-    "filament_diameter": [
-        "2.85"
     ],
     "cool_plate_temp": [
         "0"
@@ -44,8 +43,17 @@
     "textured_plate_temp_initial_layer": [
         "60"
     ],
+    "filament_diameter": [
+        "1.75"
+    ],
     "filament_max_volumetric_speed": [
-        "7.5"
+        "9.5"
+    ],
+    "chamber_temperature": [
+        "40"
+    ],
+    "activate_chamber_temp_control": [
+        "0"
     ],
     "fan_min_speed": [
         "50"
@@ -60,6 +68,15 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "6"
+        "12"
+    ],
+    "filament_retraction_speed": [
+        "50"
+    ],
+    "filament_deretraction_speed": [
+        "30"
+    ],
+    "overhang_fan_threshold": [
+        "0%"
     ]
 }

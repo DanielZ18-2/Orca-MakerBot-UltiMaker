@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @UltiMaker 2+ Connect",
-    "name": "Generic Silk PLA @UltiMaker 2+ Connect",
+    "setting_id": "Generic PLA Silk @UltiMaker Original",
+    "name": "Generic PLA Silk @UltiMaker Original",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,10 +13,7 @@
         "0.02"
     ],
     "compatible_printers": [
-        "UltiMaker 2+ Connect 0.25 nozzle",
-        "UltiMaker 2+ Connect 0.4 nozzle",
-        "UltiMaker 2+ Connect 0.6 nozzle",
-        "UltiMaker 2+ Connect 0.8 nozzle"
+        "UltiMaker Original 0.4 nozzle"
     ],
     "nozzle_temperature": [
         "220"
@@ -61,6 +58,6 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "9"
+        "8"
     ]
 }

@@ -1,11 +1,11 @@
 {
     "type": "filament",
-    "setting_id": "Generic Silk PLA @MakerBot Sketch Large",
-    "name": "Generic Silk PLA @MakerBot Sketch Large",
+    "setting_id": "Generic PLA Silk @MakerBot Replicator+",
+    "name": "Generic PLA Silk @MakerBot Replicator+",
     "inherits": "fdm_filament_pla_silk",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL97",
+    "filament_id": "OGFL96",
     "filament_type": [
         "PLA"
     ],
@@ -13,7 +13,11 @@
         "0.02"
     ],
     "compatible_printers": [
-        "MakerBot Sketch Large 0.4 nozzle"
+        "MakerBot Replicator+ 0.2 nozzle",
+        "MakerBot Replicator+ 0.4 nozzle",
+        "MakerBot Replicator+ 0.6 nozzle",
+        "MakerBot Replicator+ 0.8 nozzle",
+        "MakerBot Replicator+ 1 nozzle"
     ],
     "nozzle_temperature": [
         "220"
@@ -43,7 +47,7 @@
         "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "5.0"
+        "9.5"
     ],
     "fan_min_speed": [
         "50"
@@ -58,6 +62,12 @@
         "5"
     ],
     "slow_down_min_speed": [
-        "8"
+        "12"
+    ],
+    "filament_retraction_speed": [
+        "50"
+    ],
+    "filament_deretraction_speed": [
+        "30"
     ]
 }
