@@ -1372,6 +1372,11 @@ PRINT_CONFIG_CLASS_DEFINE(
     // --- MakerBot / UltiMaker Fork: Smart Extruder ---
     ((ConfigOptionInt,                 smart_extruder_count))
     ((ConfigOptionStrings,             smart_extruder_type))
+    // --- MakerBot / UltiMaker Fork: machine identifiers the exporters read.
+    // Declared in PrintConfigDef, but the exporters take a typed
+    // const PrintConfig&, whose option() only resolves declared members.
+    ((ConfigOptionString,             makerbot_bot_type))
+    ((ConfigOptionString,             gpx_machine_type))
 
     ((ConfigOptionFloat,               time_cost)) 
     ((ConfigOptionString,              layer_change_gcode))
