@@ -2575,9 +2575,28 @@ void PresetBundle::load_installed_filaments(AppConfig &config)
         const std::string key     = printer.vendor->id + ":" + printer_model->id;
         const std::string version = printer.vendor->config_version.to_string();
 
+        // How many of this model's default materials are still installed?
+        // A model whose materials are ALL missing was not curated by the
+        // user: unchecking every last one leaves the printer with nothing to
+        // print with, while a list that lost them looks exactly like this.
+        // Measured on 2026-08-28: all 91 MakerBot filaments vanished from the
+        // installed list inside one running session, and because the marker
+        // for that profile version had already been written, every later
+        // start skipped the models. The materials stayed invisible until the
+        // marker was deleted by hand.
+        size_t installed = 0;
+        for (const std::string &default_filament : printer_model->default_materials)
+            if (config.has(AppConfig::SECTION_FILAMENTS, default_filament))
+                ++installed;
+        const bool list_lost_them = ! printer_model->default_materials.empty()
+                                    && installed == 0;
+
         // Compared for inequality rather than order, so that a profile
         // downgrade seeds as well and a malformed version cannot wedge this.
-        if (config.get(AppConfig::SECTION_DEFAULT_MATERIALS, key) == version)
+        // The second condition makes the seeding self-healing. It costs a
+        // user who really did uncheck everything one single re-check - after
+        // that the materials are back in the list and the marker holds again.
+        if (config.get(AppConfig::SECTION_DEFAULT_MATERIALS, key) == version && ! list_lost_them)
             continue;
 
         for (const std::string &default_filament : printer_model->default_materials) {
@@ -2586,7 +2605,7 @@ void PresetBundle::load_installed_filaments(AppConfig &config)
                 compatible_filaments.insert(filament);
         }
         seeded[key] = version;
-        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": seeding %1% default filaments for printer %2% (%3%, profile %4%)")%printer_model->default_materials.size() %printer.name %key %version;
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": seeding %1% default filaments for printer %2% (%3%, profile %4%, %5% still installed)")%printer_model->default_materials.size() %printer.name %key %version %installed;
     }
 
     for (const Preset *filament : compatible_filaments) {
