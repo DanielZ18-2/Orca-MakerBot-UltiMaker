@@ -1370,6 +1370,18 @@ void MainFrame::init_tabpanel() {
 void MainFrame::show_device(bool bBBLPrinter) {
     auto idx = -1;
     if (bBBLPrinter) {
+        // === MakerBot/UltiMaker Fork ===
+        // This branch only knows m_printer_view. Our own device panel is a third
+        // page it never removed, so leaving a MakerBot for a Bambu left both in
+        // the tab - two pages labelled "Device". Drop ours before anything else,
+        // including the early exit below, so an already duplicated tab heals on
+        // the next printer change.
+        if (m_makerbot_device_panel != nullptr &&
+            (idx = m_tabpanel->FindPage(m_makerbot_device_panel)) != wxNOT_FOUND) {
+            m_makerbot_device_panel->Show(false);
+            m_tabpanel->RemovePage(idx);
+        }
+        // === Ende MakerBot/UltiMaker Fork ===
         if (m_tabpanel->FindPage(m_monitor) != wxNOT_FOUND) {
             fit_tab_labels(); // ORCA on printer change - same button layout
             return;
@@ -1413,7 +1425,19 @@ void MainFrame::show_device(bool bBBLPrinter) {
 #endif // _MSW_DARK_MODE
 
     } else {
-        if (m_tabpanel->FindPage(m_printer_view) != wxNOT_FOUND) {
+        // === MakerBot/UltiMaker Fork ===
+        // The early exit below keeps an already attached WebView in place. That is
+        // right for every other host, but it also skips the MakerBot branch further
+        // down, so switching from another printer to a MakerBot left the generic
+        // WebView standing: it then loaded http://<ip>/ and the printer answered
+        // with a directory listing instead of a control UI. Decide the host type
+        // first and let a MakerBot host through to its own panel.
+        const auto& mb_cfg_early = wxGetApp().preset_bundle->printers.get_edited_preset().config;
+        const auto* mb_ht_early  = mb_cfg_early.option<ConfigOptionEnum<PrintHostType>>("host_type");
+        const bool  mb_host_early = mb_ht_early != nullptr &&
+            (mb_ht_early->value == htMakerbotLink || mb_ht_early->value == htUltimakerLink);
+        // === Ende MakerBot/UltiMaker Fork ===
+        if (m_tabpanel->FindPage(m_printer_view) != wxNOT_FOUND && !mb_host_early) {
             fit_tab_labels(); // ORCA on printer change - same button layout
             return;
         }
