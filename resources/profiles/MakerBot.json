@@ -1,6 +1,6 @@
 {
     "name": "MakerBot",
-    "version": "01.00.09.00",
+    "version": "01.00.10.00",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "MakerBot configurations",
@@ -2070,172 +2070,96 @@
     ],
     "filament_list": [
         {
-            "name": "fdm_filament_common",
-            "sub_path": "filament/fdm_filament_common.json"
+            "name": "Generic ABS @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Cupcake CNC.json"
         },
         {
-            "name": "fdm_filament_abs",
-            "sub_path": "filament/fdm_filament_abs.json"
+            "name": "Generic ABS @MakerBot Method",
+            "sub_path": "filament/Lava/Generic ABS @MakerBot Method.json"
         },
         {
-            "name": "fdm_filament_pa",
-            "sub_path": "filament/fdm_filament_pa.json"
+            "name": "Generic ABS @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic ABS @MakerBot Method X.json"
         },
         {
-            "name": "fdm_filament_asa",
-            "sub_path": "filament/fdm_filament_asa.json"
+            "name": "Generic ABS @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic ABS @MakerBot Method X Carbon Fiber.json"
         },
         {
-            "name": "fdm_filament_pla",
-            "sub_path": "filament/fdm_filament_pla.json"
+            "name": "Generic ABS @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic ABS @MakerBot Method XL.json"
         },
         {
-            "name": "fdm_filament_pla_silk",
-            "sub_path": "filament/fdm_filament_pla_silk.json"
-        },
-        {
-            "name": "fdm_filament_pet",
-            "sub_path": "filament/fdm_filament_pet.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator Original",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator Original.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Thing-O-Matic Acrylic",
-            "sub_path": "filament/Legacy/Generic ABS @MakerBot Thing-O-Matic Acrylic.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator 2",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator 2.json"
-        },
-        {
-            "name": "Generic HIPS @MakerBot Replicator 2X",
-            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator 2X.json"
-        },
-        {
-            "name": "Generic HIPS @MakerBot Replicator Original Dual",
-            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator Original Dual.json"
-        },
-        {
-            "name": "Generic HIPS @MakerBot Replicator Original",
-            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator Original.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator 2",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator 2.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Thing-O-Matic ABP",
-            "sub_path": "filament/Legacy/Generic ABS @MakerBot Thing-O-Matic ABP.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator Original Dual",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator Original Dual.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Thing-O-Matic ABP",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Thing-O-Matic ABP.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator 2X",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator 2X.json"
+            "name": "Generic ABS @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator 2.json"
         },
         {
             "name": "Generic ABS @MakerBot Replicator 2X",
             "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator 2X.json"
         },
         {
-            "name": "Generic PETG @MakerBot Replicator 2X",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator 2X.json"
+            "name": "Generic ABS @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator 5th Gen.json"
         },
         {
-            "name": "Generic HIPS @MakerBot Thing-O-Matic Acrylic",
-            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic Acrylic.json"
+            "name": "Generic ABS @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Mini.json"
         },
         {
-            "name": "Generic PLA @MakerBot Thing-O-Matic Acrylic",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Thing-O-Matic Acrylic.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Cupcake CNC",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Cupcake CNC.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Replicator Original Dual",
-            "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator Original Dual.json"
+            "name": "Generic ABS @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Mini+.json"
         },
         {
             "name": "Generic ABS @MakerBot Replicator Original",
             "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator Original.json"
         },
         {
-            "name": "Generic HIPS @MakerBot Thing-O-Matic ABP",
-            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic ABP.json"
+            "name": "Generic ABS @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator Original Dual.json"
         },
         {
-            "name": "Generic PLA @MakerBot Cupcake CNC",
-            "sub_path": "filament/Legacy/Generic PLA @MakerBot Cupcake CNC.json"
+            "name": "Generic ABS @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Z18.json"
         },
         {
-            "name": "Generic ABS @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic ABS @MakerBot Sketch Sprint.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch Sprint.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Sketch",
-            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Sketch",
-            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Sketch Large",
-            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Large.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Sketch Large",
-            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch Large.json"
+            "name": "Generic ABS @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator+.json"
         },
         {
             "name": "Generic ABS @MakerBot Sketch",
             "sub_path": "filament/Sketch/Generic ABS @MakerBot Sketch.json"
         },
         {
-            "name": "Generic ASA @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch Sprint.json"
-        },
-        {
-            "name": "Generic ASA @MakerBot Sketch Large",
-            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch Large.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Sprint.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Sketch Sprint",
-            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch Sprint.json"
-        },
-        {
             "name": "Generic ABS @MakerBot Sketch Large",
             "sub_path": "filament/Sketch/Generic ABS @MakerBot Sketch Large.json"
         },
         {
-            "name": "Generic PETG @MakerBot Sketch Large",
-            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch Large.json"
+            "name": "Generic ABS @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic ABS @MakerBot Sketch Sprint.json"
         },
         {
-            "name": "Generic PLA @MakerBot Sketch",
-            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch.json"
+            "name": "Generic ABS @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Thing-O-Matic ABP.json"
         },
         {
-            "name": "Generic ASA @MakerBot Sketch",
-            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch.json"
+            "name": "Generic ABS @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic ABS @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic ASA @MakerBot Method",
+            "sub_path": "filament/Lava/Generic ASA @MakerBot Method.json"
+        },
+        {
+            "name": "Generic ASA @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic ASA @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic ASA @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic ASA @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic ASA @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic ASA @MakerBot Method XL.json"
         },
         {
             "name": "Generic ASA @MakerBot Replicator 5th Gen",
@@ -2246,208 +2170,128 @@
             "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator Mini.json"
         },
         {
-            "name": "Generic ASA @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator+.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Replicator Mini",
-            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator 5th Gen",
-            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator 5th Gen.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Replicator Mini",
-            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Mini.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator+.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator Mini",
-            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Mini.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Replicator 5th Gen",
-            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator 5th Gen.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator+.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini+.json"
-        },
-        {
-            "name": "Generic PLA Silk @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator+.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator Z18",
-            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Z18.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Mini+.json"
+            "name": "Generic ASA @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator Mini+.json"
         },
         {
             "name": "Generic ASA @MakerBot Replicator Z18",
             "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator Z18.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Replicator Z18",
-            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Z18.json"
+            "name": "Generic ASA @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator+.json"
         },
         {
-            "name": "Generic ASA @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator Mini+.json"
+            "name": "Generic ASA @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch.json"
         },
         {
-            "name": "Generic ABS @MakerBot Replicator 5th Gen",
-            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator 5th Gen.json"
+            "name": "Generic ASA @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch Large.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Replicator 5th Gen",
-            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator 5th Gen.json"
+            "name": "Generic ASA @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic ASA @MakerBot Sketch Sprint.json"
         },
         {
-            "name": "Generic ABS @MakerBot Replicator Z18",
-            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Z18.json"
+            "name": "Generic BVOH @MakerBot Method",
+            "sub_path": "filament/Lava/Generic BVOH @MakerBot Method.json"
         },
         {
-            "name": "Generic PLA @MakerBot Replicator Mini",
-            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Mini.json"
+            "name": "Generic BVOH @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic BVOH @MakerBot Method X.json"
         },
         {
-            "name": "Generic ABS @MakerBot Replicator+",
-            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator+.json"
+            "name": "Generic BVOH @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic BVOH @MakerBot Method X Carbon Fiber.json"
         },
         {
-            "name": "Generic PLA @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Mini+.json"
+            "name": "Generic BVOH @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic BVOH @MakerBot Method XL.json"
         },
         {
-            "name": "Generic ABS @MakerBot Replicator Mini+",
-            "sub_path": "filament/Birdwing/Generic ABS @MakerBot Replicator Mini+.json"
+            "name": "Generic BVOH @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic BVOH @MakerBot Replicator 2X.json"
         },
         {
-            "name": "Generic PLA @MakerBot Replicator Z18",
-            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Z18.json"
+            "name": "Generic BVOH @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic BVOH @MakerBot Replicator Original Dual.json"
         },
         {
-            "name": "Generic ABS @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic ABS @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Cupcake CNC.json"
         },
         {
-            "name": "Generic PETG @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic PETG @MakerBot Method XL.json"
+            "name": "Generic CoPE @MakerBot Method",
+            "sub_path": "filament/Lava/Generic CoPE @MakerBot Method.json"
         },
         {
-            "name": "Generic PA-CF @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic CoPE @MakerBot Method X.json"
         },
         {
-            "name": "Generic PLA @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic PLA @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic CoPE @MakerBot Method X Carbon Fiber.json"
         },
         {
-            "name": "Generic ASA @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic ASA @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic CoPE @MakerBot Method XL.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method XL.json"
+            "name": "Generic CoPE @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Replicator 2.json"
         },
         {
-            "name": "Generic ASA @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic ASA @MakerBot Method XL.json"
+            "name": "Generic CoPE @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Replicator 2X.json"
         },
         {
-            "name": "Generic PA-CF @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method XL.json"
+            "name": "Generic CoPE @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic CoPE @MakerBot Replicator 5th Gen.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic CoPE @MakerBot Replicator Mini.json"
         },
         {
-            "name": "Generic PETG @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic PETG @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic CoPE @MakerBot Replicator Mini+.json"
         },
         {
-            "name": "Generic ABS @MakerBot Method X",
-            "sub_path": "filament/Lava/Generic ABS @MakerBot Method X.json"
+            "name": "Generic CoPE @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Replicator Original.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Replicator Original Dual.json"
         },
         {
-            "name": "Generic PLA @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic PLA @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic CoPE @MakerBot Replicator Z18.json"
         },
         {
-            "name": "Generic PLA @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic PLA @MakerBot Method XL.json"
+            "name": "Generic CoPE @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic CoPE @MakerBot Replicator+.json"
         },
         {
-            "name": "Generic PA-CF @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic CoPE @MakerBot Sketch.json"
         },
         {
-            "name": "Generic PETG @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic PETG @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic CoPE @MakerBot Sketch Large.json"
         },
         {
-            "name": "Generic ASA @MakerBot Method X Carbon Fiber",
-            "sub_path": "filament/Lava/Generic ASA @MakerBot Method X Carbon Fiber.json"
+            "name": "Generic CoPE @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic CoPE @MakerBot Sketch Sprint.json"
         },
         {
-            "name": "Generic PLA Silk @MakerBot Method",
-            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method.json"
+            "name": "Generic CoPE @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Thing-O-Matic ABP.json"
         },
         {
-            "name": "Generic ABS @MakerBot Method XL",
-            "sub_path": "filament/Lava/Generic ABS @MakerBot Method XL.json"
-        },
-        {
-            "name": "Generic PLA @MakerBot Method",
-            "sub_path": "filament/Lava/Generic PLA @MakerBot Method.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Method",
-            "sub_path": "filament/Lava/Generic PETG @MakerBot Method.json"
-        },
-        {
-            "name": "Generic ASA @MakerBot Method",
-            "sub_path": "filament/Lava/Generic ASA @MakerBot Method.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Method",
-            "sub_path": "filament/Lava/Generic ABS @MakerBot Method.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator Original",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Replicator Original Dual",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original Dual.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Thing-O-Matic ABP",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic ABP.json"
-        },
-        {
-            "name": "Generic PETG @MakerBot Thing-O-Matic Acrylic",
-            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic Acrylic.json"
-        },
-        {
-            "name": "Generic ABS @MakerBot Cupcake CNC",
-            "sub_path": "filament/Legacy/Generic ABS @MakerBot Cupcake CNC.json"
+            "name": "Generic CoPE @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic CoPE @MakerBot Thing-O-Matic Acrylic.json"
         },
         {
             "name": "Generic HIPS @MakerBot Cupcake CNC",
@@ -2458,8 +2302,440 @@
             "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator 2.json"
         },
         {
-            "name": "Generic ABS @MakerBot Replicator 2",
-            "sub_path": "filament/Legacy/Generic ABS @MakerBot Replicator 2.json"
+            "name": "Generic HIPS @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic HIPS @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PA @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PA @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PA @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PA @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Replicator 2.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic PA @MakerBot Replicator 5th Gen.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic PA @MakerBot Replicator Mini.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic PA @MakerBot Replicator Mini+.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic PA @MakerBot Replicator Z18.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic PA @MakerBot Replicator+.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic PA @MakerBot Sketch.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic PA @MakerBot Sketch Large.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic PA @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic PA @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic PA @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic PA-CF @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PA-CF @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PA-CF @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PETG @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PETG @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PETG @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PETG @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator 2.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator 5th Gen.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Mini.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Mini+.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator Z18.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic PETG @MakerBot Replicator+.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch Large.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic PETG @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic PETG @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PLA @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PLA @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PLA @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PLA @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator 2.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator 5th Gen.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Mini.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Mini+.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator Z18.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic PLA @MakerBot Replicator+.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch Large.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic PLA @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic PLA @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic PLA @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator 5th Gen.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Mini+.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator Z18.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic PLA Silk @MakerBot Replicator+.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Large.json"
+        },
+        {
+            "name": "Generic PLA Silk @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Method",
+            "sub_path": "filament/Lava/Generic PVA @MakerBot Method.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic PVA @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic PVA @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic PVA @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic PVA @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic PVA @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic PVA @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Cupcake CNC",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Cupcake CNC.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Method",
+            "sub_path": "filament/Lava/Generic TPU @MakerBot Method.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Method X",
+            "sub_path": "filament/Lava/Generic TPU @MakerBot Method X.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Method X Carbon Fiber",
+            "sub_path": "filament/Lava/Generic TPU @MakerBot Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Method XL",
+            "sub_path": "filament/Lava/Generic TPU @MakerBot Method XL.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator 2",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Replicator 2.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator 2X",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Replicator 2X.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator 5th Gen",
+            "sub_path": "filament/Birdwing/Generic TPU @MakerBot Replicator 5th Gen.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator Mini",
+            "sub_path": "filament/Birdwing/Generic TPU @MakerBot Replicator Mini.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator Mini+",
+            "sub_path": "filament/Birdwing/Generic TPU @MakerBot Replicator Mini+.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator Original",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Replicator Original.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator Original Dual",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator Z18",
+            "sub_path": "filament/Birdwing/Generic TPU @MakerBot Replicator Z18.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Replicator+",
+            "sub_path": "filament/Birdwing/Generic TPU @MakerBot Replicator+.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Sketch",
+            "sub_path": "filament/Sketch/Generic TPU @MakerBot Sketch.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Sketch Large",
+            "sub_path": "filament/Sketch/Generic TPU @MakerBot Sketch Large.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Sketch Sprint",
+            "sub_path": "filament/Sketch/Generic TPU @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Thing-O-Matic ABP",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Thing-O-Matic ABP.json"
+        },
+        {
+            "name": "Generic TPU @MakerBot Thing-O-Matic Acrylic",
+            "sub_path": "filament/Legacy/Generic TPU @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "fdm_filament_abs",
+            "sub_path": "filament/fdm_filament_abs.json"
+        },
+        {
+            "name": "fdm_filament_asa",
+            "sub_path": "filament/fdm_filament_asa.json"
+        },
+        {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_pa",
+            "sub_path": "filament/fdm_filament_pa.json"
+        },
+        {
+            "name": "fdm_filament_pet",
+            "sub_path": "filament/fdm_filament_pet.json"
+        },
+        {
+            "name": "fdm_filament_pla",
+            "sub_path": "filament/fdm_filament_pla.json"
+        },
+        {
+            "name": "fdm_filament_pla_silk",
+            "sub_path": "filament/fdm_filament_pla_silk.json"
         }
     ],
     "machine_list": [

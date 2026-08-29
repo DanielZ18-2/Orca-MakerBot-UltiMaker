@@ -1,0 +1,14 @@
+{
+    "type": "filament",
+    "name": "fdm_filament_cope",
+    "from": "system",
+    "instantiation": "false",
+    "inherits": "fdm_filament_common",
+    "filament_id": "OGFLC99",
+    "filament_type": [
+        "CoPE"
+    ],
+    "filament_density": [
+        "1.27"
+    ]
+}

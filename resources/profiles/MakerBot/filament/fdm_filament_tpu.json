@@ -1,0 +1,14 @@
+{
+    "type": "filament",
+    "name": "fdm_filament_tpu",
+    "from": "system",
+    "instantiation": "false",
+    "inherits": "fdm_filament_common",
+    "filament_id": "OGFU99",
+    "filament_type": [
+        "TPU"
+    ],
+    "filament_density": [
+        "1.22"
+    ]
+}

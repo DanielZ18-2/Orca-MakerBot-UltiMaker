@@ -1,0 +1,14 @@
+{
+    "type": "filament",
+    "name": "fdm_filament_pva",
+    "from": "system",
+    "instantiation": "false",
+    "inherits": "fdm_filament_common",
+    "filament_id": "OGFS99",
+    "filament_type": [
+        "PVA"
+    ],
+    "filament_density": [
+        "1.23"
+    ]
+}

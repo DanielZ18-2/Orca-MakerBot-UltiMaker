@@ -1,0 +1,14 @@
+{
+    "type": "filament",
+    "name": "fdm_filament_bvoh",
+    "from": "system",
+    "instantiation": "false",
+    "inherits": "fdm_filament_common",
+    "filament_id": "OGFS97",
+    "filament_type": [
+        "BVOH"
+    ],
+    "filament_density": [
+        "1.14"
+    ]
+}

@@ -1,6 +1,6 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.06.00",
+    "version": "01.00.07.00",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
@@ -1566,392 +1566,64 @@
     ],
     "filament_list": [
         {
-            "name": "fdm_filament_common",
-            "sub_path": "filament/fdm_filament_common.json"
-        },
-        {
-            "name": "fdm_filament_pa",
-            "sub_path": "filament/fdm_filament_pa.json"
-        },
-        {
-            "name": "fdm_filament_pet",
-            "sub_path": "filament/fdm_filament_pet.json"
-        },
-        {
-            "name": "fdm_filament_pla",
-            "sub_path": "filament/fdm_filament_pla.json"
-        },
-        {
-            "name": "fdm_filament_pla_silk",
-            "sub_path": "filament/fdm_filament_pla_silk.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Extended+.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2 Extended",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Extended.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Go.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2+ Connect.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 2+",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2+.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 3 Extended.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker 3",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker 3.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker Original+.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic PETG @UltiMaker Original.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Extended+.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2 Extended",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Extended.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Go.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2+ Connect.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 2+",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2+.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 3 Extended.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker 3",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker 3.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker Original+.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic PLA @UltiMaker Original.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended+.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2 Extended",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Go.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+ Connect.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 2+",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3 Extended.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker 3",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original+.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Factor 4",
-            "sub_path": "filament/Factor/Generic PETG @UltiMaker Factor 4.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Factor 4",
-            "sub_path": "filament/Factor/Generic PLA @UltiMaker Factor 4.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Factor 4",
-            "sub_path": "filament/Factor/Generic PLA Silk @UltiMaker Factor 4.json"
-        },
-        {
-            "name": "Generic PA-CF @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic PA-CF @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic PA-CF @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method XL.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic PETG @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic PETG @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic PETG @UltiMaker Method XL.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker Method",
-            "sub_path": "filament/Method/Generic PETG @UltiMaker Method.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic PLA @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic PLA @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic PLA @UltiMaker Method XL.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker Method",
-            "sub_path": "filament/Method/Generic PLA @UltiMaker Method.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method XL.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker Method",
-            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker S3",
-            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S3.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker S5",
-            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S5.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker S7",
-            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S7.json"
-        },
-        {
-            "name": "Generic PETG @UltiMaker S8",
-            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S8.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker S3",
-            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S3.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker S5",
-            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S5.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker S7",
-            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S7.json"
-        },
-        {
-            "name": "Generic PLA @UltiMaker S8",
-            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S8.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker S3",
-            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S3.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker S5",
-            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S5.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker S7",
-            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S7.json"
-        },
-        {
-            "name": "Generic PLA Silk @UltiMaker S8",
-            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S8.json"
-        },
-        {
-            "name": "fdm_filament_abs",
-            "sub_path": "filament/fdm_filament_abs.json"
-        },
-        {
-            "name": "fdm_filament_asa",
-            "sub_path": "filament/fdm_filament_asa.json"
-        },
-        {
             "name": "Generic ABS @UltiMaker 2",
             "sub_path": "filament/Classic/Generic ABS @UltiMaker 2.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2.json"
-        },
-        {
-            "name": "Generic ABS @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2 Extended+.json"
         },
         {
             "name": "Generic ABS @UltiMaker 2 Extended",
             "sub_path": "filament/Classic/Generic ABS @UltiMaker 2 Extended.json"
         },
         {
-            "name": "Generic ABS @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2 Go.json"
+            "name": "Generic ABS @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2 Extended+.json"
         },
         {
-            "name": "Generic ABS @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2+ Connect.json"
+            "name": "Generic ABS @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2 Go.json"
         },
         {
             "name": "Generic ABS @UltiMaker 2+",
             "sub_path": "filament/Classic/Generic ABS @UltiMaker 2+.json"
         },
         {
-            "name": "Generic ABS @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker 3 Extended.json"
+            "name": "Generic ABS @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker 2+ Connect.json"
         },
         {
             "name": "Generic ABS @UltiMaker 3",
             "sub_path": "filament/Classic/Generic ABS @UltiMaker 3.json"
         },
         {
-            "name": "Generic ABS @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker Original+.json"
-        },
-        {
-            "name": "Generic ABS @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic ABS @UltiMaker Original.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2 Extended+",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Extended+.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2 Extended",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Extended.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2 Go",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Go.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2+ Connect",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2+ Connect.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 2+",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2+.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 3 Extended",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 3 Extended.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker 3",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker 3.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker Original+",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker Original+.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker Original",
-            "sub_path": "filament/Classic/Generic ASA @UltiMaker Original.json"
+            "name": "Generic ABS @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker 3 Extended.json"
         },
         {
             "name": "Generic ABS @UltiMaker Factor 4",
             "sub_path": "filament/Factor/Generic ABS @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic ASA @UltiMaker Factor 4",
-            "sub_path": "filament/Factor/Generic ASA @UltiMaker Factor 4.json"
-        },
-        {
-            "name": "Generic ABS @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic ABS @UltiMaker Method X Carbon Fiber.json"
+            "name": "Generic ABS @UltiMaker Method",
+            "sub_path": "filament/Method/Generic ABS @UltiMaker Method.json"
         },
         {
             "name": "Generic ABS @UltiMaker Method X",
             "sub_path": "filament/Method/Generic ABS @UltiMaker Method X.json"
         },
         {
+            "name": "Generic ABS @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic ABS @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
             "name": "Generic ABS @UltiMaker Method XL",
             "sub_path": "filament/Method/Generic ABS @UltiMaker Method XL.json"
         },
         {
-            "name": "Generic ABS @UltiMaker Method",
-            "sub_path": "filament/Method/Generic ABS @UltiMaker Method.json"
+            "name": "Generic ABS @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker Original.json"
         },
         {
-            "name": "Generic ASA @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic ASA @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic ASA @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic ASA @UltiMaker Method XL.json"
-        },
-        {
-            "name": "Generic ASA @UltiMaker Method",
-            "sub_path": "filament/Method/Generic ASA @UltiMaker Method.json"
+            "name": "Generic ABS @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic ABS @UltiMaker Original+.json"
         },
         {
             "name": "Generic ABS @UltiMaker S3",
@@ -1970,6 +1642,66 @@
             "sub_path": "filament/SSERIES/Generic ABS @UltiMaker S8.json"
         },
         {
+            "name": "Generic ASA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic ASA @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Method",
+            "sub_path": "filament/Method/Generic ASA @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic ASA @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic ASA @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic ASA @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic ASA @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic ASA @UltiMaker Original+.json"
+        },
+        {
             "name": "Generic ASA @UltiMaker S3",
             "sub_path": "filament/SSERIES/Generic ASA @UltiMaker S3.json"
         },
@@ -1984,6 +1716,650 @@
         {
             "name": "Generic ASA @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic ASA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic BVOH @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic BVOH @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic BVOH @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker Method",
+            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic BVOH @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic BVOH @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic BVOH @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic BVOH @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic BVOH @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic CoPE @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Method",
+            "sub_path": "filament/Method/Generic CoPE @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic CoPE @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic CoPE @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic CoPE @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic CoPE @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic CoPE @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic CoPE @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic CoPE @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic CoPE @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PA @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PA @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PA @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PA @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PA @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PA @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PA @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PA @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PA @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PA @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PA-CF @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PA-CF @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PA-CF @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PETG @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PETG @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PETG @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PETG @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PETG @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PETG @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PLA @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PLA @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PLA @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PLA @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PLA @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PLA @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PLA @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PLA Silk @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PLA Silk @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PP @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic PP @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PP @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PP @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PP @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PP @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PP @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic PVA @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic PVA @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic PVA @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker Method",
+            "sub_path": "filament/Method/Generic PVA @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic PVA @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic PVA @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic PVA @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic PVA @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic PVA @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic PVA @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic PVA @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic PVA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2 Extended",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2 Extended.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2 Extended+",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2 Extended+.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2 Go",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2 Go.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2+",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2+.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 2+ Connect",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 2+ Connect.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 3",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 3.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker 3 Extended",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker 3 Extended.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Factor 4",
+            "sub_path": "filament/Factor/Generic TPU @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Method",
+            "sub_path": "filament/Method/Generic TPU @UltiMaker Method.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic TPU @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic TPU @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic TPU @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Original",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker Original.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker Original+",
+            "sub_path": "filament/Classic/Generic TPU @UltiMaker Original+.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker S3",
+            "sub_path": "filament/SSERIES/Generic TPU @UltiMaker S3.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker S5",
+            "sub_path": "filament/SSERIES/Generic TPU @UltiMaker S5.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker S7",
+            "sub_path": "filament/SSERIES/Generic TPU @UltiMaker S7.json"
+        },
+        {
+            "name": "Generic TPU @UltiMaker S8",
+            "sub_path": "filament/SSERIES/Generic TPU @UltiMaker S8.json"
+        },
+        {
+            "name": "fdm_filament_abs",
+            "sub_path": "filament/fdm_filament_abs.json"
+        },
+        {
+            "name": "fdm_filament_asa",
+            "sub_path": "filament/fdm_filament_asa.json"
+        },
+        {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_pa",
+            "sub_path": "filament/fdm_filament_pa.json"
+        },
+        {
+            "name": "fdm_filament_pet",
+            "sub_path": "filament/fdm_filament_pet.json"
+        },
+        {
+            "name": "fdm_filament_pla",
+            "sub_path": "filament/fdm_filament_pla.json"
+        },
+        {
+            "name": "fdm_filament_pla_silk",
+            "sub_path": "filament/fdm_filament_pla_silk.json"
         }
     ],
     "machine_list": [
