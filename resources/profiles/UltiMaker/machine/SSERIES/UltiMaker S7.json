@@ -9,5 +9,5 @@
     "bed_model": "ultimaker_S7.stl",
     "bed_texture": "ultimaker_s7_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @UltiMaker S7;Generic PETG @UltiMaker S7;Generic ABS @UltiMaker S7;Generic ASA @UltiMaker S7;Generic PLA Silk @UltiMaker S7"
+    "default_materials": "Generic PLA @UltiMaker S7;Generic PETG @UltiMaker S7;Generic ABS @UltiMaker S7;Generic ASA @UltiMaker S7;Generic PLA Silk @UltiMaker S7;Generic BVOH @UltiMaker S7;Generic CoPE @UltiMaker S7;Generic PA @UltiMaker S7;Generic PP @UltiMaker S7;Generic PVA @UltiMaker S7;Generic TPU @UltiMaker S7"
 }
