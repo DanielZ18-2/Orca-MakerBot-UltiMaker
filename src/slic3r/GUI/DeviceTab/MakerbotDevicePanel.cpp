@@ -1,4 +1,5 @@
 #include "MakerbotDevicePanel.hpp"
+#include <wx/spinctrl.h>
 #include <cmath>
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Utils.hpp"
@@ -895,10 +896,12 @@ void MakerbotDevicePanel::build_hardware_controls_section() {
     // material below, calibration isolated at the very bottom.
     wxStaticBoxSizer* control_box = new wxStaticBoxSizer(wxVERTICAL, this, _L("Control"));
 
-    // Print control: most common actions. RPC confirmed (process_method
-    // "suspend"/"resume", cancel_process) - no capability precheck like
-    // in the reference; we send directly and show the firmware error
-    // if currently unsupported. Untested on real hardware.
+    // Print control: most common actions. Verified against Birdwing
+    // firmware 2.6.3.736: suspend and resume are process methods
+    // (printprocess.py, process_method decorators listing the steps they
+    // accept), cancel is an RPC method of its own (kaitenstub.hh). No
+    // capability precheck like in the reference; we send directly and
+    // show the firmware error if currently unsupported.
     wxBoxSizer* primary_sizer = new wxBoxSizer(wxHORIZONTAL);
     m_btn_pause  = new wxButton(this, wxID_ANY, _L("Pause"));
     m_btn_resume = new wxButton(this, wxID_ANY, _L("Resume"));
@@ -1130,6 +1133,113 @@ void MakerbotDevicePanel::start_print_with_confirmation() {
     m_kaiten_worker->push(std::move(job));
 }
 
+// === MakerBot/UltiMaker Fork ===
+// Preheat dialog. The button used to send the active filament profile's
+// nozzle temperature without asking - 255 C for ABS is wrong when PLA is
+// in the extruder, and the user only found out at the machine.
+//
+// Prefilled from the active filament profile, every heater switchable.
+// An unchecked heater is sent as 0, which is what preheatprocess.py
+// expects: it pads the list with zeros to [tool_0, tool_1, platform,
+// chamber] anyway.
+class MakerbotPreheatDialog : public wxDialog
+{
+public:
+    MakerbotPreheatDialog(wxWindow* parent,
+                          int nozzle_default,
+                          int chamber_default,
+                          bool second_nozzle,
+                          bool chamber_available)
+        : wxDialog(parent, wxID_ANY, _L("Preheat"),
+                   wxDefaultPosition, wxDefaultSize,
+                   wxDEFAULT_DIALOG_STYLE)
+    {
+        wxBoxSizer* main = new wxBoxSizer(wxVERTICAL);
+        main->Add(new wxStaticText(this, wxID_ANY,
+                      _L("Choose what to heat and to which temperature.")),
+                  0, wxALL, FromDIP(10));
+
+        wxFlexGridSizer* grid = new wxFlexGridSizer(3, FromDIP(8), FromDIP(8));
+
+        m_use_nozzle0 = new wxCheckBox(this, wxID_ANY,
+                            second_nozzle ? _L("Nozzle 1") : _L("Nozzle"));
+        m_use_nozzle0->SetValue(true);
+        m_nozzle0 = new wxSpinCtrl(this, wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+                        0, 300, nozzle_default > 0 ? nozzle_default : 215);
+        grid->Add(m_use_nozzle0, 0, wxALIGN_CENTER_VERTICAL);
+        grid->Add(m_nozzle0, 0, wxALIGN_CENTER_VERTICAL);
+        grid->Add(new wxStaticText(this, wxID_ANY, wxString::FromUTF8("\xc2\xb0""C")),
+                  0, wxALIGN_CENTER_VERTICAL);
+
+        if (second_nozzle) {
+            m_use_nozzle1 = new wxCheckBox(this, wxID_ANY, _L("Nozzle 2"));
+            m_use_nozzle1->SetValue(false);
+            m_nozzle1 = new wxSpinCtrl(this, wxID_ANY, wxEmptyString,
+                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+                            0, 300, nozzle_default > 0 ? nozzle_default : 215);
+            grid->Add(m_use_nozzle1, 0, wxALIGN_CENTER_VERTICAL);
+            grid->Add(m_nozzle1, 0, wxALIGN_CENTER_VERTICAL);
+            grid->Add(new wxStaticText(this, wxID_ANY, wxString::FromUTF8("\xc2\xb0""C")),
+                      0, wxALIGN_CENTER_VERTICAL);
+        }
+
+        if (chamber_available) {
+            m_use_chamber = new wxCheckBox(this, wxID_ANY, _L("Chamber"));
+            m_use_chamber->SetValue(chamber_default > 0);
+            m_chamber = new wxSpinCtrl(this, wxID_ANY, wxEmptyString,
+                            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+                            // 70 C ceiling: the Z18 reaches about 65 C under good conditions and
+                            // the Method range sits in the same order. A limit no machine can
+                            // reach only invites a target that never arrives.
+                            0, 70, chamber_default > 0 ? chamber_default : 50);
+            grid->Add(m_use_chamber, 0, wxALIGN_CENTER_VERTICAL);
+            grid->Add(m_chamber, 0, wxALIGN_CENTER_VERTICAL);
+            grid->Add(new wxStaticText(this, wxID_ANY, wxString::FromUTF8("\xc2\xb0""C")),
+                      0, wxALIGN_CENTER_VERTICAL);
+        }
+
+        main->Add(grid, 0, wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+
+        main->Add(new wxStaticText(this, wxID_ANY,
+                      _L("Values come from the active filament profile. "
+                         "The printer does not wait for the target.")),
+                  0, wxLEFT | wxRIGHT | wxBOTTOM, FromDIP(10));
+
+        wxSizer* buttons = CreateButtonSizer(wxOK | wxCANCEL);
+        if (buttons)
+            main->Add(buttons, 0, wxALL | wxALIGN_RIGHT, FromDIP(10));
+
+        SetSizerAndFit(main);
+        CentreOnParent();
+    }
+
+    int nozzle0() const {
+        return (m_use_nozzle0 && m_use_nozzle0->GetValue() && m_nozzle0)
+               ? m_nozzle0->GetValue() : 0;
+    }
+    int nozzle1() const {
+        return (m_use_nozzle1 && m_use_nozzle1->GetValue() && m_nozzle1)
+               ? m_nozzle1->GetValue() : 0;
+    }
+    int chamber() const {
+        return (m_use_chamber && m_use_chamber->GetValue() && m_chamber)
+               ? m_chamber->GetValue() : 0;
+    }
+    bool nothing_selected() const {
+        return nozzle0() == 0 && nozzle1() == 0 && chamber() == 0;
+    }
+
+private:
+    wxCheckBox* m_use_nozzle0{nullptr};
+    wxCheckBox* m_use_nozzle1{nullptr};
+    wxCheckBox* m_use_chamber{nullptr};
+    wxSpinCtrl* m_nozzle0{nullptr};
+    wxSpinCtrl* m_nozzle1{nullptr};
+    wxSpinCtrl* m_chamber{nullptr};
+};
+// === Ende MakerBot/UltiMaker Fork ===
+
 void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
     if (m_category != MBDeviceCategory::Birdwing) {
         wxMessageDialog(this,
@@ -1165,27 +1275,46 @@ void MakerbotDevicePanel::execute_printer_action(const std::string& action_id) {
         if (wxMessageDialog(this, _L("Cancel the current print? This cannot be undone."),
                 _L("Cancel Print"), wxYES_NO | wxICON_WARNING).ShowModal() != wxID_YES)
             return;
-        method = "cancel_process";
+        // The exposed RPC method is "cancel" (kaitenstub.hh). What the
+        // firmware calls cancel_process is MachineManager._cancel_process,
+        // internal by its leading underscore and never reachable over RPC.
+        method = "cancel";
         success_message = _L("Cancel command sent to the printer.");
     } else if (action_id == "rename") {
         method = "change_machine_name";
         params["machine_name"] = m_pending_rename_name;
     } else if (action_id == "preheat") {
-        // temperature_settings: [extruder0, extruder1, chamber/platform, unused].
-        // Temperature comes from the active filament profile (Daniel's wish).
-        // Index 2 in the kaiten protocol is ONE shared slot for chamber
-        // OR bed, depending on hardware (Z18: chamber; other Birdwing models
-        // without chamber heating: partly heated bed instead of chamber). First
-        // try chamber_temperature (Z18 case), and on 0 fall back to
-        // bed_temperature (other model). 0 if nothing is set in the
-        // profile (no heating).
-        int nozzle_temp = filament_int_option_or_zero("temperature");
-        int platform_temp = filament_int_option_or_zero("chamber_temperature");
-        if (platform_temp == 0)
-            platform_temp = filament_int_option_or_zero("bed_temperature");
+        // Verified against Birdwing firmware 2.6.3.736:
+        //   kaitenstub.hh          preheat takes temperature_settings and nothing
+        //                          else - a second parameter is answered with
+        //                          "invalid params".
+        //   preheatprocess.py:20   "Pymachine expects [tool_0, tool_1, platform,
+        //                          chamber]", padded with zeros to length 4.
+        //   machine_manager.py     only runnable while no process is running.
+        // Platform stays 0: no kaiten machine in this fork has a heated build
+        // plate - Birdwing and Lava heat the chamber instead.
+        const int nozzle_default  = filament_int_option_or_zero("nozzle_temperature");
+        const int chamber_default = filament_int_option_or_zero("chamber_temperature");
+
+        // Two extruders? Ask for both nozzles.
+        size_t extruder_count = 1;
+        if (PresetBundle* pb = wxGetApp().preset_bundle) {
+            if (const auto* nd = pb->full_config().option<ConfigOptionFloats>("nozzle_diameter"))
+                extruder_count = nd->values.empty() ? 1 : nd->values.size();
+        }
+
+        MakerbotPreheatDialog dlg(this, nozzle_default, chamber_default,
+                                  extruder_count > 1, chamber_default > 0);
+        if (dlg.ShowModal() != wxID_OK)
+            return;
+        if (dlg.nothing_selected()) {
+            wxMessageDialog(this, _L("No heater selected."), _L("Preheat"),
+                            wxOK | wxICON_INFORMATION).ShowModal();
+            return;
+        }
+
         method = "preheat";
-        params["temperature_settings"] = {nozzle_temp, 0, platform_temp, 0};
-        params["wait_till_heated"] = false;
+        params["temperature_settings"] = {dlg.nozzle0(), dlg.nozzle1(), 0, dlg.chamber()};
     } else if (action_id == "unload_filament") {
         // RPC confirmed by source-code analysis (conveyor 3.10.1,
         // birdwing.py:2084-2096) - no longer a guess. tool_index 0:
