@@ -144,6 +144,15 @@ struct HeaderData
     int         supertack_plate_temp         = -1;
     std::string curr_bed_type;
     bool        saw_filament_retraction_speed = false;
+    // Filament overrides (Orca serialises them as nullable per-filament
+    // vectors; an unset entry reads "nil"). Kept separate from the printer
+    // values so an override that is absent leaves the printer value alone.
+    double      filament_retraction_length      = 0.0;
+    double      filament_deretraction_speed     = 0.0;
+    double      filament_retract_restart_extra  = 0.0;
+    bool        saw_filament_retraction_length     = false;
+    bool        saw_filament_deretraction_speed    = false;
+    bool        saw_filament_retract_restart_extra = false;
 };
 
 struct BBox
@@ -208,6 +217,33 @@ static int hms_to_seconds(const std::string& s)
     }
     if (!found_unit) total = parse_int_safe(s, 0);
     return total;
+}
+
+// Reads one filament override value.
+//
+// Orca writes these as nullable per-filament vectors, so the serialised
+// form is "nil", "4", "nil,4" or "4,nil". The .makerbot header describes a
+// single tool with a single material, so the first entry that is not nil is
+// the one that applies. Returns false when the whole vector is nil - the
+// printer value then stands untouched, which is also what the slicer does.
+static bool parse_override(const std::string& s, double& out)
+{
+    size_t start = 0;
+    while (start <= s.size()) {
+        const size_t comma = s.find(',', start);
+        std::string part = (comma == std::string::npos)
+            ? s.substr(start)
+            : s.substr(start, comma - start);
+        boost::algorithm::trim(part);
+        if (!part.empty() && part != "nil") {
+            size_t pos = 0;
+            const double v = string_to_double_decimal_point(part, &pos);
+            if (pos != 0 && std::isfinite(v)) { out = v; return true; }
+        }
+        if (comma == std::string::npos) break;
+        start = comma + 1;
+    }
+    return false;
 }
 
 // Single-pass G-code parser:
@@ -327,8 +363,20 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key == "retraction_length")   h.retraction_length             = parse_double_safe(val, h.retraction_length);
         else if (key == "retraction_speed")    h.retraction_speed              = parse_double_safe(val, h.retraction_speed);
         else if (key == "filament_retraction_speed") {
-            h.filament_retraction_speed = parse_double_safe(val, h.filament_retraction_speed);
-            h.saw_filament_retraction_speed = true;
+            h.saw_filament_retraction_speed =
+                parse_override(val, h.filament_retraction_speed);
+        }
+        else if (key == "filament_retraction_length") {
+            h.saw_filament_retraction_length =
+                parse_override(val, h.filament_retraction_length);
+        }
+        else if (key == "filament_deretraction_speed") {
+            h.saw_filament_deretraction_speed =
+                parse_override(val, h.filament_deretraction_speed);
+        }
+        else if (key == "filament_retract_restart_extra") {
+            h.saw_filament_retract_restart_extra =
+                parse_override(val, h.filament_retract_restart_extra);
         }
         else if (key == "deretraction_speed")  h.deretraction_speed            = parse_double_safe(val, h.deretraction_speed);
         else if (key == "z_hop")               h.z_hop                         = parse_double_safe(val, h.z_hop);
@@ -395,9 +443,25 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
     // The cap may only apply when the filament profile actually
     // set its own limit. Otherwise the default value (40) would
     // throttle the correct machine speed.
-    h.filament_retraction_speed = h.saw_filament_retraction_speed
-        ? std::min(h.retraction_speed, h.filament_retraction_speed)
-        : h.retraction_speed;
+    // A filament override REPLACES the printer value - it is not a cap.
+    // See PrintConfig.cpp, compute_filament_override_value():
+    //     opt_copy->apply_override(opt_new_filament, f_maps);
+    // The earlier std::min() here reported the printer's slower speed
+    // whenever a filament profile asked for a faster one.
+    //
+    // Reading these at all matters because the CONFIG_BLOCK in the G-code
+    // is written from Print::full_print_config(), which still holds the raw
+    // printer values; Print applies the overrides to m_config only. So
+    // "retraction_length" alone describes a retraction the printer never
+    // performs as soon as the filament profile overrides it.
+    if (h.saw_filament_retraction_length)
+        h.retraction_length = h.filament_retraction_length;
+    if (h.saw_filament_retract_restart_extra)
+        h.retract_restart_extra = h.filament_retract_restart_extra;
+    if (h.saw_filament_deretraction_speed)
+        h.deretraction_speed = h.filament_deretraction_speed;
+    if (!h.saw_filament_retraction_speed)
+        h.filament_retraction_speed = h.retraction_speed;
 
     return h;
 }
@@ -466,11 +530,11 @@ static nlohmann::json build_birdwing_meta(
         ps["extruder_temperatures"]= nlohmann::json::array({h.first_layer_temp, h.temperature});
         ps["first_layer_height"]   = h.first_layer_height;
         ps["chamber_temperature"]  = h.chamber_temp;
-        // DIAGNOSTIC test (2026-06-28): tests whether the firmware checks the slicer string
-        // against a list (explanation for "Press the dial"), or whether it
-        // is due to the transport path (network vs. USB). NOT the final value -
-        // see patch_slicer_string_diagnostic_test.py for details.
-        ps["slicer"]               = "SIMPLIFY3D";
+        // Birdwing keeps this in printer_settings and shows it with the job
+        // details. It replaces a diagnostic value that was set on 2026-06-28 to
+        // find out whether the firmware validates the string, and never rolled
+        // back - see pruefe_slicerwert.py for how the question was settled.
+        ps["slicer"]               = "ORCA_SLICER";
         meta["printer_settings"]   = ps;
     }
 
