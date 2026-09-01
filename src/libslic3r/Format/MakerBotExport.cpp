@@ -530,10 +530,15 @@ static nlohmann::json build_birdwing_meta(
         ps["extruder_temperatures"]= nlohmann::json::array({h.first_layer_temp, h.temperature});
         ps["first_layer_height"]   = h.first_layer_height;
         ps["chamber_temperature"]  = h.chamber_temp;
-        // Birdwing keeps this in printer_settings and shows it with the job
-        // details. It replaces a diagnostic value that was set on 2026-06-28 to
-        // find out whether the firmware validates the string, and never rolled
-        // back - see pruefe_slicerwert.py for how the question was settled.
+        // Birdwing stores this in printer_settings; it does not validate it.
+        // Checked against the 2.6.3.736 firmware images: the root filesystem
+        // carries no list of slicer names, and the only slicer-related value
+        // kaiten reads is extra_slicer_settings.plate_variability in
+        // processes/printprocess.py. libtinything.so carries the bare key
+        // "slicer", i.e. it stores the field rather than checking it. Files
+        // written by MakerBot's own software frequently omit the field
+        // altogether. Replaces a diagnostic value set on 2026-06-28 that was
+        // never rolled back.
         ps["slicer"]               = "ORCA_SLICER";
         meta["printer_settings"]   = ps;
     }
