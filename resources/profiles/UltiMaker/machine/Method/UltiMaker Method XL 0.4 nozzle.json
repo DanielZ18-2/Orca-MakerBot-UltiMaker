@@ -36,7 +36,7 @@
     ],
     "host_type": "makerbotlink",
     "printer_vendor": "UltiMaker",
-    "makerbot_bot_type": "method_xl",
+    "makerbot_bot_type": "magma_10",
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [

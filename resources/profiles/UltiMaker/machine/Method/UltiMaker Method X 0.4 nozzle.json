@@ -36,7 +36,7 @@
     ],
     "host_type": "makerbotlink",
     "printer_vendor": "UltiMaker",
-    "makerbot_bot_type": "method_x",
+    "makerbot_bot_type": "lava_f",
     "printer_structure": "corexy",
     "support_multi_bed_types": "0",
     "printable_area": [
@@ -87,8 +87,8 @@
     "machine_end_gcode": "M104 S0 T0 ; Set Toolhead Temp to 0\nM140 S0 T0 ; Set Platform Temp to 0\nG162 Z F1800 ; Move to max axes position\nG28 X Y ; Home\nM652 ; Turn off back fan\nM132 X Y Z A B ; Set Home Position\nG91 ; Use Relative Positioning\nM18 ; Disable Axes",
     "smart_extruder_count": "2",
     "smart_extruder_type": [
-        "mk14",
-        "mk14_s"
+        "mk14_hot",
+        "mk14_hot_s"
     ],
     "default_bed_type": "1",
     "retraction_length": [
