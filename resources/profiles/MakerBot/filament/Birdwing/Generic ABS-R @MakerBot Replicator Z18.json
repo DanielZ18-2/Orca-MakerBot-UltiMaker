@@ -1,0 +1,80 @@
+{
+    "type": "filament",
+    "setting_id": "Generic ABS-R @MakerBot Replicator Z18",
+    "name": "Generic ABS-R @MakerBot Replicator Z18",
+    "inherits": "fdm_filament_abs",
+    "from": "system",
+    "instantiation": "true",
+    "filament_id": "OGFFD647",
+    "filament_type": [
+        "ABS-R"
+    ],
+    "filament_notes": "['Derived profile, not a manufacturer specification. ultimaker_absr_175 lists machine blocks for the Method X and the Method XL only; MakerBot never qualified ABS-R for the Z18. Nozzle and bed temperature come from that material data (260 / 95). The material also asks for a 107 C build volume. The Z18 does heat its chamber - firmware 2.6.3.736-6 reports has_heated_chamber true and carries a dedicated chamber toolhead, and it is the only Birdwing machine that does - but it does not reach 107 C. The profile uses 65 C, the same as Generic ABS on this machine. Expect more warping on large parts than a Method X would show, though far less than an unheated enclosure. Fan, flow limit and retraction follow Generic ABS @MakerBot Replicator Z18, because those are set by the machine and the mk13 extruder, not by the material.']\n\nKammer 60 statt der 65, die dieses Geraet gerade noch erreicht: ein Druck mit 65 brach am 31.08.2026 beim Aufheizen ab, derselbe Drucker laeuft mit 60 durch. Die Firmware gibt fuer die Kammer keinen Vorgabewert ausser 0 (printer_settings.json, toolheads.chamber.heater), die 65 waren eine eigene Ableitung ohne Quelle. Wer die Bedingungen hat, kann hoeher gehen.",
+    "pressure_advance": [
+        "0.024"
+    ],
+    "compatible_printers": [
+        "MakerBot Replicator Z18 0.2 nozzle",
+        "MakerBot Replicator Z18 0.4 nozzle",
+        "MakerBot Replicator Z18 0.6 nozzle",
+        "MakerBot Replicator Z18 0.8 nozzle",
+        "MakerBot Replicator Z18 1 nozzle"
+    ],
+    "nozzle_temperature": [
+        "260"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "260"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "hot_plate_temp": [
+        "95"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "95"
+    ],
+    "textured_plate_temp": [
+        "95"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "95"
+    ],
+    "filament_diameter": [
+        "1.75"
+    ],
+    "filament_max_volumetric_speed": [
+        "9.5"
+    ],
+    "chamber_temperature": [
+        "60"
+    ],
+    "activate_chamber_temp_control": [
+        "1"
+    ],
+    "fan_min_speed": [
+        "50"
+    ],
+    "fan_max_speed": [
+        "95"
+    ],
+    "overhang_fan_speed": [
+        "95"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "slow_down_min_speed": [
+        "12"
+    ],
+    "filament_retraction_speed": [
+        "50"
+    ],
+    "filament_deretraction_speed": [
+        "30"
+    ]
+}

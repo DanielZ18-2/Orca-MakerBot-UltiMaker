@@ -16,28 +16,10 @@
         "MakerBot Method X Carbon Fiber 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "215"
+        "210"
     ],
     "nozzle_temperature_initial_layer": [
-        "215"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
-    "hot_plate_temp": [
-        "60"
-    ],
-    "hot_plate_temp_initial_layer": [
-        "60"
-    ],
-    "textured_plate_temp": [
-        "60"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "60"
+        "210"
     ],
     "filament_diameter": [
         "1.75"
@@ -52,13 +34,13 @@
         "1"
     ],
     "fan_min_speed": [
-        "50"
+        "100"
     ],
     "fan_max_speed": [
-        "95"
+        "100"
     ],
     "overhang_fan_speed": [
-        "95"
+        "100"
     ],
     "slow_down_layer_time": [
         "5"
@@ -68,5 +50,23 @@
     ],
     "filament_retraction_length": [
         "0.75"
+    ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
+    "textured_plate_temp": [
+        "60"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

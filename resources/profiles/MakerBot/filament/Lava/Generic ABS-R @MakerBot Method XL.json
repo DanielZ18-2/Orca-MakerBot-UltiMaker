@@ -1,25 +1,25 @@
 {
     "type": "filament",
-    "setting_id": "Generic ABS @MakerBot Method",
-    "name": "Generic ABS @MakerBot Method",
+    "setting_id": "Generic ABS-R @MakerBot Method XL",
+    "name": "Generic ABS-R @MakerBot Method XL",
     "inherits": "fdm_filament_abs",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFB99",
+    "filament_id": "OGFAA65D",
     "filament_type": [
-        "ABS"
+        "ABS-R"
     ],
     "pressure_advance": [
         "0.024"
     ],
     "compatible_printers": [
-        "MakerBot Method 0.4 nozzle"
+        "MakerBot Method XL 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "245"
+        "260"
     ],
     "nozzle_temperature_initial_layer": [
-        "245"
+        "260"
     ],
     "cool_plate_temp": [
         "0"
@@ -28,37 +28,37 @@
         "0"
     ],
     "hot_plate_temp": [
-        "100"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "105"
+        "95"
     ],
     "textured_plate_temp": [
-        "100"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "105"
+        "95"
     ],
     "filament_diameter": [
         "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "11.7"
+        "8.7"
     ],
     "chamber_temperature": [
-        "75"
+        "85"
     ],
     "activate_chamber_temp_control": [
         "1"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"

@@ -1,31 +1,31 @@
 {
     "type": "filament",
-    "setting_id": "Generic TPU @MakerBot Method",
-    "name": "Generic TPU @MakerBot Method",
-    "inherits": "fdm_filament_tpu",
+    "setting_id": "Generic SR-30 @MakerBot Method X",
+    "name": "Generic SR-30 @MakerBot Method X",
+    "inherits": "fdm_filament_pva",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFU99",
+    "filament_id": "OGFAB384",
     "filament_type": [
-        "TPU"
+        "SR-30"
     ],
     "compatible_printers": [
-        "MakerBot Method 0.4 nozzle"
+        "MakerBot Method X 0.4 nozzle"
     ],
     "filament_diameter": [
         "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "11.7"
+        "9.8"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -36,31 +36,31 @@
     "activate_chamber_temp_control": [
         "1"
     ],
+    "nozzle_temperature": [
+        "255"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "255"
+    ],
+    "filament_soluble": [
+        "1"
+    ],
+    "hot_plate_temp": [
+        "95"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "95"
+    ],
+    "textured_plate_temp": [
+        "95"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "95"
+    ],
     "cool_plate_temp": [
         "0"
     ],
     "cool_plate_temp_initial_layer": [
         "0"
-    ],
-    "nozzle_temperature": [
-        "228"
-    ],
-    "nozzle_temperature_initial_layer": [
-        "228"
-    ],
-    "hot_plate_temp": [
-        "60"
-    ],
-    "hot_plate_temp_initial_layer": [
-        "60"
-    ],
-    "textured_plate_temp": [
-        "60"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "60"
-    ],
-    "chamber_temperature": [
-        "27"
     ]
 }

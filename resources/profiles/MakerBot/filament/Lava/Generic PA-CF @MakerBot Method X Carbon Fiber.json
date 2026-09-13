@@ -21,24 +21,6 @@
     "activate_chamber_temp_control": [
         "1"
     ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
-    "hot_plate_temp": [
-        "110"
-    ],
-    "hot_plate_temp_initial_layer": [
-        "110"
-    ],
-    "textured_plate_temp": [
-        "110"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "110"
-    ],
     "nozzle_temperature": [
         "250"
     ],
@@ -68,5 +50,23 @@
     ],
     "filament_retraction_length": [
         "0.5"
+    ],
+    "hot_plate_temp": [
+        "110"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "110"
+    ],
+    "textured_plate_temp": [
+        "110"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "110"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

@@ -36,17 +36,14 @@
     "activate_chamber_temp_control": [
         "1"
     ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "nozzle_temperature": [
         "240"
     ],
     "nozzle_temperature_initial_layer": [
         "240"
+    ],
+    "chamber_temperature": [
+        "37"
     ],
     "hot_plate_temp": [
         "70"
@@ -60,7 +57,10 @@
     "textured_plate_temp_initial_layer": [
         "70"
     ],
-    "chamber_temperature": [
-        "37"
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

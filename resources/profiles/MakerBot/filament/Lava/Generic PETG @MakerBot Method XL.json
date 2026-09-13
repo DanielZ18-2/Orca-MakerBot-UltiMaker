@@ -16,10 +16,10 @@
         "MakerBot Method XL 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "240"
+        "230"
     ],
     "nozzle_temperature_initial_layer": [
-        "240"
+        "230"
     ],
     "cool_plate_temp": [
         "0"
@@ -28,16 +28,16 @@
         "0"
     ],
     "hot_plate_temp": [
-        "70"
+        "60"
     ],
     "hot_plate_temp_initial_layer": [
-        "70"
+        "60"
     ],
     "textured_plate_temp": [
-        "70"
+        "60"
     ],
     "textured_plate_temp_initial_layer": [
-        "70"
+        "60"
     ],
     "filament_diameter": [
         "1.75"
@@ -46,7 +46,7 @@
         "8.7"
     ],
     "chamber_temperature": [
-        "55"
+        "60"
     ],
     "activate_chamber_temp_control": [
         "1"
@@ -55,10 +55,10 @@
         "50"
     ],
     "fan_max_speed": [
-        "95"
+        "50"
     ],
     "overhang_fan_speed": [
-        "95"
+        "50"
     ],
     "slow_down_layer_time": [
         "5"

@@ -1,31 +1,31 @@
 {
     "type": "filament",
-    "setting_id": "Generic BVOH @MakerBot Method X Carbon Fiber",
-    "name": "Generic BVOH @MakerBot Method X Carbon Fiber",
-    "inherits": "fdm_filament_bvoh",
+    "setting_id": "Generic RapidRinse @MakerBot Method XL",
+    "name": "Generic RapidRinse @MakerBot Method XL",
+    "inherits": "fdm_filament_pva",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFS97",
+    "filament_id": "OGF498BA",
     "filament_type": [
-        "BVOH"
+        "RapidRinse"
     ],
     "compatible_printers": [
-        "MakerBot Method X Carbon Fiber 0.4 nozzle"
+        "MakerBot Method XL 0.4 nozzle"
     ],
     "filament_diameter": [
         "1.75"
     ],
     "filament_max_volumetric_speed": [
-        "9.8"
+        "8.7"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -43,21 +43,24 @@
         "0"
     ],
     "nozzle_temperature": [
-        "205"
+        "260"
     ],
     "nozzle_temperature_initial_layer": [
-        "205"
+        "260"
     ],
     "hot_plate_temp": [
-        "60"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
     "textured_plate_temp": [
-        "60"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "60"
+        "95"
+    ],
+    "filament_soluble": [
+        "1"
     ]
 }

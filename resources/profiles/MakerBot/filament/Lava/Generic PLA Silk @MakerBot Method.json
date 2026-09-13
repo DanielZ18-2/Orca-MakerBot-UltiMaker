@@ -21,24 +21,6 @@
     "nozzle_temperature_initial_layer": [
         "220"
     ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
-    "hot_plate_temp": [
-        "60"
-    ],
-    "hot_plate_temp_initial_layer": [
-        "60"
-    ],
-    "textured_plate_temp": [
-        "60"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "60"
-    ],
     "filament_diameter": [
         "1.75"
     ],
@@ -68,5 +50,23 @@
     ],
     "filament_retraction_length": [
         "0.75"
+    ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
+    "textured_plate_temp": [
+        "60"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

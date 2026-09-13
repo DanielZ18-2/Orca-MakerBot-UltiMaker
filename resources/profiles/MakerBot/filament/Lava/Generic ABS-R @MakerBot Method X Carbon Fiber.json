@@ -1,25 +1,25 @@
 {
     "type": "filament",
-    "setting_id": "Generic PLA Silk @MakerBot Method X Carbon Fiber",
-    "name": "Generic PLA Silk @MakerBot Method X Carbon Fiber",
-    "inherits": "fdm_filament_pla_silk",
+    "setting_id": "Generic ABS-R @MakerBot Method X Carbon Fiber",
+    "name": "Generic ABS-R @MakerBot Method X Carbon Fiber",
+    "inherits": "fdm_filament_abs",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFL96",
+    "filament_id": "OGF2C648",
     "filament_type": [
-        "PLA"
+        "ABS-R"
     ],
     "pressure_advance": [
-        "0.02"
+        "0.024"
     ],
     "compatible_printers": [
         "MakerBot Method X Carbon Fiber 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "220"
+        "260"
     ],
     "nozzle_temperature_initial_layer": [
-        "220"
+        "260"
     ],
     "filament_diameter": [
         "1.75"
@@ -28,19 +28,19 @@
         "9.8"
     ],
     "chamber_temperature": [
-        "40"
+        "107"
     ],
     "activate_chamber_temp_control": [
         "1"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -49,19 +49,19 @@
         "8"
     ],
     "filament_retraction_length": [
-        "0.75"
+        "0.5"
     ],
     "hot_plate_temp": [
-        "60"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
     "textured_plate_temp": [
-        "60"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
     "cool_plate_temp": [
         "0"
