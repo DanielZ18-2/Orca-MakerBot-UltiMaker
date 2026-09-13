@@ -16,10 +16,10 @@
         "MakerBot Sketch 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "215"
+        "220"
     ],
     "nozzle_temperature_initial_layer": [
-        "215"
+        "220"
     ],
     "cool_plate_temp": [
         "0"
@@ -28,16 +28,16 @@
         "0"
     ],
     "hot_plate_temp": [
-        "60"
+        "50"
     ],
     "hot_plate_temp_initial_layer": [
-        "60"
+        "50"
     ],
     "textured_plate_temp": [
-        "60"
+        "50"
     ],
     "textured_plate_temp_initial_layer": [
-        "60"
+        "50"
     ],
     "filament_diameter": [
         "1.75"
@@ -46,13 +46,13 @@
         "6.0"
     ],
     "fan_min_speed": [
-        "50"
+        "100"
     ],
     "fan_max_speed": [
-        "95"
+        "100"
     ],
     "overhang_fan_speed": [
-        "95"
+        "100"
     ],
     "slow_down_layer_time": [
         "5"
