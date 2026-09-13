@@ -244,15 +244,15 @@ std::string gcode_to_birdwing_jsontoolpath(
     // Only a real switch to T1+ makes it a dual job. Orca emits a single "T0"
     // even for single-material prints on a dual machine, which must stay
     // single-axis output.
-    // ── Einstellungen je Extruder aus dem G-Code-Fuss ──────────────────────
-    // Ohne sie bleibt tool_temp[1] in Dualauftraegen auf -1, und der
-    // eintretende Extruder erhaelt nie seine Drucktemperatur. Gemessen an
-    // 3DBenchy_ABS_3h9m.makerbot (Method X, ABS + PETG): 75x Ruhetemperatur
-    // 180 fuer Werkzeug 1, kein einziges Mal die eingestellten 240, bei
-    // 95893 Extrusionsbewegungen auf der b-Achse.
+    // ── Per-extruder settings from the G-code footer ───────────────────────────
+    // Without them tool_temp[1] stays at -1 on dual jobs and the
+    // entering extruder never reaches its print temperature. Measured on
+    // 3DBenchy_ABS_3h9m.makerbot (Method X, ABS + PETG): 75x standby
+    // temperature 180 for tool 1, not once the configured 240, across
+    // 95893 extrusion moves on the b axis.
     std::vector<double> cfg_nozzle_temp;         // nozzle_temperature = 245,240
     std::vector<double> cfg_nozzle_temp_first;   // nozzle_temperature_initial_layer
-    std::vector<double> cfg_idle_temp;           // idle_temperature, coInts je Extruder
+    std::vector<double> cfg_idle_temp;           // idle_temperature, coInts per extruder
     double              cfg_standby_delta = -5.0;
 
     auto parse_num_list = [](const std::string& s) {
@@ -392,9 +392,9 @@ std::string gcode_to_birdwing_jsontoolpath(
     // Per-tool target temperature, filled from M104/M109 (with or without T).
     double tool_temp[2]  = {-1.0, -1.0};
 
-    // Vorbelegung aus dem Einstellungsblock. M104/M109 ueberschreiben sie
-    // spaeter, falls vorhanden - fuer Werkzeug 1 gibt es sie aber nicht,
-    // weil der Start-G-Code nur T0 heizt.
+    // Seeded from the settings block. M104/M109 override these later
+    // where present - but not for tool 1, because the start G-code
+    // only heats T0.
     for (int ti = 0; ti < 2; ++ti) {
         if (static_cast<int>(cfg_nozzle_temp.size()) > ti && cfg_nozzle_temp[ti] > 0.0)
             tool_temp[ti] = cfg_nozzle_temp[ti];
@@ -405,13 +405,13 @@ std::string gcode_to_birdwing_jsontoolpath(
     // MakerBot uses a fixed standby, Orca has no matching setting.
     const int STANDBY_TEMP = 180;
 
-    // Ruhetemperatur des ruhenden Extruders, in dieser Reihenfolge:
-    //   1) idle_temperature[n], falls der Anwender sie gesetzt hat
-    //   2) 180 als Vorgabe - MakerBots gemessener Wert; auf den eintretenden
-    //      Extruder wird ohnehin gewartet (wait_for_temperature), ein kaltes
-    //      Ruhen kostet also Zeit, aber keine Qualitaet
-    //   3) liegt die Drucktemperatur UNTER 180, waere die Vorgabe zu heiss;
-    //      dann Drucktemperatur plus standby_temperature_delta
+    // Standby temperature of the idle extruder, in this order:
+    //   1) idle_temperature[n], if the user set it
+    //   2) 180 as the default - MakerBot's measured value; the entering
+    //      extruder is waited for anyway (wait_for_temperature), so a
+    //      cold standby costs time, not quality
+    //   3) if the print temperature is BELOW 180 the default would be
+    //      too hot; then print temperature plus standby_temperature_delta
     auto standby_for = [&](int tool) -> int {
         if (tool >= 0 && tool < 2) {
             if (static_cast<int>(cfg_idle_temp.size()) > tool && cfg_idle_temp[tool] > 0.0)
@@ -971,349 +971,6 @@ std::string gcode_to_birdwing_jsontoolpath(
 }
 
 
-// ── make_birdwing_meta_json: unchanged (works correctly) ──────────────
-static std::string make_birdwing_meta_json_full(
-    const std::string& bot_type,
-    double             layer_height,
-    double             layer_width,
-    double             total_filament_mm,
-    int                duration_s,
-    const std::string& extruder_type,
-    double             nozzle_diameter,
-    double             feed_diameter,
-    double             retract_distance,
-    double             extruder_temp,
-    double             travel_speed_xy,
-    double             travel_speed_z,
-    double             fill_speed,
-    double             inner_speed,
-    double             outer_speed,
-    bool               do_raft,
-    bool               do_fan,
-    bool               do_exp_decel,
-    double             retract_rate = 30.0,
-    double             restart_rate = 18.0)
-{
-    // Extruder hardware ID (bwcoreutils/tool_mappings.hh from z18_6.json)
-    // Confirmed by z18_6.json: mk12=7, mk13=8
-    int extruder_id = 7; // mk12 default
-    if      (extruder_type == "mk13")              extruder_id = 8;
-    else if (extruder_type == "mk13_impla")        extruder_id = 14;
-    else if (extruder_type == "mk13_experimental") extruder_id = 99;
-
-    // Material-String: mk13_impla → "im-pla", alle anderen → "pla"
-    const std::string material = (extruder_type == "mk13_impla") ? "im-pla" : "pla";
-
-    // Filament-Masse: ρ_PLA=1.24 g/cm³, d=1.77mm (aus z18_6.json: feed_diameter=1.77)
-    const double filament_mass_g =
-        total_filament_mm * 3.14159265358979
-        * (feed_diameter / 2.0) * (feed_diameter / 2.0)
-        * 1.24e-3;
-
-    const int ext_temp_int = static_cast<int>(extruder_temp);
-
-    // commanded_duration ≈ 75% von total (Overhead durch Beschleunigung etc.)
-    const double commanded_duration = duration_s * 0.75;
-
-    // ── Extrusion profile (from z18_6.json and legacy profile) ─────────────────
-    // Values taken directly from the original MakerBot sources:
-    // retract_distance: mk12=1.0mm, mk13=0.5mm (aus z18_6.json)
-    // retract_rate:     50 mm/s
-    // restart_rate:     30 mm/s
-    nlohmann::json extrusion_profile = {
-        {"feedDiameter",          feed_diameter > 0 ? feed_diameter : 1.77},
-        {"nozzleDiameter",        nozzle_diameter > 0 ? nozzle_diameter : 0.4},
-        {"defaultTemperature",    ext_temp_int},
-        {"idleTemperature",       190},
-        {"retractDistance",       retract_distance > 0 ? retract_distance : 0.8},
-        {"retractRate",           retract_rate > 0 ? retract_rate : 30.0},
-        {"restartRate",           restart_rate > 0 ? restart_rate : 30.0},
-        {"restartExtraDistance",  0.1},
-        {"oozeFeedstockDistance", 0.1},   // aus z18_6.json: ooze_feedstock_distance
-        {"preOozeFeedstockDistance", 0.1},
-        {"extrusionVolumeMultiplier", 1.0},
-        {"toolchangeRestartDistance",  18.5},
-        {"toolchangeRestartRate",       6.0},
-        {"toolchangeRetractDistance",  19.0},
-        {"toolchangeRetractRate",       6.0},
-        // Geschwindigkeiten aus gantry_configuration in z18_6.json:
-        // max_outer_shell_speed=40, max_inner_shell_speed=90, max_fill_speed=110
-        {"extrusionProfiles", {
-            {"outlines",               {{"feedrate", outer_speed > 0 ? outer_speed : 40.0}, {"fanSpeed", 0.95}}},
-            {"insets",                 {{"feedrate", inner_speed > 0 ? inner_speed : 90.0}, {"fanSpeed", 0.95}}},
-            {"infill",                 {{"feedrate", fill_speed  > 0 ? fill_speed  : 110.0},{"fanSpeed", 0.5}}},
-            {"roofSurfaceFills",       {{"feedrate", fill_speed  > 0 ? fill_speed  : 110.0},{"fanSpeed", 0.5}}},
-            {"floorSurfaceFills",      {{"feedrate", fill_speed  > 0 ? fill_speed  : 110.0},{"fanSpeed", 0.5}}},
-            {"sparseRoofSurfaceFills", {{"feedrate", fill_speed  > 0 ? fill_speed  : 110.0},{"fanSpeed", 0.5}}},
-            {"firstModelLayer",        {{"feedrate", 30.0},  {"fanSpeed", 1.0}}},
-            {"raftBase",               {{"feedrate", 10.0},  {"fanSpeed", 0.5}}},
-            {"raft",                   {{"feedrate", 90.0},  {"fanSpeed", 0.95}}},
-            {"bridges",                {{"feedrate", 40.0},  {"fanSpeed", 0.95}}}
-        }}
-    };
-
-    // ── miracle_config.gaggles.default ────────────────────────────────────────
-    nlohmann::json mg = {
-        {"layerHeight",        layer_height},
-        {"numberOfShells",     2},
-        {"infillDensity",      0.1},
-        {"sparseInfillPattern","diamond (fast)"},
-        {"floorThickness",     0.8},
-        {"roofThickness",      0.8},
-        {"floorSolidThickness",0.8},
-        {"roofSolidThickness", 0.8},
-        {"doRaft",    do_raft},
-        {"doSupport", false},
-        {"doBreakawaySupport", false},
-        {"doFanCommand",        do_fan},
-        {"doFanModulation",     do_fan},
-        {"fanDefaultSpeed",     do_fan ? 0.95 : 0.0},
-        {"fanLayer",            do_fan ? 1 : 0},
-        {"fanModulationThreshold", 0.5},
-        {"fanModulationWindow",    0.1},
-        // Geschwindigkeiten aus z18_6.json/gantry_configuration
-        {"travelSpeedXY", travel_speed_xy > 0 ? travel_speed_xy : 150.0},
-        {"travelSpeedZ",  travel_speed_z  > 0 ? travel_speed_z  : 3.0},
-        {"minSpeedMultiplier", 0.3},
-        // Exponential Deceleration (Birdwing 5th Gen Feature)
-        {"doExponentialDeceleration",       do_exp_decel},
-        {"exponentialDecelerationRatio",    do_exp_decel ? 0.375 : 0.0},
-        {"exponentialDecelerationSegmentCount", do_exp_decel ? 10 : 0},
-        {"exponentialDecelerationMinSpeed", 0.0},
-        // Rate Limiting (aus z18_6_mk13_pla_balanced profile)
-        {"doRateLimit",               true},
-        {"rateLimitBufferSize",       100},
-        {"rateLimitMinSpeed",         10},
-        {"rateLimitSpeedRatio",       0.3},
-        {"rateLimitTransmissionRate", travel_speed_xy > 0 ? travel_speed_xy : 150.0},
-        // Geometrie
-        {"defaultExtruder",      0},
-        {"defaultSupportMaterial", 0},
-        {"adjacentFillLeakyConnections", true},
-        {"adjacentFillLeakyDistanceRatio", 1.4},
-        {"anchorExtrusionAmount", 5.0},
-        {"anchorExtrusionSpeed",  2.0},
-        {"anchorWidth",           2.0},
-        {"doAnchor",              true},
-        {"doBridging",            true},
-        {"doExternalSpurs",       true},
-        {"doFixedShellStart",     true},
-        {"doNewPathPlanning",     true},
-        {"doSplitLongMoves",      false},
-        {"fixedShellStartDirection", 215},
-        {"infillShellSpacingMultiplier", 0.55},
-        {"insetDistanceMultiplier", 1.0},
-        {"leakyConnectionsAdjacentDistance", 0.8},
-        {"maxConnectionLength",  10.0},
-        {"maxSparseFillThickness", layer_height},
-        {"minLayerDuration",     5.0},
-        {"minLayerHeight",       0.01},
-        {"minSpurLength",        0.34},
-        {"minSpurWidth",         0.12},
-        {"shellsLeakyConnections", true},
-        {"splitMinimumDistance", 0.4},
-        // Raft (aus z18_6_mk13_pla_balanced_none_raft.json legacy profile)
-        {"raftBaseLayers",    1},
-        {"raftBaseThickness", 0.3},
-        {"raftBaseWidth",     2.5},
-        {"raftExtraOffset",   0.0},
-        {"raftInterfaceLayers", 2},
-        {"raftInterfaceThickness", 0.27},
-        {"raftInterfaceWidth", 0.4},
-        {"raftInterfaceZOffset", -0.14},
-        {"raftModelSpacing",  0.26},
-        {"raftSurfaceLayers", 2},
-        {"raftSurfaceShells", 2},
-        {"raftSurfaceThickness", 0.27},
-        {"raftSurfaceZOffset", -0.03},
-        // Support
-        {"supportAngle",        68.0},
-        {"supportExtraDistance", 0.5},
-        {"supportLayerHeight",  layer_height},
-        {"supportLeakyConnections", true},
-        {"supportModelSpacing", 0.4},
-        // Startposition (Z18: center-origin)
-        {"startPosition", {{"x", 145.5}, {"y", 130.0}, {"z", layer_height}}},
-        {"extruderProfiles", {extrusion_profile}}
-    };
-
-    // ── machine_config extruder profile ────────────────────────────────────────
-    // Taken exactly from z18_6.json for mk13 (the usual model)
-    nlohmann::json ext_hw_profile = {
-        {"nozzle_diameter", nozzle_diameter > 0 ? nozzle_diameter : 0.4},
-        {"max_speed_mm_per_second", {{"a", 5.3}}},  // aus z18_6.json!
-        {"steps_per_mm", {{"a", 108.55}}},           // aus z18_6.json!
-        {"materials", {{material, {
-            {"feed_diameter",          feed_diameter > 0 ? feed_diameter : 1.77},
-            {"max_flow_rate",          5.0},          // aus z18_6.json!
-            {"ooze_feedstock_distance",0.1},
-            {"restart_rate",           restart_rate  > 0 ? restart_rate  : 30.0},
-            {"retract_distance",       retract_distance > 0 ? retract_distance : 0.8},
-            {"retract_rate",           retract_rate  > 0 ? retract_rate  : 30.0},
-            {"temperature",            ext_temp_int},
-            // slip_compensation_table ENTFERNT:
-            // Orca's Kalibrierung (flow_ratio, Max Volumetric Speed) ersetzt sie.
-            // Double compensation by firmware + slicer -> avoid over-extrusion!
-            {"acceleration", {
-                {"impulse_speed_limit_mm_per_s", {{"a", 3.0}}},
-                {"max_speed_change_mm_per_s",    {{"a", 0.5}}},
-                {"min_speed_change_mm_per_s",    {{"a", 0.01}}},
-                {"rate_mm_per_s_sq",             {{"a", 10.0}}}
-            }}
-        }}}}
-    };
-
-    // ── Complete meta.json ───────────────────────────────────────────────
-    // Mandatory fields confirmed by firmware analysis Z18 v2.6.3
-    nlohmann::json meta = {
-        {"version",       "1.1.0"},
-        {"bot_type",      bot_type},
-        {"toolpath_type", "jsontoolpath"},
-        {"grue_version",  "5.4.0"},
-
-        // Extruder identification (validated by firmware!)
-        {"tool_type",           extruder_type},
-        {"tool_types",          {extruder_type}},
-        {"_attached_extruders", {extruder_type}},
-        {"_bot",                bot_type},
-        {"_extruders",          {extruder_type}},
-
-        // Material (auf Display angezeigt)
-        {"material",   material},
-        {"materials",  {material}},
-        {"_materials", {material}},
-
-        // Raft-Flag (auf Display angezeigt)
-        {"uses_raft", do_raft},
-
-        // Temperaturen (auf Display angezeigt)
-        {"extruder_temperature",  ext_temp_int},
-        {"extruder_temperatures", {ext_temp_int}},
-        {"platform_temperature",  0},
-        {"chamber_temperature",   nullptr},
-
-        // Filament-Verbrauch (auf Display angezeigt)
-        {"extrusion_distance_mm",  std::max(0.0, total_filament_mm)},
-        {"extrusion_distances_mm", {std::max(0.0, total_filament_mm)}},
-        {"extrusion_mass_g",       filament_mass_g},
-        {"extrusion_masses_g",     {filament_mass_g}},
-
-        // Druckzeit (auf Display angezeigt)
-        {"duration_s",           duration_s},
-        {"commanded_duration_s", commanded_duration},
-
-        // Print quality
-        {"preferences", {
-            {"default", {
-                {"print_mode", "balanced"},
-                {"overrides", nlohmann::json::object()}
-            }}
-        }},
-
-        // miracle_config (informativ, Firmware slicet NICHT neu)
-        {"miracle_config", {
-            {"_bot",       bot_type},
-            {"_extruders", {extruder_type}},
-            {"_materials", {material}},
-            {"doRaft",     do_raft},
-            {"version",    "5.4.0"},
-            {"gaggles",    {{"default", mg}}}
-        }},
-
-        // machine_config (extruder IDs are validated by firmware!)
-        {"machine_config", {
-            {"bot_type",  bot_type},
-            {"version",   "1.1.0"},
-            {"build_volume", {{"x", 300}, {"y", 305}, {"z", 457}}},
-            {"makerbot_generation", 5},
-            {"chamber_temperature_default", 0},
-            {"extra_slicer_settings", {{"plate_variability", 0.6}}},
-            // start_position aus z18_6.json
-            {"start_position", {{"x", 145.5}, {"y", 130.0}, {"z", layer_height}}},
-            {"max_speed_mm_per_second", {{"x", 175}, {"y", 175}, {"z", 3.0}}},
-            // steps_per_mm from z18_6.json (exact values!)
-            {"steps_per_mm", {
-                {"x",  88.573186},
-                {"y",  88.573186},
-                {"z", -2666.666666}
-            }},
-            // acceleration aus z18_6.json
-            {"acceleration", {
-                {"buffer_size", 128},
-                {"rate_mm_per_s_sq",          {{"x", 850}, {"y", 850}, {"z", 150}}},
-                {"max_speed_change_mm_per_s", {{"x", 25},  {"y", 25},  {"z", 0}}},
-                {"min_speed_change_mm_per_s", {{"x", 1},   {"y", 1},   {"z", 0}}},
-                {"impulse_speed_limit_mm_per_s", {{"x", 70}, {"y", 70}, {"z", 0}}},
-                {"split_move_distance_mm",    2.5},
-                {"split_move_recursion_count", 36}
-            }},
-            // gantry_configuration aus z18_6.json
-            {"gantry_configuration", {
-                {"max_fill_speed",        fill_speed  > 0 ? fill_speed  : 110.0},
-                {"max_inner_shell_speed", inner_speed > 0 ? inner_speed : 90.0},
-                {"max_outer_shell_speed", outer_speed > 0 ? outer_speed : 40.0},
-                {"travel_speed_xy",       travel_speed_xy > 0 ? travel_speed_xy : 150.0},
-                {"travel_speed_z",        travel_speed_z  > 0 ? travel_speed_z  : 3.0}
-            }},
-            {"extruder_profiles", {
-                // attached_extruders: calibrated=true, id=8 (mk13) aus z18_6.json
-                {"attached_extruders", {
-                    {{"calibrated", true}, {"id", extruder_id}}
-                }},
-                // supported_extruders exakt aus z18_6.json
-                {"supported_extruders", {
-                    {"0",  nullptr},
-                    {"1",  "mk12"}, {"2",  "mk12"}, {"3",  "mk12"},
-                    {"4",  "mk12"}, {"5",  "mk12"}, {"6",  "mk12"},
-                    {"7",  "mk12"}, {"8",  "mk13"}, {"9",  "mk12"},
-                    {"10", "mk12"}, {"11", "mk12"}, {"12", "mk12"},
-                    {"13", "mk12"},
-                    {"14", "mk13_impla"},
-                    {"99", "mk13_experimental"}
-                }},
-                // Profile for the selected extruder
-                {extruder_type, ext_hw_profile}
-            }}
-        }}
-    };
-
-    return meta.dump(2);
-}
-
-// ── Public wrapper: exact old 18-parameter signature ───────────────────
-// MakerBotExport.cpp calls this version (without retract_rate/restart_rate).
-// Sensible Defaults: retract_rate=30mm/s, restart_rate=18mm/s.
-// Once MakerBotExport.cpp is updated, the wrapper can be removed.
-std::string make_birdwing_meta_json(
-    const std::string& bot_type,
-    double             layer_height,
-    double             layer_width,
-    double             total_filament_mm,
-    int                duration_s,
-    const std::string& extruder_type,
-    double             nozzle_diameter,
-    double             feed_diameter,
-    double             retract_distance,
-    double             extruder_temp,
-    double             travel_speed_xy,
-    double             travel_speed_z,
-    double             fill_speed,
-    double             inner_speed,
-    double             outer_speed,
-    bool               do_raft,
-    bool               do_fan,
-    bool               do_exp_decel,
-    double             retract_rate,    // aus Orca retraction_speed  (default im .hpp: 30.0)
-    double             restart_rate)    // aus Orca deretraction_speed (default im .hpp: 18.0)
-{
-    return make_birdwing_meta_json_full(
-        bot_type, layer_height, layer_width, total_filament_mm, duration_s,
-        extruder_type, nozzle_diameter, feed_diameter, retract_distance,
-        extruder_temp, travel_speed_xy, travel_speed_z,
-        fill_speed, inner_speed, outer_speed,
-        do_raft, do_fan, do_exp_decel,
-        retract_rate, restart_rate);
-}
 
 
 

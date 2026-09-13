@@ -52,27 +52,4 @@ std::string gcode_to_birdwing_jsontoolpath(
     // Replicator+ get print.jsontoolpath, the Sketch line gets print.gcode.
     bool                      lava_format = false);
 
-// Build the meta.json for a Birdwing .makerbot archive (no slip compensation).
-std::string make_birdwing_meta_json(
-    const std::string& bot_type,
-    double             layer_height,
-    double             layer_width,
-    double             total_filament_mm,
-    int                duration_s,
-    const std::string& extruder_type    = "mk13",
-    double             nozzle_diameter  = 0.4,
-    double             feed_diameter    = 1.77,
-    double             retract_distance = 0.5,
-    double             extruder_temp    = 215.0,
-    double             travel_speed_xy  = 150.0,
-    double             travel_speed_z   = 3.0,
-    double             fill_speed       = 110.0,
-    double             inner_speed      = 90.0,
-    double             outer_speed      = 40.0,
-    bool               do_raft          = true,
-    bool               do_fan           = true,
-    bool               do_exp_decel     = true,
-    double             retract_rate     = 30.0,   // from Orca retraction_speed
-    double             restart_rate     = 18.0);  // from Orca deretraction_speed
-
 } // namespace Slic3r
