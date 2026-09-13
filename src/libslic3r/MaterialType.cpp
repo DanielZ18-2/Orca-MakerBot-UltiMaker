@@ -19,6 +19,12 @@ const std::vector<MaterialTypeInfo>& MaterialType::all()
         {"ABS",         190, 300, 50, 65,  1,   0.1 , 100},
         {"ABS-CF",      220, 300, 50, 65,  1,   0.1 , 100},
         {"ABS-GF",      240, 280, 50, 65,  1,   0.1 , 100},
+        // MakerBot/UltiMaker Method series. Working values are documented by
+        // UltiMaker (ultimaker_absr_175.xml.fdm_material, shipped with Cura):
+        // 260 C nozzle, 95 C bed, 107 C build volume, part cooling off.
+        // The ranges below are derived from ABS, not measured; only the
+        // chamber ceiling is raised to match the documented build volume.
+        {"ABS-R",       190, 300, 50, 110, 1,   0.1 , 100},
         {"ASA",         220, 300, 50, 65,  1,   0.1 , 100},
         {"ASA-CF",      230, 300, 50, 65,  1,   0.1 , 100},
         {"ASA-GF",      240, 300, 50, 65,  1,   0.1 , 100},
@@ -88,7 +94,15 @@ const std::vector<MaterialTypeInfo>& MaterialType::all()
         {"PVA",         185, 250, 0,  60,  1,   0.02, 200},
         {"PVB",         190, 250, 0,  55,  1,   0.02, 200},
         {"PVDF",        245, 265, 40, 60,  1,   0.02, 200},
+        // Method-series support materials. Working values from UltiMaker's
+        // own definitions (ultimaker_sr30_175 and ultimaker_rapidrinse_175):
+        // SR-30 255 C, RapidRinse 260 C, both 95 C bed, 107 C build volume,
+        // part cooling off, and both only permitted on the 2XA toolhead.
+        // Nozzle ranges are derived around those working values; the
+        // yield and thermal figures follow the other soluble supports.
+        {"RapidRinse",  220, 280, 50, 110, 1,   0.02, 200},
         {"SBS",         195, 250, 0,  55,  1,   0.02, 200},
+        {"SR-30",       220, 280, 50, 110, 1,   0.02, 200},
         {"TPI",         420, 445, 90, 100, 1,   0.02, 200},
         {"TPU",         175, 260, 0,  50,  0.5, 0.02, 1000}
     };
