@@ -12,7 +12,7 @@
     "default_print_profile": "0.20mm Standard @UltiMaker Method 0.4 nozzle",
     "default_filament_profile": [
         "Generic PLA @UltiMaker Method",
-        "Generic PLA @UltiMaker Method"
+        "Generic PVA @UltiMaker Method"
     ],
     "nozzle_diameter": [
         "0.4",
@@ -111,5 +111,9 @@
         "Standard"
     ],
     "gpx_machine_type": "",
-    "single_extruder_multi_material": "0"
+    "single_extruder_multi_material": "0",
+    "makerbot_plate_size": [
+        "283.3",
+        "236.48"
+    ]
 }

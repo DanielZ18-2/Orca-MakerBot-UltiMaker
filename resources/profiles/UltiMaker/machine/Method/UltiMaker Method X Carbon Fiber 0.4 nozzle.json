@@ -11,8 +11,8 @@
     "printer_variant": "0.4",
     "default_print_profile": "0.20mm Standard @UltiMaker Method X Carbon Fiber 0.4 nozzle",
     "default_filament_profile": [
-        "Generic PLA @UltiMaker Method X Carbon Fiber",
-        "Generic PLA @UltiMaker Method X Carbon Fiber"
+        "Generic PA-CF @UltiMaker Method X Carbon Fiber",
+        "Generic SR-30 @UltiMaker Method X Carbon Fiber"
     ],
     "nozzle_diameter": [
         "0.4",
@@ -87,8 +87,8 @@
     "machine_end_gcode": "M104 S0 T0 ; Set Toolhead Temp to 0\nM140 S0 T0 ; Set Platform Temp to 0\nG162 Z F1800 ; Move to max axes position\nG28 X Y ; Home\nM652 ; Turn off back fan\nM132 X Y Z A B ; Set Home Position\nG91 ; Use Relative Positioning\nM18 ; Disable Axes",
     "smart_extruder_count": "2",
     "smart_extruder_type": [
-        "mk14",
-        "mk14_s"
+        "mk14_c",
+        "mk14_hot_s"
     ],
     "default_bed_type": "1",
     "retraction_length": [
@@ -111,5 +111,9 @@
         "Standard"
     ],
     "gpx_machine_type": "",
-    "single_extruder_multi_material": "0"
+    "single_extruder_multi_material": "0",
+    "makerbot_plate_size": [
+        "283.3",
+        "236.48"
+    ]
 }

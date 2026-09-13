@@ -11,8 +11,8 @@
     "printer_variant": "0.4",
     "default_print_profile": "0.20mm Standard @UltiMaker Method X 0.4 nozzle",
     "default_filament_profile": [
-        "Generic PLA @UltiMaker Method X",
-        "Generic PLA @UltiMaker Method X"
+        "Generic ABS-R @UltiMaker Method X",
+        "Generic SR-30 @UltiMaker Method X"
     ],
     "nozzle_diameter": [
         "0.4",
@@ -111,5 +111,9 @@
         "Standard"
     ],
     "gpx_machine_type": "",
-    "single_extruder_multi_material": "0"
+    "single_extruder_multi_material": "0",
+    "makerbot_plate_size": [
+        "283.3",
+        "236.48"
+    ]
 }

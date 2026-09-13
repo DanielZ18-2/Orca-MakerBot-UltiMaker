@@ -1,65 +1,73 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.08.00",
+    "version": "01.00.08.18",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
     "machine_model_list": [
         {
-            "name": "UltiMaker 2 Extended+",
-            "sub_path": "machine/Classic/UltiMaker 2 Extended+.json"
+            "name": "UltiMaker 2",
+            "sub_path": "machine/UltiMaker 2.json"
         },
         {
             "name": "UltiMaker 2 Extended",
             "sub_path": "machine/Classic/UltiMaker 2 Extended.json"
         },
         {
-            "name": "UltiMaker 2 Go",
-            "sub_path": "machine/Classic/UltiMaker 2 Go.json"
+            "name": "UltiMaker 2 Extended+",
+            "sub_path": "machine/Classic/UltiMaker 2 Extended+.json"
         },
         {
-            "name": "UltiMaker 2+ Connect",
-            "sub_path": "machine/Classic/UltiMaker 2+ Connect.json"
+            "name": "UltiMaker 2 Go",
+            "sub_path": "machine/Classic/UltiMaker 2 Go.json"
         },
         {
             "name": "UltiMaker 2+",
             "sub_path": "machine/Classic/UltiMaker 2+.json"
         },
         {
-            "name": "UltiMaker 3 Extended",
-            "sub_path": "machine/Classic/UltiMaker 3 Extended.json"
+            "name": "UltiMaker 2+ Connect",
+            "sub_path": "machine/Classic/UltiMaker 2+ Connect.json"
         },
         {
             "name": "UltiMaker 3",
             "sub_path": "machine/Classic/UltiMaker 3.json"
         },
         {
-            "name": "UltiMaker Original+",
-            "sub_path": "machine/Classic/UltiMaker Original+.json"
-        },
-        {
-            "name": "UltiMaker Original",
-            "sub_path": "machine/Classic/UltiMaker Original.json"
+            "name": "UltiMaker 3 Extended",
+            "sub_path": "machine/Classic/UltiMaker 3 Extended.json"
         },
         {
             "name": "UltiMaker Factor 4",
             "sub_path": "machine/Factor/UltiMaker Factor 4.json"
         },
         {
-            "name": "UltiMaker Method X Carbon Fiber",
-            "sub_path": "machine/Method/UltiMaker Method X Carbon Fiber.json"
+            "name": "UltiMaker Factor 4+",
+            "sub_path": "machine/Factor/UltiMaker Factor 4+.json"
+        },
+        {
+            "name": "UltiMaker Method",
+            "sub_path": "machine/Method/UltiMaker Method.json"
         },
         {
             "name": "UltiMaker Method X",
             "sub_path": "machine/Method/UltiMaker Method X.json"
         },
         {
+            "name": "UltiMaker Method X Carbon Fiber",
+            "sub_path": "machine/Method/UltiMaker Method X Carbon Fiber.json"
+        },
+        {
             "name": "UltiMaker Method XL",
             "sub_path": "machine/Method/UltiMaker Method XL.json"
         },
         {
-            "name": "UltiMaker Method",
-            "sub_path": "machine/Method/UltiMaker Method.json"
+            "name": "UltiMaker Original",
+            "sub_path": "machine/Classic/UltiMaker Original.json"
+        },
+        {
+            "name": "UltiMaker Original+",
+            "sub_path": "machine/Classic/UltiMaker Original+.json"
         },
         {
             "name": "UltiMaker S3",
@@ -76,32 +84,12 @@
         {
             "name": "UltiMaker S8",
             "sub_path": "machine/SSERIES/UltiMaker S8.json"
-        },
-        {
-            "name": "UltiMaker 2",
-            "sub_path": "machine/UltiMaker 2.json"
         }
     ],
     "process_list": [
         {
-            "name": "fdm_process_common",
-            "sub_path": "process/fdm_process_common.json"
-        },
-        {
-            "name": "fdm_process_ultimaker_common",
-            "sub_path": "process/fdm_process_ultimaker_common.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker 2",
-            "sub_path": "process/0.12mm Fine @UltiMaker 2.json"
-        },
-        {
-            "name": "0.18mm Standard @UltiMaker 2",
-            "sub_path": "process/0.18mm Standard @UltiMaker 2.json"
-        },
-        {
-            "name": "0.25mm Draft @UltiMaker 2",
-            "sub_path": "process/0.25mm Darft @UltiMaker 2.json"
+            "name": "0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle.json"
         },
         {
             "name": "0.06mm Ultra Fine @UltiMaker 2 0.25 nozzle",
@@ -134,6 +122,26 @@
         {
             "name": "0.06mm Ultra Fine @UltiMaker 3 Extended 0.25 nozzle",
             "sub_path": "process/Classic/0.06mm Ultra Fine @UltiMaker 3 Extended 0.25 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine @UltiMaker S3 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S3 0.25 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine @UltiMaker S5 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S5 0.25 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine @UltiMaker S7 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S7 0.25 nozzle.json"
+        },
+        {
+            "name": "0.06mm Ultra Fine @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.07mm Fine @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.07mm Fine @UltiMaker Factor 4 0.25 nozzle.json"
         },
         {
             "name": "0.08mm Extra Fine @UltiMaker 2 0.25 nozzle",
@@ -200,12 +208,64 @@
             "sub_path": "process/Classic/0.08mm Extra Fine @UltiMaker 3 Extended 0.4 nozzle.json"
         },
         {
+            "name": "0.08mm Extra Fine @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.08mm Extra Fine @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.08mm Extra Fine @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.08mm Extra Fine @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.08mm Extra Fine @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.08mm Extra Fine @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S3 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S3 0.25 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S5 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S5 0.25 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S7 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S7 0.25 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.08mm Extra Fine @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S8 0.4 nozzle.json"
         },
         {
             "name": "0.10mm Extra Fine @UltiMaker 2 0.25 nozzle",
@@ -238,6 +298,46 @@
         {
             "name": "0.10mm Extra Fine @UltiMaker 3 Extended 0.25 nozzle",
             "sub_path": "process/Classic/0.10mm Extra Fine @UltiMaker 3 Extended 0.25 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine @UltiMaker S3 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S3 0.25 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine @UltiMaker S5 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S5 0.25 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine @UltiMaker S7 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S7 0.25 nozzle.json"
+        },
+        {
+            "name": "0.10mm Extra Fine @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.10mm Optimal @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.10mm Optimal @UltiMaker Factor 4 0.25 nozzle.json"
+        },
+        {
+            "name": "0.12mm Extra Fine @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Extra Fine @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Extra Fine @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Extra Fine @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S8 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker 2",
+            "sub_path": "process/0.12mm Fine @UltiMaker 2.json"
         },
         {
             "name": "0.12mm Fine @UltiMaker 2 0.25 nozzle",
@@ -328,12 +428,84 @@
             "sub_path": "process/Classic/0.12mm Fine @UltiMaker 3 Extended 0.4 nozzle.json"
         },
         {
+            "name": "0.12mm Fine @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.12mm Fine @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.12mm Fine @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.12mm Fine @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.12mm Fine @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.12mm Fine @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.12mm Fine @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S3 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S3 0.25 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S5 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S5 0.25 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S7 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S7 0.25 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.12mm Fine @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.12mm Standard @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.12mm Standard @UltiMaker Factor 4 0.25 nozzle.json"
+        },
+        {
+            "name": "0.15mm Draft @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.15mm Draft @UltiMaker Factor 4 0.25 nozzle.json"
+        },
+        {
+            "name": "0.15mm Optimal @UltiMaker Factor 4+ 0.4 nozzle",
+            "sub_path": "process/Factor/0.15mm Optimal @UltiMaker Factor 4+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Extra Fine @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.16mm Extra Fine @UltiMaker Factor 4 0.8 nozzle.json"
         },
         {
             "name": "0.16mm Optimal @UltiMaker 2 0.25 nozzle",
@@ -456,12 +628,108 @@
             "sub_path": "process/Classic/0.16mm Optimal @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.16mm Optimal @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.16mm Optimal @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.16mm Optimal @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.16mm Optimal @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.16mm Optimal @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.16mm Optimal @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.16mm Optimal @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S3 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.25 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S5 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.25 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S7 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.25 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.16mm Optimal @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.18mm Draft @UltiMaker Factor 4 0.25 nozzle",
+            "sub_path": "process/Factor/0.18mm Draft @UltiMaker Factor 4 0.25 nozzle.json"
+        },
+        {
+            "name": "0.18mm Fine @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.18mm Fine @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.18mm Fine @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.18mm Fine @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S8 0.6 nozzle.json"
+        },
+        {
+            "name": "0.18mm Standard @UltiMaker 2",
+            "sub_path": "process/0.18mm Standard @UltiMaker 2.json"
         },
         {
             "name": "0.20mm Standard @UltiMaker 2 0.4 nozzle",
@@ -552,12 +820,80 @@
             "sub_path": "process/Classic/0.20mm Standard @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.20mm Standard @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Factor 4+ 0.4 nozzle",
+            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Factor 4+ 0.6 nozzle",
+            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4+ 0.6 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.20mm Standard @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.20mm Standard @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.20mm Standard @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.20mm Standard @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S8 0.25 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.25 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.20mm Standard @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.8 nozzle.json"
         },
         {
             "name": "0.24mm Draft @UltiMaker 2 0.4 nozzle",
@@ -648,12 +984,92 @@
             "sub_path": "process/Classic/0.24mm Draft @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.24mm Draft @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.24mm Draft @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.24mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.24mm Draft @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.24mm Draft @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.24mm Draft @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.24mm Draft @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.24mm Draft @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Fine @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.24mm Fine @UltiMaker Factor 4 0.8 nozzle.json"
+        },
+        {
+            "name": "0.24mm Optimal @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Optimal @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Optimal @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.24mm Optimal @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S8 0.6 nozzle.json"
+        },
+        {
+            "name": "0.25mm Draft @UltiMaker 2",
+            "sub_path": "process/0.25mm Darft @UltiMaker 2.json"
         },
         {
             "name": "0.28mm Draft @UltiMaker 2 0.4 nozzle",
@@ -744,12 +1160,88 @@
             "sub_path": "process/Classic/0.28mm Draft @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.28mm Draft @UltiMaker Factor 4 0.4 nozzle",
+            "sub_path": "process/Factor/0.28mm Draft @UltiMaker Factor 4 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.28mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker Method 0.4 nozzle",
+            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker Method X 0.4 nozzle",
+            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method X 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle",
+            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker Method XL 0.4 nozzle",
+            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
             "name": "0.28mm Draft @UltiMaker Original 0.4 nozzle",
             "sub_path": "process/Classic/0.28mm Draft @UltiMaker Original 0.4 nozzle.json"
         },
         {
             "name": "0.28mm Draft @UltiMaker Original+ 0.4 nozzle",
             "sub_path": "process/Classic/0.28mm Draft @UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S3 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S3 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S5 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S5 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S7 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S7 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.28mm Draft @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.30mm Draft @UltiMaker Factor 4+ 0.6 nozzle",
+            "sub_path": "process/Factor/0.30mm Draft @UltiMaker Factor 4+ 0.6 nozzle.json"
+        },
+        {
+            "name": "0.30mm Standard @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.30mm Standard @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.30mm Standard @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.30mm Standard @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S8 0.6 nozzle.json"
         },
         {
             "name": "0.32mm Draft @UltiMaker 2 0.6 nozzle",
@@ -808,6 +1300,34 @@
             "sub_path": "process/Classic/0.32mm Draft @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.32mm Draft @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.32mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft @UltiMaker S8 0.4 nozzle",
+            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S8 0.4 nozzle.json"
+        },
+        {
+            "name": "0.32mm Draft @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.32mm Optimal @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.32mm Optimal @UltiMaker Factor 4 0.8 nozzle.json"
+        },
+        {
             "name": "0.36mm Draft @UltiMaker 2 0.6 nozzle",
             "sub_path": "process/Classic/0.36mm Draft @UltiMaker 2 0.6 nozzle.json"
         },
@@ -830,6 +1350,26 @@
         {
             "name": "0.36mm Draft @UltiMaker 2+ Connect 0.6 nozzle",
             "sub_path": "process/Classic/0.36mm Draft @UltiMaker 2+ Connect 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.36mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.36mm Draft @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S8 0.6 nozzle.json"
         },
         {
             "name": "0.40mm Coarse @UltiMaker 2 0.8 nozzle",
@@ -864,6 +1404,26 @@
             "sub_path": "process/Classic/0.40mm Coarse @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.40mm Coarse @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Coarse @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.40mm Standard @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.40mm Standard @UltiMaker Factor 4 0.8 nozzle.json"
+        },
+        {
             "name": "0.42mm Coarse @UltiMaker 2 0.6 nozzle",
             "sub_path": "process/Classic/0.42mm Coarse @UltiMaker 2 0.6 nozzle.json"
         },
@@ -886,6 +1446,26 @@
         {
             "name": "0.42mm Coarse @UltiMaker 2+ Connect 0.6 nozzle",
             "sub_path": "process/Classic/0.42mm Coarse @UltiMaker 2+ Connect 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Coarse @UltiMaker Factor 4 0.6 nozzle",
+            "sub_path": "process/Factor/0.42mm Coarse @UltiMaker Factor 4 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Draft @UltiMaker S3 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S3 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Draft @UltiMaker S5 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S5 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Draft @UltiMaker S7 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S7 0.6 nozzle.json"
+        },
+        {
+            "name": "0.42mm Draft @UltiMaker S8 0.6 nozzle",
+            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S8 0.6 nozzle.json"
         },
         {
             "name": "0.48mm Coarse @UltiMaker 2 0.8 nozzle",
@@ -920,6 +1500,26 @@
             "sub_path": "process/Classic/0.48mm Coarse @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "0.48mm Coarse @UltiMaker S3 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S3 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse @UltiMaker S5 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S5 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse @UltiMaker S7 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S7 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Coarse @UltiMaker S8 0.8 nozzle",
+            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "0.48mm Draft @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.48mm Draft @UltiMaker Factor 4 0.8 nozzle.json"
+        },
+        {
             "name": "0.56mm Coarse @UltiMaker 2 0.8 nozzle",
             "sub_path": "process/Classic/0.56mm Coarse @UltiMaker 2 0.8 nozzle.json"
         },
@@ -952,598 +1552,6 @@
             "sub_path": "process/Classic/0.56mm Coarse @UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
-            "name": "0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.07mm Fine @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.07mm Fine @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.08mm Extra Fine @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.10mm Optimal @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.10mm Optimal @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.12mm Fine @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.12mm Fine @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Standard @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.12mm Standard @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.15mm Draft @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.15mm Draft @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.16mm Extra Fine @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.16mm Extra Fine @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.16mm Optimal @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.16mm Optimal @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.18mm Draft @UltiMaker Factor 4 0.25 nozzle",
-            "sub_path": "process/Factor/0.18mm Draft @UltiMaker Factor 4 0.25 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.20mm Standard @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.24mm Draft @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.24mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.24mm Fine @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.24mm Fine @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Factor 4 0.4 nozzle",
-            "sub_path": "process/Factor/0.28mm Draft @UltiMaker Factor 4 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.28mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.32mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.32mm Optimal @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.32mm Optimal @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.36mm Draft @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.36mm Draft @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.40mm Standard @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.40mm Standard @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.42mm Coarse @UltiMaker Factor 4 0.6 nozzle",
-            "sub_path": "process/Factor/0.42mm Coarse @UltiMaker Factor 4 0.6 nozzle.json"
-        },
-        {
-            "name": "0.48mm Draft @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.48mm Draft @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.56mm Draft @UltiMaker Factor 4 0.8 nozzle",
-            "sub_path": "process/Factor/0.56mm Draft @UltiMaker Factor 4 0.8 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.08mm Extra Fine @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.12mm Fine @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.16mm Optimal @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.20mm Standard @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.24mm Draft @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Method 0.4 nozzle",
-            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Method X 0.4 nozzle",
-            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method X 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle",
-            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method X Carbon Fiber 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker Method XL 0.4 nozzle",
-            "sub_path": "process/Method/0.28mm Draft @UltiMaker Method XL 0.4 nozzle.json"
-        },
-        {
-            "name": "0.06mm Ultra Fine @UltiMaker S3 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S3 0.25 nozzle.json"
-        },
-        {
-            "name": "0.06mm Ultra Fine @UltiMaker S5 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S5 0.25 nozzle.json"
-        },
-        {
-            "name": "0.06mm Ultra Fine @UltiMaker S7 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S7 0.25 nozzle.json"
-        },
-        {
-            "name": "0.06mm Ultra Fine @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.06mm Ultra Fine @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S3 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S3 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S5 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S5 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S7 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S7 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.08mm Extra Fine @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.08mm Extra Fine @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.10mm Extra Fine @UltiMaker S3 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S3 0.25 nozzle.json"
-        },
-        {
-            "name": "0.10mm Extra Fine @UltiMaker S5 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S5 0.25 nozzle.json"
-        },
-        {
-            "name": "0.10mm Extra Fine @UltiMaker S7 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S7 0.25 nozzle.json"
-        },
-        {
-            "name": "0.10mm Extra Fine @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.10mm Extra Fine @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Extra Fine @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Extra Fine @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Extra Fine @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Extra Fine @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S3 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S3 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S5 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S5 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S7 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S7 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.12mm Fine @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S3 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.25 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S5 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.25 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S7 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.25 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.16mm Optimal @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.16mm Optimal @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.18mm Fine @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.18mm Fine @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.18mm Fine @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.18mm Fine @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S8 0.25 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.25 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.20mm Standard @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.20mm Standard @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.24mm Draft @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Draft @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.24mm Optimal @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.24mm Optimal @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.24mm Optimal @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.24mm Optimal @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S3 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S3 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S5 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S5 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S7 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S7 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.28mm Draft @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.28mm Draft @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.30mm Standard @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.30mm Standard @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.30mm Standard @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.30mm Standard @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.30mm Standard @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker S8 0.4 nozzle",
-            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S8 0.4 nozzle.json"
-        },
-        {
-            "name": "0.32mm Draft @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.32mm Draft @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.36mm Draft @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.36mm Draft @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.36mm Draft @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.36mm Draft @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.36mm Draft @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.40mm Coarse @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.40mm Coarse @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.40mm Coarse @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.40mm Coarse @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.40mm Coarse @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "0.42mm Draft @UltiMaker S3 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S3 0.6 nozzle.json"
-        },
-        {
-            "name": "0.42mm Draft @UltiMaker S5 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S5 0.6 nozzle.json"
-        },
-        {
-            "name": "0.42mm Draft @UltiMaker S7 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S7 0.6 nozzle.json"
-        },
-        {
-            "name": "0.42mm Draft @UltiMaker S8 0.6 nozzle",
-            "sub_path": "process/SSERIES/0.42mm Draft @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.48mm Coarse @UltiMaker S3 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S3 0.8 nozzle.json"
-        },
-        {
-            "name": "0.48mm Coarse @UltiMaker S5 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S5 0.8 nozzle.json"
-        },
-        {
-            "name": "0.48mm Coarse @UltiMaker S7 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S7 0.8 nozzle.json"
-        },
-        {
-            "name": "0.48mm Coarse @UltiMaker S8 0.8 nozzle",
-            "sub_path": "process/SSERIES/0.48mm Coarse @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
             "name": "0.56mm Coarse @UltiMaker S3 0.8 nozzle",
             "sub_path": "process/SSERIES/0.56mm Coarse @UltiMaker S3 0.8 nozzle.json"
         },
@@ -1560,8 +1568,20 @@
             "sub_path": "process/SSERIES/0.56mm Coarse @UltiMaker S8 0.8 nozzle.json"
         },
         {
+            "name": "0.56mm Draft @UltiMaker Factor 4 0.8 nozzle",
+            "sub_path": "process/Factor/0.56mm Draft @UltiMaker Factor 4 0.8 nozzle.json"
+        },
+        {
             "name": "0.64mm Coarse @UltiMaker S8 0.8 nozzle",
             "sub_path": "process/SSERIES/0.64mm Coarse @UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "fdm_process_common",
+            "sub_path": "process/fdm_process_common.json"
+        },
+        {
+            "name": "fdm_process_ultimaker_common",
+            "sub_path": "process/fdm_process_ultimaker_common.json"
         }
     ],
     "filament_list": [
@@ -1602,8 +1622,8 @@
             "sub_path": "filament/Factor/Generic ABS @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic ABS @UltiMaker Method",
-            "sub_path": "filament/Method/Generic ABS @UltiMaker Method.json"
+            "name": "Generic ABS @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic ABS @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic ABS @UltiMaker Method X",
@@ -1642,6 +1662,18 @@
             "sub_path": "filament/SSERIES/Generic ABS @UltiMaker S8.json"
         },
         {
+            "name": "Generic ABS-R @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic ABS-R @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic ABS-R @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic ABS-R @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic ABS-R @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic ABS-R @UltiMaker Method XL.json"
+        },
+        {
             "name": "Generic ASA @UltiMaker 2",
             "sub_path": "filament/Classic/Generic ASA @UltiMaker 2.json"
         },
@@ -1678,8 +1710,8 @@
             "sub_path": "filament/Factor/Generic ASA @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic ASA @UltiMaker Method",
-            "sub_path": "filament/Method/Generic ASA @UltiMaker Method.json"
+            "name": "Generic ASA @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic ASA @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic ASA @UltiMaker Method X",
@@ -1730,20 +1762,8 @@
             "sub_path": "filament/Factor/Generic BVOH @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic BVOH @UltiMaker Method",
-            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method.json"
-        },
-        {
-            "name": "Generic BVOH @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic BVOH @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic BVOH @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic BVOH @UltiMaker Method XL.json"
+            "name": "Generic BVOH @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic BVOH @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic BVOH @UltiMaker S3",
@@ -1796,6 +1816,10 @@
         {
             "name": "Generic CoPE @UltiMaker Factor 4",
             "sub_path": "filament/Factor/Generic CoPE @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic CoPE @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic CoPE @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic CoPE @UltiMaker Method",
@@ -1874,6 +1898,10 @@
             "sub_path": "filament/Factor/Generic PA @UltiMaker Factor 4.json"
         },
         {
+            "name": "Generic PA @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PA @UltiMaker Factor 4+.json"
+        },
+        {
             "name": "Generic PA @UltiMaker Method",
             "sub_path": "filament/Method/Generic PA @UltiMaker Method.json"
         },
@@ -1912,6 +1940,10 @@
         {
             "name": "Generic PA @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic PA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic PA-CF @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PA-CF @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic PA-CF @UltiMaker Method X",
@@ -1960,6 +1992,10 @@
         {
             "name": "Generic PETG @UltiMaker Factor 4",
             "sub_path": "filament/Factor/Generic PETG @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PETG @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PETG @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic PETG @UltiMaker Method",
@@ -2038,6 +2074,10 @@
             "sub_path": "filament/Factor/Generic PLA @UltiMaker Factor 4.json"
         },
         {
+            "name": "Generic PLA @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PLA @UltiMaker Factor 4+.json"
+        },
+        {
             "name": "Generic PLA @UltiMaker Method",
             "sub_path": "filament/Method/Generic PLA @UltiMaker Method.json"
         },
@@ -2112,6 +2152,10 @@
         {
             "name": "Generic PLA Silk @UltiMaker Factor 4",
             "sub_path": "filament/Factor/Generic PLA Silk @UltiMaker Factor 4.json"
+        },
+        {
+            "name": "Generic PLA Silk @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PLA Silk @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic PLA Silk @UltiMaker Method",
@@ -2190,6 +2234,10 @@
             "sub_path": "filament/Factor/Generic PP @UltiMaker Factor 4.json"
         },
         {
+            "name": "Generic PP @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PP @UltiMaker Factor 4+.json"
+        },
+        {
             "name": "Generic PP @UltiMaker Original",
             "sub_path": "filament/Classic/Generic PP @UltiMaker Original.json"
         },
@@ -2226,6 +2274,10 @@
             "sub_path": "filament/Factor/Generic PVA @UltiMaker Factor 4.json"
         },
         {
+            "name": "Generic PVA @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic PVA @UltiMaker Factor 4+.json"
+        },
+        {
             "name": "Generic PVA @UltiMaker Method",
             "sub_path": "filament/Method/Generic PVA @UltiMaker Method.json"
         },
@@ -2256,6 +2308,30 @@
         {
             "name": "Generic PVA @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic PVA @UltiMaker S8.json"
+        },
+        {
+            "name": "Generic RapidRinse @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic RapidRinse @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic RapidRinse @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic RapidRinse @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic RapidRinse @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic RapidRinse @UltiMaker Method XL.json"
+        },
+        {
+            "name": "Generic SR-30 @UltiMaker Method X",
+            "sub_path": "filament/Method/Generic SR-30 @UltiMaker Method X.json"
+        },
+        {
+            "name": "Generic SR-30 @UltiMaker Method X Carbon Fiber",
+            "sub_path": "filament/Method/Generic SR-30 @UltiMaker Method X Carbon Fiber.json"
+        },
+        {
+            "name": "Generic SR-30 @UltiMaker Method XL",
+            "sub_path": "filament/Method/Generic SR-30 @UltiMaker Method XL.json"
         },
         {
             "name": "Generic TPU @UltiMaker 2",
@@ -2294,20 +2370,8 @@
             "sub_path": "filament/Factor/Generic TPU @UltiMaker Factor 4.json"
         },
         {
-            "name": "Generic TPU @UltiMaker Method",
-            "sub_path": "filament/Method/Generic TPU @UltiMaker Method.json"
-        },
-        {
-            "name": "Generic TPU @UltiMaker Method X",
-            "sub_path": "filament/Method/Generic TPU @UltiMaker Method X.json"
-        },
-        {
-            "name": "Generic TPU @UltiMaker Method X Carbon Fiber",
-            "sub_path": "filament/Method/Generic TPU @UltiMaker Method X Carbon Fiber.json"
-        },
-        {
-            "name": "Generic TPU @UltiMaker Method XL",
-            "sub_path": "filament/Method/Generic TPU @UltiMaker Method XL.json"
+            "name": "Generic TPU @UltiMaker Factor 4+",
+            "sub_path": "filament/Factor/Generic TPU @UltiMaker Factor 4+.json"
         },
         {
             "name": "Generic TPU @UltiMaker Original",
@@ -2342,8 +2406,16 @@
             "sub_path": "filament/fdm_filament_asa.json"
         },
         {
+            "name": "fdm_filament_bvoh",
+            "sub_path": "filament/fdm_filament_bvoh.json"
+        },
+        {
             "name": "fdm_filament_common",
             "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_cope",
+            "sub_path": "filament/fdm_filament_cope.json"
         },
         {
             "name": "fdm_filament_pa",
@@ -2360,33 +2432,21 @@
         {
             "name": "fdm_filament_pla_silk",
             "sub_path": "filament/fdm_filament_pla_silk.json"
+        },
+        {
+            "name": "fdm_filament_pp",
+            "sub_path": "filament/fdm_filament_pp.json"
+        },
+        {
+            "name": "fdm_filament_pva",
+            "sub_path": "filament/fdm_filament_pva.json"
+        },
+        {
+            "name": "fdm_filament_tpu",
+            "sub_path": "filament/fdm_filament_tpu.json"
         }
     ],
     "machine_list": [
-        {
-            "name": "fdm_machine_common",
-            "sub_path": "machine/fdm_machine_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_common",
-            "sub_path": "machine/fdm_ultimaker_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_classic_common",
-            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_factor_common",
-            "sub_path": "machine/Factor/fdm_ultimaker_factor_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_method_common",
-            "sub_path": "machine/Method/fdm_ultimaker_method_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_sseries_common",
-            "sub_path": "machine/SSERIES/fdm_ultimaker_sseries_common.json"
-        },
         {
             "name": "UltiMaker 2 0.25 nozzle",
             "sub_path": "machine/UltiMaker 2 0.25 nozzle.json"
@@ -2508,14 +2568,6 @@
             "sub_path": "machine/Classic/UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
-            "name": "UltiMaker Original 0.4 nozzle",
-            "sub_path": "machine/Classic/UltiMaker Original 0.4 nozzle.json"
-        },
-        {
-            "name": "UltiMaker Original+ 0.4 nozzle",
-            "sub_path": "machine/Classic/UltiMaker Original+ 0.4 nozzle.json"
-        },
-        {
             "name": "UltiMaker Factor 4 0.25 nozzle",
             "sub_path": "machine/Factor/UltiMaker Factor 4 0.25 nozzle.json"
         },
@@ -2532,6 +2584,14 @@
             "sub_path": "machine/Factor/UltiMaker Factor 4 0.8 nozzle.json"
         },
         {
+            "name": "UltiMaker Factor 4+ 0.4 nozzle",
+            "sub_path": "machine/Factor/UltiMaker Factor 4+ 0.4 nozzle.json"
+        },
+        {
+            "name": "UltiMaker Factor 4+ 0.6 nozzle",
+            "sub_path": "machine/Factor/UltiMaker Factor 4+ 0.6 nozzle.json"
+        },
+        {
             "name": "UltiMaker Method 0.4 nozzle",
             "sub_path": "machine/Method/UltiMaker Method 0.4 nozzle.json"
         },
@@ -2546,6 +2606,14 @@
         {
             "name": "UltiMaker Method XL 0.4 nozzle",
             "sub_path": "machine/Method/UltiMaker Method XL 0.4 nozzle.json"
+        },
+        {
+            "name": "UltiMaker Original 0.4 nozzle",
+            "sub_path": "machine/Classic/UltiMaker Original 0.4 nozzle.json"
+        },
+        {
+            "name": "UltiMaker Original+ 0.4 nozzle",
+            "sub_path": "machine/Classic/UltiMaker Original+ 0.4 nozzle.json"
         },
         {
             "name": "UltiMaker S3 0.25 nozzle",
@@ -2610,6 +2678,30 @@
         {
             "name": "UltiMaker S8 0.8 nozzle",
             "sub_path": "machine/SSERIES/UltiMaker S8 0.8 nozzle.json"
+        },
+        {
+            "name": "fdm_machine_common",
+            "sub_path": "machine/fdm_machine_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_classic_common",
+            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_common",
+            "sub_path": "machine/fdm_ultimaker_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_factor_common",
+            "sub_path": "machine/Factor/fdm_ultimaker_factor_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_method_common",
+            "sub_path": "machine/Method/fdm_ultimaker_method_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_sseries_common",
+            "sub_path": "machine/SSERIES/fdm_ultimaker_sseries_common.json"
         }
     ]
 }

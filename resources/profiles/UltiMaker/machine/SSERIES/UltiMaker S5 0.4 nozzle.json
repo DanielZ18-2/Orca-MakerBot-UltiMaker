@@ -63,24 +63,19 @@
         "2000"
     ],
     "machine_max_speed_e": [
-        "150",
-        "150"
+        "45"
     ],
     "machine_max_acceleration_x": [
-        "2000",
-        "2000"
+        "9000"
     ],
     "machine_max_acceleration_y": [
-        "2000",
-        "2000"
+        "9000"
     ],
     "machine_max_speed_x": [
-        "150",
-        "150"
+        "300"
     ],
     "machine_max_speed_y": [
-        "150",
-        "150"
+        "300"
     ],
     "machine_start_gcode": "; UltiMaker S-Series / Factor Start\nG28\nG1 Z15.0 F6000\nG92 E0\nG1 F200 E5\nG92 E0",
     "machine_end_gcode": "; UltiMaker S-Series / Factor End\nM104 S0\nM140 S0\nG28 X0 Y0\nM84",
@@ -89,10 +84,10 @@
         "6.5"
     ],
     "retract_length_toolchange": [
-        "8"
+        "16"
     ],
     "deretraction_speed": [
-        "15"
+        "45"
     ],
     "retract_restart_extra": [
         "0"
