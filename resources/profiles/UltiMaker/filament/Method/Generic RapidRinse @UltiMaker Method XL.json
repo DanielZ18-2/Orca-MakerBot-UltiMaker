@@ -1,16 +1,16 @@
 {
     "type": "filament",
-    "setting_id": "Generic TPU @UltiMaker Method X",
-    "name": "Generic TPU @UltiMaker Method X",
-    "inherits": "fdm_filament_tpu",
+    "setting_id": "Generic RapidRinse @UltiMaker Method XL",
+    "name": "Generic RapidRinse @UltiMaker Method XL",
+    "inherits": "fdm_filament_pva",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFU99",
+    "filament_id": "OGF2C248",
     "filament_type": [
-        "TPU"
+        "RapidRinse"
     ],
     "compatible_printers": [
-        "UltiMaker Method X 0.4 nozzle"
+        "UltiMaker Method XL 0.4 nozzle"
     ],
     "filament_diameter": [
         "1.75"
@@ -19,13 +19,13 @@
         "12.0"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -43,24 +43,24 @@
         "0"
     ],
     "nozzle_temperature": [
-        "228"
+        "260"
     ],
     "nozzle_temperature_initial_layer": [
-        "228"
+        "260"
     ],
     "hot_plate_temp": [
-        "60"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
     "textured_plate_temp": [
-        "60"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
-    "chamber_temperature": [
-        "27"
+    "filament_soluble": [
+        "1"
     ]
 }

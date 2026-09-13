@@ -19,10 +19,10 @@
         "UltiMaker 2 Extended 0.8 nozzle"
     ],
     "nozzle_temperature": [
-        "215"
+        "200"
     ],
     "nozzle_temperature_initial_layer": [
-        "215"
+        "200"
     ],
     "filament_diameter": [
         "2.85"
@@ -49,13 +49,13 @@
         "8.0"
     ],
     "fan_min_speed": [
-        "50"
+        "100"
     ],
     "fan_max_speed": [
-        "95"
+        "100"
     ],
     "overhang_fan_speed": [
-        "95"
+        "100"
     ],
     "slow_down_layer_time": [
         "5"

@@ -21,13 +21,13 @@
         "12.0"
     ],
     "fan_min_speed": [
-        "50"
+        "88"
     ],
     "fan_max_speed": [
-        "95"
+        "88"
     ],
     "overhang_fan_speed": [
-        "95"
+        "88"
     ],
     "slow_down_layer_time": [
         "5"
@@ -42,10 +42,10 @@
         "0"
     ],
     "nozzle_temperature": [
-        "205"
+        "210"
     ],
     "nozzle_temperature_initial_layer": [
-        "205"
+        "210"
     ],
     "hot_plate_temp": [
         "60"

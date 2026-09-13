@@ -1,16 +1,16 @@
 {
     "type": "filament",
-    "setting_id": "Generic BVOH @UltiMaker Method X Carbon Fiber",
-    "name": "Generic BVOH @UltiMaker Method X Carbon Fiber",
-    "inherits": "fdm_filament_bvoh",
+    "setting_id": "Generic SR-30 @UltiMaker Method XL",
+    "name": "Generic SR-30 @UltiMaker Method XL",
+    "inherits": "fdm_filament_pva",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFS97",
+    "filament_id": "OGF48A0C",
     "filament_type": [
-        "BVOH"
+        "SR-30"
     ],
     "compatible_printers": [
-        "UltiMaker Method X Carbon Fiber 0.4 nozzle"
+        "UltiMaker Method XL 0.4 nozzle"
     ],
     "filament_diameter": [
         "1.75"
@@ -19,13 +19,13 @@
         "12.0"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -43,21 +43,24 @@
         "0"
     ],
     "nozzle_temperature": [
-        "205"
+        "255"
     ],
     "nozzle_temperature_initial_layer": [
-        "205"
+        "255"
     ],
     "hot_plate_temp": [
-        "60"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "60"
+        "95"
     ],
     "textured_plate_temp": [
-        "60"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "60"
+        "95"
+    ],
+    "filament_soluble": [
+        "1"
     ]
 }

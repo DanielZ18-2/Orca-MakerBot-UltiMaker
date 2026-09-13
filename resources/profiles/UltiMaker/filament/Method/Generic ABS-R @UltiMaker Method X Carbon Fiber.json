@@ -1,13 +1,13 @@
 {
     "type": "filament",
-    "setting_id": "Generic ASA @UltiMaker Method X Carbon Fiber",
-    "name": "Generic ASA @UltiMaker Method X Carbon Fiber",
-    "inherits": "fdm_filament_asa",
+    "setting_id": "Generic ABS-R @UltiMaker Method X Carbon Fiber",
+    "name": "Generic ABS-R @UltiMaker Method X Carbon Fiber",
+    "inherits": "fdm_filament_abs",
     "from": "system",
     "instantiation": "true",
-    "filament_id": "OGFB98",
+    "filament_id": "OGFEF2C3",
     "filament_type": [
-        "ASA"
+        "ABS-R"
     ],
     "filament_retraction_length": [
         "0.5"
@@ -19,10 +19,10 @@
         "UltiMaker Method X Carbon Fiber 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "255"
+        "260"
     ],
     "nozzle_temperature_initial_layer": [
-        "255"
+        "260"
     ],
     "filament_max_volumetric_speed": [
         "12.0"
@@ -52,16 +52,16 @@
         "1.75"
     ],
     "hot_plate_temp": [
-        "90"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "90"
+        "95"
     ],
     "textured_plate_temp": [
-        "90"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "90"
+        "95"
     ],
     "cool_plate_temp": [
         "0"

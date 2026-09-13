@@ -33,16 +33,16 @@
         "0"
     ],
     "hot_plate_temp": [
-        "100"
+        "85"
     ],
     "hot_plate_temp_initial_layer": [
-        "105"
+        "85"
     ],
     "textured_plate_temp": [
-        "100"
+        "85"
     ],
     "textured_plate_temp_initial_layer": [
-        "105"
+        "85"
     ],
     "filament_max_volumetric_speed": [
         "12.0"

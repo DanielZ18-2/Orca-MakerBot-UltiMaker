@@ -19,46 +19,28 @@
         "UltiMaker Method X 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "260"
+        "255"
     ],
     "nozzle_temperature_initial_layer": [
-        "260"
-    ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
-    "hot_plate_temp": [
-        "100"
-    ],
-    "hot_plate_temp_initial_layer": [
-        "105"
-    ],
-    "textured_plate_temp": [
-        "100"
-    ],
-    "textured_plate_temp_initial_layer": [
-        "105"
+        "255"
     ],
     "filament_max_volumetric_speed": [
         "12.0"
     ],
     "chamber_temperature": [
-        "75"
+        "107"
     ],
     "activate_chamber_temp_control": [
         "1"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -68,5 +50,23 @@
     ],
     "filament_diameter": [
         "1.75"
+    ],
+    "hot_plate_temp": [
+        "90"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "90"
+    ],
+    "textured_plate_temp": [
+        "90"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "90"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

@@ -17,10 +17,10 @@
         "UltiMaker Factor 4 0.6 nozzle"
     ],
     "nozzle_temperature": [
-        "260"
+        "255"
     ],
     "nozzle_temperature_initial_layer": [
-        "260"
+        "255"
     ],
     "filament_diameter": [
         "2.85"
@@ -32,28 +32,28 @@
         "0"
     ],
     "hot_plate_temp": [
-        "100"
+        "95"
     ],
     "hot_plate_temp_initial_layer": [
-        "105"
+        "95"
     ],
     "textured_plate_temp": [
-        "100"
+        "95"
     ],
     "textured_plate_temp_initial_layer": [
-        "105"
+        "95"
     ],
     "filament_max_volumetric_speed": [
         "10.0"
     ],
     "fan_min_speed": [
-        "50"
+        "20"
     ],
     "fan_max_speed": [
-        "95"
+        "20"
     ],
     "overhang_fan_speed": [
-        "95"
+        "20"
     ],
     "slow_down_layer_time": [
         "5"

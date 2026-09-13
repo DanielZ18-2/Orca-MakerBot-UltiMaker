@@ -19,13 +19,13 @@
         "12.0"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"
@@ -36,17 +36,11 @@
     "activate_chamber_temp_control": [
         "1"
     ],
-    "cool_plate_temp": [
-        "0"
-    ],
-    "cool_plate_temp_initial_layer": [
-        "0"
-    ],
     "nozzle_temperature": [
-        "215"
+        "210"
     ],
     "nozzle_temperature_initial_layer": [
-        "215"
+        "210"
     ],
     "hot_plate_temp": [
         "60"
@@ -59,5 +53,11 @@
     ],
     "textured_plate_temp_initial_layer": [
         "60"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
     ]
 }

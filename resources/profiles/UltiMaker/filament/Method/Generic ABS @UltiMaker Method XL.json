@@ -19,10 +19,10 @@
         "UltiMaker Method XL 0.4 nozzle"
     ],
     "nozzle_temperature": [
-        "245"
+        "235"
     ],
     "nozzle_temperature_initial_layer": [
-        "245"
+        "235"
     ],
     "cool_plate_temp": [
         "0"
@@ -31,34 +31,34 @@
         "0"
     ],
     "hot_plate_temp": [
-        "100"
+        "85"
     ],
     "hot_plate_temp_initial_layer": [
-        "105"
+        "85"
     ],
     "textured_plate_temp": [
-        "100"
+        "85"
     ],
     "textured_plate_temp_initial_layer": [
-        "105"
+        "85"
     ],
     "filament_max_volumetric_speed": [
         "12.0"
     ],
     "chamber_temperature": [
-        "75"
+        "85"
     ],
     "activate_chamber_temp_control": [
         "1"
     ],
     "fan_min_speed": [
-        "50"
+        "0"
     ],
     "fan_max_speed": [
-        "95"
+        "0"
     ],
     "overhang_fan_speed": [
-        "95"
+        "0"
     ],
     "slow_down_layer_time": [
         "5"

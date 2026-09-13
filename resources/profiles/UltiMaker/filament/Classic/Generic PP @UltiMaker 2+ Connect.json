@@ -22,13 +22,13 @@
         "8.0"
     ],
     "fan_min_speed": [
-        "50"
+        "20"
     ],
     "fan_max_speed": [
-        "95"
+        "20"
     ],
     "overhang_fan_speed": [
-        "95"
+        "20"
     ],
     "slow_down_layer_time": [
         "5"
