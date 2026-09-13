@@ -11,7 +11,7 @@
     "printer_variant": "0.4",
     "default_filament_profile": [
         "Generic PLA @MakerBot Method",
-        "Generic PLA @MakerBot Method"
+        "Generic PVA @MakerBot Method"
     ],
     "default_print_profile": "0.20mm Standard @MakerBot Method 0.4 nozzle",
     "nozzle_diameter": [
@@ -111,5 +111,9 @@
     "retraction_speed": [
         "5"
     ],
-    "single_extruder_multi_material": "0"
+    "single_extruder_multi_material": "0",
+    "makerbot_plate_size": [
+        "283.3",
+        "236.48"
+    ]
 }

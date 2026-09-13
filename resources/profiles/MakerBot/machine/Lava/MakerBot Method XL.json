@@ -9,5 +9,5 @@
     "bed_model": "makerbot_method_xl.stl",
     "bed_texture": "makerbot_method_xl_texture.png",
     "hotend_model": "",
-    "default_materials": "Generic PLA @MakerBot Method XL;Generic PETG @MakerBot Method XL;Generic ABS @MakerBot Method XL;Generic ASA @MakerBot Method XL;Generic PA-CF @MakerBot Method XL;Generic PLA Silk @MakerBot Method XL;Generic BVOH @MakerBot Method XL;Generic CoPE @MakerBot Method XL;Generic PA @MakerBot Method XL;Generic PVA @MakerBot Method XL;Generic TPU @MakerBot Method XL"
+    "default_materials": "Generic PLA @MakerBot Method XL;Generic PETG @MakerBot Method XL;Generic ABS @MakerBot Method XL;Generic ASA @MakerBot Method XL;Generic PA-CF @MakerBot Method XL;Generic PLA Silk @MakerBot Method XL;Generic CoPE @MakerBot Method XL;Generic PA @MakerBot Method XL;Generic PVA @MakerBot Method XL;Generic ABS-R @MakerBot Method XL;Generic RapidRinse @MakerBot Method XL;Generic SR-30 @MakerBot Method XL"
 }

@@ -6,7 +6,9 @@
     "from": "system",
     "instantiation": "true",
     "gcode_flavor": "makerbot_lava",
-    "smart_extruder_type": ["sketch_extruder"],
+    "smart_extruder_type": [
+        "sketch_l_extruder"
+    ],
     "smart_extruder_count": "1",
     "printer_model": "MakerBot Sketch Large",
     "model_id": "MakerBot Sketch Large",
@@ -36,7 +38,7 @@
     "host_type": "makerbotlink",
     "printer_vendor": "MakerBot",
     "gpx_machine_type": "",
-    "makerbot_bot_type": "sketchL",
+    "makerbot_bot_type": "sketch_large",
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [

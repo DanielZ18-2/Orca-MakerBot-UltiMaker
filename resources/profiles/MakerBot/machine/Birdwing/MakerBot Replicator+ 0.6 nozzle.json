@@ -39,9 +39,9 @@
     "support_multi_bed_types": "0",
     "printable_area": [
         "0x0",
-        "295x0",
-        "295x195",
-        "0x195"
+        "300x0",
+        "300x200",
+        "0x200"
     ],
     "printable_height": "165",
     "min_layer_height": [

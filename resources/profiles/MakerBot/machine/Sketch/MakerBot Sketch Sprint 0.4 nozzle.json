@@ -6,7 +6,9 @@
     "from": "system",
     "instantiation": "true",
     "gcode_flavor": "makerbot_lava",
-    "smart_extruder_type": ["sketch_extruder"],
+    "smart_extruder_type": [
+        "sketch_sprint_extruder"
+    ],
     "smart_extruder_count": "1",
     "printer_model": "MakerBot Sketch Sprint",
     "model_id": "MakerBot Sketch Sprint",
@@ -36,16 +38,16 @@
     "host_type": "makerbotlink",
     "printer_vendor": "MakerBot",
     "gpx_machine_type": "",
-    "makerbot_bot_type": "sketchS",
+    "makerbot_bot_type": "sketch_sprint",
     "printer_structure": "corexy",
     "support_multi_bed_types": "1",
     "printable_area": [
         "0x0",
-        "220x0",
-        "220x220",
-        "0x220"
+        "221.5x0",
+        "221.5x221.5",
+        "0x221.5"
     ],
-    "printable_height": "220",
+    "printable_height": "220.4",
     "min_layer_height": [
         "0.08"
     ],

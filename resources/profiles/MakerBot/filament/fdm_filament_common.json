@@ -33,17 +33,8 @@
     "filament_cost": [
         "20"
     ],
-    "filament_retract_when_changing_layer": [
-        "0"
-    ],
-    "filament_wipe": [
-        "1"
-    ],
     "enable_pressure_advance": [
         "0"
-    ],
-    "filament_z_hop": [
-        "0.2"
     ],
     "filament_vendor": [
         "Generic"
