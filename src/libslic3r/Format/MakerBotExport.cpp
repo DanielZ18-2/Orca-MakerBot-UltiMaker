@@ -29,6 +29,7 @@
 #include <fstream>
 #include <limits>
 #include <map>
+#include <random>
 #include <regex>
 #include <sstream>
 #include <locale>
@@ -132,6 +133,17 @@ struct HeaderData
     double      max_volumetric_speed         = 5.0;   // filament_max_volumetric_speed
     double      default_acceleration         = 500.0; // default_acceleration
     double      travel_acceleration          = 2000.0;// travel_acceleration
+    // Per-role acceleration and jerk, kept as the raw strings from the
+    // settings block so a percentage ("50%") can be resolved against
+    // default_acceleration afterwards. They feed meta.json's accel_overrides,
+    // which is the ONLY channel through which an acceleration setting reaches
+    // the Method series: the toolpath knows five command types and none of
+    // them carries acceleration.
+    std::map<std::string, std::string> accel_raw;
+    // Gantry limits. Orca serialises these as "normal,stealth"; the first
+    // entry is the normal mode. Defaults match Orca's own, not any machine.
+    double      max_speed_x                  = 500.0; // machine_max_speed_x
+    double      max_speed_y                  = 500.0; // machine_max_speed_y
     double      retract_restart_extra        = 0.1;   // retract_restart_extra (-> ooze_feedstock_distance)
     int         bed_temperature              = 0;     // bed_temperature / platform_temperature
     double      travel_speed_z               = 3.0;   // travel_speed_z
@@ -181,6 +193,27 @@ struct BBox
 };
 
 struct ThumbnailBlob { int width = 0, height = 0; std::string bytes; };
+
+// The settings block serialises filament_type for ALL extruders in one
+// string: a dual-head machine yields "PLA;PLA". meta["material"] is a single
+// name - the reference file writes "abs-wss1", not "abs-wss1;abs-wss1" - so
+// the first entry is what belongs there. meta["materials"] is built
+// separately from ConfigOptionStrings and already carries one entry per
+// extruder.
+//
+// Measured on Mr_Jaws_PLA_1h2m.makerbot (Method X): "material" read
+// "pla;pla" while "materials" correctly read ["pla", "pla"]. Every test file
+// before it came from a single-extruder machine, where the string has no
+// separator and the bug is invisible.
+static std::string first_filament_type(const std::string& filament_type)
+{
+    const size_t cut = filament_type.find_first_of(";,");
+    std::string t = cut == std::string::npos ? filament_type
+                                             : filament_type.substr(0, cut);
+    boost::algorithm::trim(t);
+    return t;
+}
+
 
 static double parse_double_safe(const std::string& s, double fb)
 {
@@ -394,6 +427,21 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
         else if (key == "filament_max_volumetric_speed") h.max_volumetric_speed = parse_double_safe(val, h.max_volumetric_speed);
         else if (key == "default_acceleration") h.default_acceleration         = parse_double_safe(val, h.default_acceleration);
         else if (key == "travel_acceleration")  h.travel_acceleration          = parse_double_safe(val, h.travel_acceleration);
+        else if (key == "outer_wall_acceleration"          ||
+                 key == "inner_wall_acceleration"          ||
+                 key == "sparse_infill_acceleration"       ||
+                 key == "internal_solid_infill_acceleration" ||
+                 key == "top_surface_acceleration"         ||
+                 key == "support_acceleration"             ||
+                 key == "initial_layer_acceleration"       ||
+                 key == "default_jerk"                     ||
+                 key == "outer_wall_jerk"                  ||
+                 key == "inner_wall_jerk"                  ||
+                 key == "infill_jerk"                      ||
+                 key == "top_surface_jerk"                 ||
+                 key == "travel_jerk")   h.accel_raw[key]                        = val;
+        else if (key == "machine_max_speed_x")  h.max_speed_x                  = parse_double_safe(val, h.max_speed_x);
+        else if (key == "machine_max_speed_y")  h.max_speed_y                  = parse_double_safe(val, h.max_speed_y);
         else if (key == "retract_restart_extra") h.retract_restart_extra       = parse_double_safe(val, h.retract_restart_extra);
         else if (key == "bed_temperature" || key == "bed_temperature_initial_layer")
                                                 h.bed_temperature               = parse_int_safe(val, h.bed_temperature);
@@ -473,6 +521,11 @@ static double extrusion_mass_g(double extrusion_mm, double filament_diameter_mm,
     return l * 3.14159265358979323846 * r * r * density_g_cm3;
 }
 
+// Defined below, but the Birdwing branch needs it: its gaggle used to carry
+// a build volume hardcoded to the Z18, which every other Birdwing machine
+// then reported as its own.
+static nlohmann::json machine_bounds(const PrintConfig& config);
+
 static nlohmann::json build_birdwing_meta(
     const PrintConfig&  config,
     const std::string&  bot_type,
@@ -482,7 +535,11 @@ static nlohmann::json build_birdwing_meta(
     int                 command_count,
     const std::string&  project_name)
 {
-    const std::string mat_up  = h.filament_type.empty() ? "PLA" : boost::algorithm::to_upper_copy(h.filament_type);
+    // Same separator problem as in the Lava branch: a dual-head
+    // Legacy machine (Replicator 2X, Original Dual) reports
+    // "PLA;PLA" here.
+    const std::string mat_first = first_filament_type(h.filament_type);
+    const std::string mat_up  = mat_first.empty() ? "PLA" : boost::algorithm::to_upper_copy(mat_first);
     const std::string mat_lo  = boost::algorithm::to_lower_copy(mat_up);
     const std::string tool    = h.tool_type.empty() || h.tool_type == "none" ? "mk13" : h.tool_type;
     const double      mass_g  = extrusion_mass_g(total_extrusion, h.filament_diameter, h.filament_density);
@@ -496,8 +553,28 @@ static nlohmann::json build_birdwing_meta(
     meta["chamber_temperature"]      = h.chamber_temp;
     meta["commanded_duration_s"]     = h.duration_s;
     meta["duration_s"]               = h.duration_s;
-    meta["extruder_temperature"]     = h.first_layer_temp;
-    meta["extruder_temperatures"]    = nlohmann::json::array({h.first_layer_temp, h.temperature});
+    // Was {first_layer_temp, temperature} - the first layer and the other
+    // layers of the SAME extruder, which reads like a plausible pair on a
+    // single-head machine and is still the wrong field. The Lava branch had
+    // the identical fault (O118); this is its Birdwing half.
+    //
+    // MakerBot Print's own file for the Z18 (MB_Print_Z18_Temmp_Tower)
+    // writes extruder_temperature 215 and extruder_temperatures [215]:
+    // one entry per extruder, and the PRINT temperature, not the
+    // first-layer one.
+    //
+    // Every Birdwing machine carries exactly one extruder (the mk13 family:
+    // Z18, Replicator+, Mini, Mini+, 5th Gen), so the list has exactly one
+    // entry. Same source as the Lava branch: nozzle_temperature per
+    // extruder, falling back to the parsed print temperature.
+    int birdwing_temp = h.temperature;
+    if (const auto* nt_opt = config.option("nozzle_temperature")) {
+        const auto* nt = dynamic_cast<const ConfigOptionInts*>(nt_opt);
+        if (nt && !nt->values.empty())
+            birdwing_temp = nt->values.front();
+    }
+    meta["extruder_temperature"]     = birdwing_temp;
+    meta["extruder_temperatures"]    = nlohmann::json::array({birdwing_temp});
     meta["extrusion_distance_mm"]    = total_extrusion;
     meta["extrusion_distances_mm"]   = nlohmann::json::array({total_extrusion});
     meta["extrusion_mass_g"]         = mass_g;
@@ -527,7 +604,8 @@ static nlohmann::json build_birdwing_meta(
         ps["support"]              = h.enable_support > 0;
         ps["raft"]                 = h.raft_layers > 0;
         ps["materials"]            = nlohmann::json::array({mat_up});
-        ps["extruder_temperatures"]= nlohmann::json::array({h.first_layer_temp, h.temperature});
+        // Same field, same rule as in meta above: one entry per extruder.
+        ps["extruder_temperatures"]= nlohmann::json::array({birdwing_temp});
         ps["first_layer_height"]   = h.first_layer_height;
         ps["chamber_temperature"]  = h.chamber_temp;
         // Birdwing stores this in printer_settings; it does not validate it.
@@ -562,13 +640,14 @@ static nlohmann::json build_birdwing_meta(
         ext_hw["restart_rate"]      = rest_rate;
         ext_hw["temperature"]       = h.temperature;
         // No slip_compensation_table – Orca calibration handles this
-        ext_hw["acceleration"]      = nlohmann::json{
-            {"default", nlohmann::json{
-                {"normal_move",    h.default_acceleration},  // was: hardcoded 500.0
-                {"during_retract", h.travel_acceleration},   // was: hardcoded 2000.0
-                {"after_retract",  h.travel_acceleration}    // was: hardcoded 2000.0
-            }}
-        };
+        // No acceleration block. The three keys this fork used to write -
+        // normal_move, during_retract, after_retract - are not documented in
+        // any MakerBot source we hold, and no .makerbot produced by MakerBot's
+        // own software carries them. Their values were wrong regardless:
+        // default_acceleration and travel_acceleration describe the gantry in
+        // XY, while during_retract and after_retract would describe the
+        // extruder axis. Without the block the firmware uses its own
+        // constants, which is what it does today anyway.
 
         nlohmann::json ext_materials;
         ext_materials[mat_lo] = ext_hw;
@@ -584,7 +663,10 @@ static nlohmann::json build_birdwing_meta(
             {"max_fill_speed",        h.sparse_infill_speed},
             {"travel_speed_xy",       h.travel_speed},
             {"travel_speed_z",        h.travel_speed_z}, // was: hardcoded 3.0
-            {"max_speed_mm_per_second", nlohmann::json{{"x",175.0},{"y",175.0},{"z",h.travel_speed_z}}}
+            // was: hardcoded 175/175, a figure from no profile we ship
+            {"max_speed_mm_per_second", nlohmann::json{{"x",h.max_speed_x},
+                                                       {"y",h.max_speed_y},
+                                                       {"z",h.travel_speed_z}}}
         };
         meta["machine_config"] = machine_config;
     }
@@ -624,7 +706,18 @@ static nlohmann::json build_birdwing_meta(
         gaggle["fanLayer"]               = h.close_fan_first_layers;
         gaggle["fanSpeed"]               = std::max(0.0, std::min(1.0, h.fan_max_speed / 100.0));
         gaggle["layerHeight"]            = h.layer_height;
-        gaggle["machineBounds"]          = nlohmann::json::array({150.0, 152.5, -150.0, -152.5});
+        // Was hardcoded to {150.0, 152.5, -150.0, -152.5} - the Z18's
+        // 300 x 305 plate - which every Birdwing machine then reported as
+        // its own. Measured on five of our own files: the Replicator+
+        // (295 x 195) carried the Z18's numbers. MakerBot Print writes no
+        // machineBounds inside gaggles at all; the field is ours, so it is
+        // corrected here rather than removed, which would be an untested
+        // change to a container the printer accepts today.
+        {
+            const nlohmann::json mb = machine_bounds(config);
+            if (!mb.is_null())
+                gaggle["machineBounds"] = mb;
+        }
         gaggle["platformTemp"]           = h.bed_temperature; // was: hardcoded 0
         gaggle["travelSpeedXY"]          = h.travel_speed;
         gaggle["travelSpeedZ"]           = h.travel_speed_z; // was: hardcoded 3
@@ -636,7 +729,12 @@ static nlohmann::json build_birdwing_meta(
         mc["_bot"]       = meta["bot_type"];
         mc["_extruders"] = nlohmann::json::array({tool});
         mc["_materials"] = nlohmann::json::array({mat_lo});
-        mc["configPath"] = "/tmp/profile.json";
+        // MakerBot Print writes the real path of the MiracleGrue profile it
+        // used. We have no such file, and a path that exists nowhere is
+        // worse than none - same class as printer_settings.slicer =
+        // "SIMPLIFY3D" (B90). The printer cannot resolve either, so name
+        // what actually produced the settings.
+        mc["configPath"] = "OrcaSlicer";
         mc["doRaft"]     = h.raft_layers > 0;
         mc["doSupport"]  = h.enable_support > 0;
         mc["layerHeight"]= h.layer_height;
@@ -649,6 +747,219 @@ static nlohmann::json build_birdwing_meta(
     return meta;
 }
 
+// MakerBot's own material identifiers for the .makerbot header.
+//
+// Our filament_type is Orca's vocabulary ("PETG", "PA-CF", "ABS-R").  The
+// header carries MakerBot's, and the two are NOT the same string in lower
+// case.  The authoritative table is Cura's cura/PrinterOutput/FormatMaps.py,
+// MATERIAL_MAP - the map UltiMaker's own MakerbotWriter applies before it
+// writes meta.json (MakerbotWriter.py lines 155, 166-168):
+//
+//     abs        ABS           pla         PLA
+//     abs-cf10   ABS-CF        pva         PVA
+//     abs-wss1   ABS-R         wss1        RapidRinse
+//     asa        ASA           sr30        SR-30
+//     nylon      Nylon         pet         PETG
+//     nylon-cf   Nylon CF      nylon12-cf  Nylon 12 CF
+//
+// Seven of the eleven names this fork can produce were wrong: lower-casing
+// "PETG" yields "petg" where the printer expects "pet", and "ABS-R" yields
+// "abs-r" where it expects "abs-wss1".
+//
+// "im-pla" (Tough PLA) is deliberately absent.  Tough PLA carries
+// filament_type "PLA" here because it is a product name, not a material
+// type; filament_type alone cannot tell the two apart.
+//
+// Types the table does not know - TPU, PC-ABS, BVOH, CoPE - fall through
+// lower-cased.  That is not documented as correct, but it keeps them in the
+// file instead of dropping them.
+//
+// This applies to the Lava branch only.  Cura does not cover Birdwing
+// machines at all; there MakerBot Desktop and MakerBot Print are the
+// reference and they write the name in upper case.
+static std::string lava_material_id(const std::string& filament_type)
+{
+    static const std::map<std::string, std::string> kMakerBotMaterialIds = {
+        {"ABS",        "abs"},
+        {"ABS-CF",     "abs-cf10"},
+        {"ABS-R",      "abs-wss1"},
+        {"ASA",        "asa"},
+        {"PA",         "nylon"},
+        {"PA-CF",      "nylon-cf"},
+        {"PA12-CF",    "nylon12-cf"},
+        {"PET",        "pet"},
+        {"PETG",       "pet"},
+        {"PLA",        "pla"},
+        {"PVA",        "pva"},
+        {"RapidRinse", "wss1"},
+        {"SR-30",      "sr30"},
+    };
+    const std::string first = first_filament_type(filament_type);
+    const std::string t = first.empty() ? std::string("PLA") : first;
+    const auto it = kMakerBotMaterialIds.find(t);
+    if (it != kMakerBotMaterialIds.end())
+        return it->second;
+    return boost::algorithm::to_lower_copy(t);
+}
+
+// ── accel_overrides: the only way acceleration reaches a Method ──────────
+//
+// Wording taken from a Cura-produced reference file
+// (UMMXL_2023_Testwuerfel_20x20.makerbot, Method XL, CuraEngine 5.12.0):
+//
+//   "accel_overrides": { "bead_mode": {
+//       "Travel Move": {"rate_mm_per_s_sq": {"x":5000,"y":5000},
+//                       "max_speed_change_mm_per_s": {"x":12.5,"y":12.5}},
+//       "FILL_0", "PRIME_TOWER_0", "TOP_SURFACE_0", "SUPPORT_0",
+//       "SUPPORT_INTERFACE_0", "WALL_OUTER_0", "WALL_INNER_0", "SKIRT_0",
+//       ... the same eight with _1 ...
+//   }}
+//
+// The role names are Cura's vocabulary; "Travel Move" is a MakerBot tag.
+// Mixed, and the firmware matches these exact strings - an invented name is
+// silently ignored. There is no name for bridges, bottom surfaces, the first
+// layer or gap fill; those keep the machine's own value.
+//
+// Cura writes the same number into all sixteen role entries because it has a
+// single acceleration_print setting. Our profiles differentiate five roles,
+// so this block is where the fork can actually do better than Cura.
+
+static double accel_from(const HeaderData& h, const char* key, double fallback)
+{
+    const auto it = h.accel_raw.find(key);
+    if (it == h.accel_raw.end() || it->second.empty())
+        return fallback;
+    const std::string& s = it->second;
+    const double v = parse_double_safe(s, -1.0);
+    if (v < 0.0)
+        return fallback;
+    // Orca serialises a relative value as "50%" - percent of the default.
+    if (s.find('%') != std::string::npos)
+        return h.default_acceleration * v / 100.0;
+    return v;
+}
+
+static nlohmann::json accel_xy(double v)
+{
+    return nlohmann::json{{"x", v}, {"y", v}};
+}
+
+static nlohmann::json build_accel_overrides(const HeaderData& h,
+                                            size_t extruder_count)
+{
+    const double def   = h.default_acceleration;
+    const double trav  = h.travel_acceleration > 0.0 ? h.travel_acceleration : def;
+
+    // Jerk is optional. Cura writes max_speed_change_mm_per_s only when
+    // jerk_enabled is set; without a value in the profile we write nothing
+    // rather than invent a number.
+    const double jerk_def = accel_from(h, "default_jerk", 0.0);
+    const bool   has_jerk = jerk_def > 0.0;
+
+    struct Rolle { const char* tag; const char* accel_key; const char* jerk_key; };
+    static const Rolle kRollen[] = {
+        {"WALL_OUTER",        "outer_wall_acceleration",             "outer_wall_jerk"},
+        {"WALL_INNER",        "inner_wall_acceleration",             "inner_wall_jerk"},
+        {"FILL",              "sparse_infill_acceleration",          "infill_jerk"},
+        {"TOP_SURFACE",       "top_surface_acceleration",            "top_surface_jerk"},
+        {"SUPPORT",           "support_acceleration",                nullptr},
+        {"SUPPORT_INTERFACE", "support_acceleration",                nullptr},
+        {"PRIME_TOWER",       nullptr,                               nullptr},
+        {"SKIRT",             nullptr,                               nullptr},
+    };
+
+    nlohmann::json bead = nlohmann::json::object();
+    bead["Travel Move"]["rate_mm_per_s_sq"] = accel_xy(trav);
+    if (has_jerk)
+        bead["Travel Move"]["max_speed_change_mm_per_s"] =
+            accel_xy(accel_from(h, "travel_jerk", jerk_def));
+
+    const size_t n = extruder_count < 1 ? 1 : extruder_count;
+    for (size_t i = 0; i < n; ++i) {
+        for (const Rolle& r : kRollen) {
+            const std::string tag = std::string(r.tag) + "_" + std::to_string(i);
+            const double a = r.accel_key ? accel_from(h, r.accel_key, def) : def;
+            bead[tag]["rate_mm_per_s_sq"] = accel_xy(a);
+            if (has_jerk) {
+                const double j = r.jerk_key ? accel_from(h, r.jerk_key, jerk_def)
+                                            : jerk_def;
+                bead[tag]["max_speed_change_mm_per_s"] = accel_xy(j);
+            }
+        }
+    }
+
+    nlohmann::json ov;
+    ov["rate_mm_per_s_sq"] = accel_xy(def);
+    if (has_jerk)
+        ov["max_speed_change_mm_per_s"] = accel_xy(jerk_def);
+    ov["bead_mode"] = bead;
+    return ov;
+}
+
+// A print job identifier. Cura writes print_information.slice_uuid here and
+// MakerBot Print writes one too; the field is a plain RFC 4122 version 4
+// string, so a locally generated one serves the same purpose.
+static std::string make_print_uuid()
+{
+    static const char* kHex = "0123456789abcdef";
+    std::random_device rd;
+    std::string out;
+    out.reserve(36);
+    for (int i = 0; i < 36; ++i) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) { out.push_back('-'); continue; }
+        if (i == 14) { out.push_back('4'); continue; }              // version 4
+        unsigned v = rd() & 0xF;
+        if (i == 19) v = (v & 0x3) | 0x8;                           // variant
+        out.push_back(kHex[v]);
+    }
+    return out;
+}
+
+// Half extents of the build volume around its centre, in the order Cura
+// writes them: [right, front, left, back]. The reference file gives
+// [205.0, 160.0, -205.0, -160.0] for the Method XL, whose plate is
+// 410 x 320 mm.
+static nlohmann::json machine_bounds(const PrintConfig& config)
+{
+    // The physical plate, when the machine profile states it. Cura's own
+    // Method X file reports [141.65, 118.24, -141.65, -118.24] = 283.3 x
+    // 236.48, which is machine_width x machine_depth of
+    // ultimaker_method_base - NOT its printable area of 152 x 190. The two
+    // differ wherever a machine has disallowed zones.
+    if (const auto* ps_opt = config.option("makerbot_plate_size")) {
+        const auto* ps = dynamic_cast<const ConfigOptionFloats*>(ps_opt);
+        if (ps && ps->values.size() >= 2) {
+            const double w = ps->values[0] / 2.0;
+            const double d = ps->values[1] / 2.0;
+            if (w > 5.0 && d > 5.0)
+                return nlohmann::json::array({w, d, -w, -d});
+        }
+    }
+    // No plate stated: fall back to the usable area, which is what this
+    // function did before. Correct wherever plate and usable area coincide -
+    // the whole Sketch series, which has no disallowed zones.
+    const auto* pa_opt = config.option("printable_area");
+    if (!pa_opt)
+        return nullptr;
+    try {
+        const auto* pts = dynamic_cast<const ConfigOptionPoints*>(pa_opt);
+        if (!pts || pts->values.size() < 2)
+            return nullptr;
+        double xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9;
+        for (const auto& p : pts->values) {
+            xmin = std::min(xmin, p.x()); xmax = std::max(xmax, p.x());
+            ymin = std::min(ymin, p.y()); ymax = std::max(ymax, p.y());
+        }
+        const double w = (xmax - xmin) / 2.0;
+        const double d = (ymax - ymin) / 2.0;
+        if (w <= 5.0 || d <= 5.0)
+            return nullptr;
+        return nlohmann::json::array({w, d, -w, -d});
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 static nlohmann::json build_lava_meta(
     const PrintConfig&  config,
     const std::string&  bot_type,
@@ -657,7 +968,7 @@ static nlohmann::json build_lava_meta(
     const std::string&  project_name,
     const ToolpathStats* tp = nullptr)
 {
-    const std::string mat_lo  = boost::algorithm::to_lower_copy(h.filament_type.empty() ? std::string("pla") : h.filament_type);
+    const std::string mat_lo  = lava_material_id(h.filament_type);
     const double      mass_g  = extrusion_mass_g(total_extrusion, h.filament_diameter, h.filament_density);
 
     // Determine tool types for Method/Sketch (mk14 / mk14_s)
@@ -698,8 +1009,41 @@ static nlohmann::json build_lava_meta(
     meta["bot_type"]                = lava_bot;
     meta["commanded_duration_s"]    = h.duration_s;
     meta["duration_s"]              = h.duration_s;
-    meta["extruder_temperature"]    = h.first_layer_temp;
-    meta["extruder_temperatures"]   = nlohmann::json::array({h.first_layer_temp, h.temperature});
+    // One entry per extruder, not first-layer-and-rest of a single one.
+    //
+    // Measured on MakerBot Traffic Cone_ABSR_1h9m.makerbot (Method X,
+    // ABS-R on 1XA, SR-30 on 2XA): the toolpath correctly commands 260 for
+    // tool 0 and 255 for tool 1, while meta.json read [260, 260]. The old
+    // expression paired first_layer_temp with temperature - two layers of
+    // the same extruder - which happens to look right whenever a material's
+    // first layer matches its other layers.
+    //
+    // Cura's reference file writes extruder_temperature = extruder 0 and
+    // extruder_temperatures = one per extruder, taken from the print
+    // temperature rather than the first-layer one.
+    //
+    // This is the header half of the fault B24/B27 fixed in the toolpath.
+    {
+        std::vector<int> lava_extruder_temperatures;
+        const auto* opt = config.option("nozzle_temperature");
+        if (opt) {
+            try {
+                const auto* ints = dynamic_cast<const ConfigOptionInts*>(opt);
+                if (ints) for (int v : ints->values)
+                    lava_extruder_temperatures.push_back(v);
+            } catch (...) {}
+        }
+        if (lava_extruder_temperatures.empty())
+            lava_extruder_temperatures.push_back(h.temperature);
+        // Mirror tool_types and materials in length.
+        while (lava_extruder_temperatures.size() < tools.size())
+            lava_extruder_temperatures.push_back(lava_extruder_temperatures.back());
+        while (lava_extruder_temperatures.size() > tools.size() &&
+               lava_extruder_temperatures.size() > 1)
+            lava_extruder_temperatures.pop_back();
+        meta["extruder_temperature"]  = lava_extruder_temperatures.front();
+        meta["extruder_temperatures"] = lava_extruder_temperatures;
+    }
     // Per-extruder figures. MakerBot Print writes extrusion_distances_mm and
     // extrusion_masses_g as one entry PER EXTRUDER; the reference file
     // method_dual_test.makerbot carries [950.633, 1104.029] there, matching the
@@ -729,7 +1073,10 @@ static nlohmann::json build_lava_meta(
             try {
                 const auto* ss = dynamic_cast<const ConfigOptionStrings*>(opt);
                 if (ss) for (const auto& v : ss->values)
-                    mats.push_back(boost::algorithm::to_lower_copy(v));
+                    // v is already a single entry here (ConfigOptionStrings),
+                    // but a profile may still carry a joined string - filter
+                    // it the same way rather than trusting the container.
+                    mats.push_back(lava_material_id(first_filament_type(v)));
             } catch (...) {}
         }
         if (mats.empty()) mats.push_back(mat_lo);
@@ -744,8 +1091,24 @@ static nlohmann::json build_lava_meta(
     meta["tool_type"]               = tools.front();
     meta["tool_types"]              = tools;
     meta["version"]                 = "3.0.0";
-    meta["preferences"]["instance0"]["printMode"] = "balanced";
-    meta["preferences"]["instance0"]["machineBounds"] = nullptr;
+    meta["uuid"]                    = make_print_uuid();
+    // Cura writes the intent CATEGORY here, and the default one is literally
+    // "default" - the reference file says so. "Balanced" is only its display
+    // name and lives in slicemetadata.json under quality.intent_name.
+    meta["preferences"]["instance0"]["printMode"] = "default";
+    meta["preferences"]["instance0"]["machineBounds"] = machine_bounds(config);
+    // Cura leaves the bounding box out for the Sketch series (it sets
+    // bounds = None for application/x-makerbot-sketch) and writes it for the
+    // Method series. tp is null exactly in the Sketch case, so the same rule
+    // falls out of the existing branching.
+    if (tp && tp->has_bbox) {
+        BBox bb;
+        bb.update(tp->min_x, tp->min_y, tp->min_z);
+        bb.update(tp->max_x, tp->max_y, tp->max_z);
+        meta["bounding_box"] = bb.to_json();
+    }
+    if (tp)
+        meta["accel_overrides"] = build_accel_overrides(h, tools.size());
     meta["miracle_config"]["_bot"] = lava_bot;
     meta["miracle_config"]["_extruders"] = tools;
     meta["miracle_config"]["_materials"] = meta["materials"];
@@ -882,8 +1245,17 @@ static bool pack_makerbot_birdwing(const std::string& gcode_path,
                         xmin = std::min(xmin, p.x()); xmax = std::max(xmax, p.x());
                         ymin = std::min(ymin, p.y()); ymax = std::max(ymax, p.y());
                     }
-                    const double W = (xmax - xmin) / 1000.0;
-                    const double H = (ymax - ymin) / 1000.0;
+                    // printable_area is in millimetres, not micrometres.
+                    // MakerBotCoords::bed_centre() reads the very same points
+                    // without dividing and sanity-checks against 1.0 mm. The
+                    // division here turned a 300 mm plate into 0.3, the guard
+                    // below rejected it, and bv silently kept its default -
+                    // so the printer profile never reached the toolpath at
+                    // all. bv.x/2 is the origin offset of every coordinate in
+                    // it, so the print landed off-centre on any machine whose
+                    // plate differs from the default.
+                    const double W = xmax - xmin;
+                    const double H = ymax - ymin;
                     if (W > 10.0 && H > 10.0) { bv.x = W; bv.y = H; }
                 }
             } catch (...) {}
@@ -1047,8 +1419,12 @@ static bool pack_makerbot_lava(const std::string& gcode_path,
                             xmin = std::min(xmin, p.x()); xmax = std::max(xmax, p.x());
                             ymin = std::min(ymin, p.y()); ymax = std::max(ymax, p.y());
                         }
-                        const double W = (xmax - xmin) / 1000.0;
-                        const double H = (ymax - ymin) / 1000.0;
+                        // Same fix as in the Birdwing packer above:
+                        // printable_area is in millimetres. With the division
+                        // the Method XL used the Method X's 152 x 190 default
+                        // and every print landed 76.5 / 57.5 mm off centre.
+                        const double W = xmax - xmin;
+                        const double H = ymax - ymin;
                         if (W > 10.0 && H > 10.0) { bv.x = W; bv.y = H; }
                     }
                 } catch (...) {}
