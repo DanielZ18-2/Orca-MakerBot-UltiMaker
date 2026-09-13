@@ -7374,19 +7374,33 @@ void PrintConfigDef::init_fff_params()
                      "Set automatically by the printer discovery / handshake dialog.");
     def->category = L("Extruder");
     def->mode    = comAdvanced;
+    // Identifiers as MakerBot writes them, and labels as MakerBot names
+    // them. Sources: MB-support-plugin/lib/constants.js (the toolhead
+    // catalogue) and Cura's FormatMaps.EXTRUDER_NAME_MAP, which maps the
+    // same identifiers to 1A / 2A / 1XA / 2XA / 1C / LABS.
+    //
+    // Removed: "mk14_p" and "labs_extruder". Neither appears in any
+    // manufacturer source; "labs_extruder" existed only in this fork's own
+    // Plater.cpp, which is how it once passed for a second witness.
+    //
+    // Added: "mk14_e" (LABS, named by both sources above) and
+    // "mk14_hot_e", which was found only in firmware 2.7.1.790 - marked as
+    // such in its label so nobody mistakes it for a catalogued part.
+    //
+    // mk13_experimental is the Birdwing head of the Z18, not a LABS part;
+    // its former label "Experimental / LABS" conflated two generations.
     def->enum_values = { "none",
                          "mk13", "mk13_impla", "mk13_experimental",
-                         "mk14", "mk14_s", "mk14_p",
+                         "mk14", "mk14_s",
                          "mk14_hot", "mk14_hot_s", "mk14_c",
-                         "labs_extruder" };
+                         "mk14_e", "mk14_hot_e" };
     def->enum_labels = { L("None"),
                          L("Smart Extruder+"), L("Tough Smart Extruder+"),
-                         L("Experimental / LABS"),
-                         L("Model Extruder (1A)"), L("Support Extruder (2A)"),
-                         L("Support Extruder (SR-30)"),
-                         L("Model Extruder 1XA"), L("Support Extruder 2XA"),
-                         L("Composite Extruder 1C"),
-                         L("LABS Gen 2 Extruder") };
+                         L("Experimental Extruder"),
+                         L("Model 1A"), L("Support 2A"),
+                         L("Model 1XA"), L("Support 2XA"),
+                         L("Model 1C"),
+                         L("LABS"), L("LABS hot (firmware only)") };
     def->set_default_value(new ConfigOptionStrings{ "none" });
 
     // --- MakerBot / UltiMaker Fork: identifiers read at export time ---
@@ -7412,6 +7426,20 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Machine");
     def->mode    = comDevelop;
     def->set_default_value(new ConfigOptionString(""));
+
+    def = this->add("makerbot_plate_size", coFloats);
+    def->label   = L("Build plate size");
+    def->tooltip = L("Physical build plate as [width, depth] in millimetres. "
+                     "This is NOT the printable area: MakerBot's Method series "
+                     "has a plate of 283.3 x 236.48 mm of which only "
+                     "152 x 190 mm are usable, the rest being blocked by the "
+                     "purge bucket and the gantry. The .makerbot container "
+                     "reports the plate, so the printer's own display and its "
+                     "bounds check agree with the machine. Leave empty to fall "
+                     "back to the printable area.");
+    def->category = L("Machine");
+    def->mode    = comDevelop;
+    def->set_default_value(new ConfigOptionFloats());
 }
 
 void PrintConfigDef::init_extruder_option_keys()

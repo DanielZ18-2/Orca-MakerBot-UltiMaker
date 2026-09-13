@@ -1377,6 +1377,12 @@ PRINT_CONFIG_CLASS_DEFINE(
     // const PrintConfig&, whose option() only resolves declared members.
     ((ConfigOptionString,             makerbot_bot_type))
     ((ConfigOptionString,             gpx_machine_type))
+    // Physical build plate, [width, depth] in millimetres. Distinct from
+    // printable_area, which is the USABLE area after the machine's
+    // disallowed zones - Cura's ultimaker_method_base has a 65-point
+    // machine_disallowed_areas that cuts 283.3 x 236.48 down to 152 x 190.
+    // meta.json wants the plate; see machine_bounds() in MakerBotExport.cpp.
+    ((ConfigOptionFloats,             makerbot_plate_size))
 
     ((ConfigOptionFloat,               time_cost)) 
     ((ConfigOptionString,              layer_change_gcode))

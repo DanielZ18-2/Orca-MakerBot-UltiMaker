@@ -1385,11 +1385,19 @@ static std::vector<std::string> s_Preset_printer_options {
     "bed_temperature_formula", "nozzle_flush_dataset",
     // --- MakerBot / UltiMaker Fork: Smart Extruder profile keys ---
     "smart_extruder_count", "smart_extruder_type",
-    // --- MakerBot / UltiMaker Fork: Export-Kennungen ---
-    // makerbot_bot_type -> MakerBotExport.cpp (bot_type in meta.json)
-    // gpx_machine_type  -> GPXExport.cpp (x3g-Maschinenkennung; ohne diesen
-    //                      Eintrag faellt GPXExport immer auf "r2x" zurueck)
-    "makerbot_bot_type", "gpx_machine_type"
+    // --- MakerBot / UltiMaker Fork: identifiers the exporters read ---
+    // A key needs three entries before it reaches a printer preset:
+    // PrintConfigDef, the typed class in PrintConfig.hpp, and this list.
+    // Without the third, PresetCollection drops it while loading and
+    // config.option() returns the empty default.
+    //   makerbot_bot_type   -> MakerBotExport.cpp, bot_type in meta.json
+    //   gpx_machine_type    -> GPXExport.cpp, the x3g machine id; without
+    //                          this entry GPXExport always falls back to
+    //                          "r2x"
+    //   makerbot_plate_size -> MakerBotExport.cpp, machine_bounds(): the
+    //                          physical plate, which is not the printable
+    //                          area wherever a machine has disallowed zones
+    "makerbot_bot_type", "gpx_machine_type", "makerbot_plate_size"
     };
 
 static std::vector<std::string> s_Preset_sla_print_options {
