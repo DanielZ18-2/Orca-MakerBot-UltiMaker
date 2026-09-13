@@ -1,0 +1,60 @@
+{
+    "type": "filament",
+    "setting_id": "Generic BVOH @UltiMaker Factor 4+",
+    "name": "Generic BVOH @UltiMaker Factor 4+",
+    "inherits": "fdm_filament_bvoh",
+    "from": "system",
+    "instantiation": "true",
+    "filament_id": "OGFS97",
+    "filament_type": [
+        "BVOH"
+    ],
+    "compatible_printers": [
+        "UltiMaker Factor 4+ 0.4 nozzle"
+    ],
+    "filament_diameter": [
+        "2.85"
+    ],
+    "filament_max_volumetric_speed": [
+        "10.0"
+    ],
+    "fan_min_speed": [
+        "88"
+    ],
+    "fan_max_speed": [
+        "88"
+    ],
+    "overhang_fan_speed": [
+        "88"
+    ],
+    "slow_down_layer_time": [
+        "5"
+    ],
+    "slow_down_min_speed": [
+        "9"
+    ],
+    "cool_plate_temp": [
+        "0"
+    ],
+    "cool_plate_temp_initial_layer": [
+        "0"
+    ],
+    "nozzle_temperature": [
+        "210"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "210"
+    ],
+    "hot_plate_temp": [
+        "60"
+    ],
+    "hot_plate_temp_initial_layer": [
+        "60"
+    ],
+    "textured_plate_temp": [
+        "60"
+    ],
+    "textured_plate_temp_initial_layer": [
+        "60"
+    ]
+}
