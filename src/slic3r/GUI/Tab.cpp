@@ -4951,7 +4951,17 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
 {
     size_t		n_before_extruders = 2;			//	Count of pages before Extruder pages
     auto        flavor = m_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor")->value;
-    bool		is_marlin_flavor = (flavor == gcfMarlinLegacy || flavor == gcfMarlinFirmware || flavor == gcfKlipper || flavor == gcfRepRapFirmware || flavor == gcfRepetier);
+    // MakerBot / UltiMaker Fork: our flavors get the Motion ability page
+    // too.  The name no longer describes the list, but every place that
+    // reads this variable concerns that page and the extruder-page
+    // anchor derived from it -- so extending the list keeps all five
+    // of them consistent, which a second predicate would not.
+    // Resonance avoidance on that page reaches our devices (GCode.cpp
+    // applies it with no flavor check) and it is where Orca's VFA
+    // calibration guide puts its result.  The machine_max_* values do
+    // not reach them (B40) -- that is documented, not hidden.
+    bool		is_marlin_flavor = (flavor == gcfMarlinLegacy || flavor == gcfMarlinFirmware || flavor == gcfKlipper || flavor == gcfRepRapFirmware || flavor == gcfRepetier
+                                 || flavor == gcfMakerBotLegacy || flavor == gcfMakerBotBirdwing || flavor == gcfMakerBotLava || flavor == gcfUltiGCode);
 
     /* ! Freeze/Thaw in this function is needed to avoid call OnPaint() for erased pages
      * and be cause of application crash, when try to change Preset in moment,
@@ -5218,10 +5228,18 @@ if (is_marlin_flavor)
     }
     // BBS. No extra extruder page for single physical extruder machine
     // # remove extra pages
+    // ORCA/Fork: both accesses below index m_pages by n_before_extruders
+    // without checking the size.  If this ever runs while the list is
+    // shorter than the anchor -- mid preset switch, for instance -- that
+    // is an out-of-range access and the application dies.  Guarded.
+    if (m_pages.size() > n_before_extruders) {
     auto &first_extruder_title = const_cast<wxString &>(m_pages[n_before_extruders]->title());
     if (m_extruders_count < m_extruders_count_old) {
-        m_pages.erase(	m_pages.begin() + n_before_extruders + m_extruders_count,
-                        m_pages.begin() + n_before_extruders + m_extruders_count_old);
+        const size_t bis = std::min(m_pages.size(),
+                                    n_before_extruders + m_extruders_count_old);
+        const size_t von = std::min(bis, n_before_extruders + m_extruders_count);
+        m_pages.erase(	m_pages.begin() + von,
+                        m_pages.begin() + bis);
         if (m_extruders_count == 1)
             first_extruder_title = wxString::Format("Extruder");
     } else if (m_extruders_count_old == 1) {
@@ -5232,6 +5250,7 @@ if (is_marlin_flavor)
         group->set_config_category_and_type(first_extruder_title, m_type);
         for (auto &opt : group->opt_map())
             searcher.add_key(opt.first + "#0", m_type, group->title, first_extruder_title);
+    }
     }
 
     Thaw();
@@ -5457,16 +5476,14 @@ void TabPrinter::on_gcode_flavor_changed()
         return;
     update_input_shaper_menu(flavor_option->value);
 
-    // MakerBot / UltiMaker Fork: rebuild extruder pages on flavor change
-    // so the sidebar correctly reflects the new printer family.
-    {
-        const auto _f = flavor_option->value;
-        if (_f == gcfMakerBotLegacy   ||
-            _f == gcfMakerBotBirdwing ||
-            _f == gcfMakerBotLava     ||
-            _f == gcfUltiGCode)
-            build_unregular_pages();
-    }
+    // MakerBot / UltiMaker Fork: the rebuild that used to sit here is
+    // gone.  on_gcode_flavor_changed() runs while m_extruders_count
+    // still belongs to the previous device -- extruders_count_changed()
+    // has not run yet -- so build_unregular_pages() reindexed pages
+    // that were laid out with the previous anchor.  Measured on
+    // 2026-09-12: wrong extruder page numbers and a crash on the second
+    // preset switch.  The page is built by the initial build now; there
+    // is nothing here to repair.
 }
 
 void TabPrinter::toggle_options()
