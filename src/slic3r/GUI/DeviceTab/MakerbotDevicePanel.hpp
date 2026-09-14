@@ -11,6 +11,7 @@
 #include <wx/timer.h>
 #include <wx/image.h>
 #include <memory>
+#include <cstdint>
 
 namespace Slic3r {
 
@@ -38,7 +39,7 @@ private:
     wxBoxSizer* m_main_sizer;
     wxBoxSizer* m_col_left  = nullptr;  // left column (camera)
     wxBoxSizer* m_col_right = nullptr;  // right column (status/Z-offset/control)
-    wxStaticBoxSizer* m_extruder_info_sizer;
+    wxStaticBoxSizer* m_extruder_info_sizer = nullptr;
 
     // --- Webcam & digital zoom (Birdwing/Lava/UltiMaker only) ---
     wxStaticBitmap* m_camera_bitmap   = nullptr;
@@ -83,6 +84,15 @@ private:
     wxTimer m_camera_timer; // P5c: own 1s tick just for the camera image
     const DynamicPrintConfig* m_active_config;
     MBDeviceCategory m_category = MBDeviceCategory::Legacy;
+
+    // Raised on every UI rebuild. A background job records the value it
+    // started with and drops its result in finalize() once the value has
+    // moved on, because every widget it would write to is gone by then.
+    uint64_t m_ui_generation = 0;
+
+    // A rebuild must never run inside another rebuild: the outer call still
+    // holds pointers into the widget tree the inner one would destroy.
+    bool m_rebuilding_ui = false;
 
     // Persistent plaintext kaiten session (port 9999, Birdwing only - see
     // MakerbotLink.hpp/.cpp). Opened lazily on the first telemetry tick,

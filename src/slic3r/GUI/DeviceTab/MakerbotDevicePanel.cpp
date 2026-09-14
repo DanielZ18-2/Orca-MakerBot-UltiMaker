@@ -223,7 +223,8 @@ public:
                         std::shared_ptr<KaitenSession> session,
                         bool capability_already_checked)
         : m_panel(panel), m_host(std::move(host)), m_session(std::move(session)),
-          m_capability_checked_in(capability_already_checked)
+          m_capability_checked_in(capability_already_checked),
+          m_generation(panel ? panel->m_ui_generation : 0)
     {}
 
     void process(Ctl& /*ctl*/) override {
@@ -355,6 +356,15 @@ public:
         eptr = nullptr; // errors go through m_error, not through exceptions
         if (canceled || !m_panel) return;
 
+        // The panel rebuilt its UI for a different printer while this job
+        // was running. Every widget written to below has been destroyed by
+        // now, so drop the result instead of reaching into freed memory.
+        if (m_generation != m_panel->m_ui_generation) {
+            BOOST_LOG_TRIVIAL(info) << "KaitenTelemetryJob: result dropped, "
+                                       "the UI was rebuilt while the job ran.";
+            return;
+        }
+
         // Write the session back, even on error below - otherwise
         // a freshly opened session is lost on the next tick and we
         // reconnect on every tick.
@@ -395,6 +405,7 @@ private:
     std::unique_ptr<PrintHost>      m_host;
     std::shared_ptr<KaitenSession>  m_session;
     bool m_capability_checked_in;
+    uint64_t m_generation           = 0;
     bool m_capability_checked_out   = false;
     double m_z_offset_max           = 2.0;
     double m_z_offset_value         = 0.0;
@@ -652,6 +663,22 @@ MBDeviceCategory MakerbotDevicePanel::category_for_config(const DynamicPrintConf
 // actually make sense for the active category.
 // -----------------------------------------------------------------------------------------
 void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config) {
+    // Guard against re-entry: a nested rebuild would destroy the widget
+    // tree the outer call is still working on.
+    if (m_rebuilding_ui) {
+        BOOST_LOG_TRIVIAL(warning) << "MakerbotDevicePanel: nested "
+                                      "update_ui_for_printer() ignored.";
+        return;
+    }
+    m_rebuilding_ui = true;
+    struct RebuildGuard {
+        bool& flag;
+        ~RebuildGuard() { flag = false; }
+    } rebuild_guard{m_rebuilding_ui};
+
+    // Invalidates every result a background job is about to deliver.
+    ++m_ui_generation;
+
     m_active_config = &config;
     m_category = category_for_config(config);
 
@@ -669,6 +696,19 @@ void MakerbotDevicePanel::update_ui_for_printer(const DynamicPrintConfig& config
     m_btn_unload_fil = nullptr;
     m_btn_start_print = nullptr;
     m_progress_donut = nullptr;
+    // Clear(true) destroyed these as well. Leaving the pointers set makes
+    // every null check in update_telemetry_ui() and set_extruder_info()
+    // pass, and turns the next SetLabel() into a call through a freed
+    // vtable - the segfault this patch is about.
+    m_extruder_info_sizer        = nullptr;
+    m_lbl_extruder_1             = nullptr;
+    m_lbl_extruder_type          = nullptr;
+    m_lbl_extruder_2             = nullptr;
+    m_lbl_telemetry_temp         = nullptr;
+    m_lbl_telemetry_temp_chamber = nullptr;
+    m_lbl_telemetry_status       = nullptr;
+    m_lbl_telemetry_progress     = nullptr;
+    m_lbl_time_remaining         = nullptr;
 
     // An open session belongs to the PREVIOUS printer - otherwise we would
     // silently keep talking to the old host after a printer switch
@@ -1375,8 +1415,13 @@ void MakerbotDevicePanel::stop_telemetry_polling() {
         // calls close() automatically on THE thread that holds the last
         // reference - never at the same time as a still
         // running call() on the worker thread.
+        //
+        // No wait_for_idle(): it pumps the worker's pending messages on the
+        // GUI thread, so a telemetry result from the previous printer lands
+        // in a UI that is being torn down - the segfault in
+        // update_telemetry_ui(). Nothing is lost by not waiting; a late
+        // result is dropped by the generation check in finalize().
         m_kaiten_worker->cancel_all();
-        m_kaiten_worker->wait_for_idle(2000);
     }
     m_kaiten_session.reset();
 }
