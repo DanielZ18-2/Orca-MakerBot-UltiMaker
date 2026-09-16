@@ -1,6 +1,6 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.08.18",
+    "version": "01.00.08.19",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
@@ -87,6 +87,14 @@
         }
     ],
     "process_list": [
+        {
+            "name": "fdm_process_common",
+            "sub_path": "process/fdm_process_common.json"
+        },
+        {
+            "name": "fdm_process_ultimaker_common",
+            "sub_path": "process/fdm_process_ultimaker_common.json"
+        },
         {
             "name": "0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle",
             "sub_path": "process/Factor/0.05mm Extra Fine @UltiMaker Factor 4 0.25 nozzle.json"
@@ -1574,17 +1582,17 @@
         {
             "name": "0.64mm Coarse @UltiMaker S8 0.8 nozzle",
             "sub_path": "process/SSERIES/0.64mm Coarse @UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "fdm_process_common",
-            "sub_path": "process/fdm_process_common.json"
-        },
-        {
-            "name": "fdm_process_ultimaker_common",
-            "sub_path": "process/fdm_process_ultimaker_common.json"
         }
     ],
     "filament_list": [
+        {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_abs",
+            "sub_path": "filament/fdm_filament_abs.json"
+        },
         {
             "name": "Generic ABS @UltiMaker 2",
             "sub_path": "filament/Classic/Generic ABS @UltiMaker 2.json"
@@ -1674,6 +1682,10 @@
             "sub_path": "filament/Method/Generic ABS-R @UltiMaker Method XL.json"
         },
         {
+            "name": "fdm_filament_asa",
+            "sub_path": "filament/fdm_filament_asa.json"
+        },
+        {
             "name": "Generic ASA @UltiMaker 2",
             "sub_path": "filament/Classic/Generic ASA @UltiMaker 2.json"
         },
@@ -1750,6 +1762,10 @@
             "sub_path": "filament/SSERIES/Generic ASA @UltiMaker S8.json"
         },
         {
+            "name": "fdm_filament_bvoh",
+            "sub_path": "filament/fdm_filament_bvoh.json"
+        },
+        {
             "name": "Generic BVOH @UltiMaker 3",
             "sub_path": "filament/Classic/Generic BVOH @UltiMaker 3.json"
         },
@@ -1780,6 +1796,10 @@
         {
             "name": "Generic BVOH @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic BVOH @UltiMaker S8.json"
+        },
+        {
+            "name": "fdm_filament_cope",
+            "sub_path": "filament/fdm_filament_cope.json"
         },
         {
             "name": "Generic CoPE @UltiMaker 2",
@@ -1860,6 +1880,10 @@
         {
             "name": "Generic CoPE @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic CoPE @UltiMaker S8.json"
+        },
+        {
+            "name": "fdm_filament_pa",
+            "sub_path": "filament/fdm_filament_pa.json"
         },
         {
             "name": "Generic PA @UltiMaker 2",
@@ -1958,6 +1982,10 @@
             "sub_path": "filament/Method/Generic PA-CF @UltiMaker Method XL.json"
         },
         {
+            "name": "fdm_filament_pet",
+            "sub_path": "filament/fdm_filament_pet.json"
+        },
+        {
             "name": "Generic PETG @UltiMaker 2",
             "sub_path": "filament/Classic/Generic PETG @UltiMaker 2.json"
         },
@@ -2036,6 +2064,10 @@
         {
             "name": "Generic PETG @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic PETG @UltiMaker S8.json"
+        },
+        {
+            "name": "fdm_filament_pla",
+            "sub_path": "filament/fdm_filament_pla.json"
         },
         {
             "name": "Generic PLA @UltiMaker 2",
@@ -2118,6 +2150,10 @@
             "sub_path": "filament/SSERIES/Generic PLA @UltiMaker S8.json"
         },
         {
+            "name": "fdm_filament_pla_silk",
+            "sub_path": "filament/fdm_filament_pla_silk.json"
+        },
+        {
             "name": "Generic PLA Silk @UltiMaker 2",
             "sub_path": "filament/Classic/Generic PLA Silk @UltiMaker 2.json"
         },
@@ -2198,6 +2234,10 @@
             "sub_path": "filament/SSERIES/Generic PLA Silk @UltiMaker S8.json"
         },
         {
+            "name": "fdm_filament_pp",
+            "sub_path": "filament/fdm_filament_pp.json"
+        },
+        {
             "name": "Generic PP @UltiMaker 2",
             "sub_path": "filament/Classic/Generic PP @UltiMaker 2.json"
         },
@@ -2260,6 +2300,10 @@
         {
             "name": "Generic PP @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic PP @UltiMaker S8.json"
+        },
+        {
+            "name": "fdm_filament_pva",
+            "sub_path": "filament/fdm_filament_pva.json"
         },
         {
             "name": "Generic PVA @UltiMaker 3",
@@ -2334,6 +2378,10 @@
             "sub_path": "filament/Method/Generic SR-30 @UltiMaker Method XL.json"
         },
         {
+            "name": "fdm_filament_tpu",
+            "sub_path": "filament/fdm_filament_tpu.json"
+        },
+        {
             "name": "Generic TPU @UltiMaker 2",
             "sub_path": "filament/Classic/Generic TPU @UltiMaker 2.json"
         },
@@ -2396,57 +2444,17 @@
         {
             "name": "Generic TPU @UltiMaker S8",
             "sub_path": "filament/SSERIES/Generic TPU @UltiMaker S8.json"
-        },
-        {
-            "name": "fdm_filament_abs",
-            "sub_path": "filament/fdm_filament_abs.json"
-        },
-        {
-            "name": "fdm_filament_asa",
-            "sub_path": "filament/fdm_filament_asa.json"
-        },
-        {
-            "name": "fdm_filament_bvoh",
-            "sub_path": "filament/fdm_filament_bvoh.json"
-        },
-        {
-            "name": "fdm_filament_common",
-            "sub_path": "filament/fdm_filament_common.json"
-        },
-        {
-            "name": "fdm_filament_cope",
-            "sub_path": "filament/fdm_filament_cope.json"
-        },
-        {
-            "name": "fdm_filament_pa",
-            "sub_path": "filament/fdm_filament_pa.json"
-        },
-        {
-            "name": "fdm_filament_pet",
-            "sub_path": "filament/fdm_filament_pet.json"
-        },
-        {
-            "name": "fdm_filament_pla",
-            "sub_path": "filament/fdm_filament_pla.json"
-        },
-        {
-            "name": "fdm_filament_pla_silk",
-            "sub_path": "filament/fdm_filament_pla_silk.json"
-        },
-        {
-            "name": "fdm_filament_pp",
-            "sub_path": "filament/fdm_filament_pp.json"
-        },
-        {
-            "name": "fdm_filament_pva",
-            "sub_path": "filament/fdm_filament_pva.json"
-        },
-        {
-            "name": "fdm_filament_tpu",
-            "sub_path": "filament/fdm_filament_tpu.json"
         }
     ],
     "machine_list": [
+        {
+            "name": "fdm_machine_common",
+            "sub_path": "machine/fdm_machine_common.json"
+        },
+        {
+            "name": "fdm_ultimaker_common",
+            "sub_path": "machine/fdm_ultimaker_common.json"
+        },
         {
             "name": "UltiMaker 2 0.25 nozzle",
             "sub_path": "machine/UltiMaker 2 0.25 nozzle.json"
@@ -2462,6 +2470,10 @@
         {
             "name": "UltiMaker 2 0.8 nozzle",
             "sub_path": "machine/UltiMaker 2 0.8 nozzle.json"
+        },
+        {
+            "name": "fdm_ultimaker_classic_common",
+            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
         },
         {
             "name": "UltiMaker 2 Extended 0.25 nozzle",
@@ -2568,6 +2580,10 @@
             "sub_path": "machine/Classic/UltiMaker 3 Extended 0.8 nozzle.json"
         },
         {
+            "name": "fdm_ultimaker_factor_common",
+            "sub_path": "machine/Factor/fdm_ultimaker_factor_common.json"
+        },
+        {
             "name": "UltiMaker Factor 4 0.25 nozzle",
             "sub_path": "machine/Factor/UltiMaker Factor 4 0.25 nozzle.json"
         },
@@ -2592,6 +2608,10 @@
             "sub_path": "machine/Factor/UltiMaker Factor 4+ 0.6 nozzle.json"
         },
         {
+            "name": "fdm_ultimaker_method_common",
+            "sub_path": "machine/Method/fdm_ultimaker_method_common.json"
+        },
+        {
             "name": "UltiMaker Method 0.4 nozzle",
             "sub_path": "machine/Method/UltiMaker Method 0.4 nozzle.json"
         },
@@ -2614,6 +2634,10 @@
         {
             "name": "UltiMaker Original+ 0.4 nozzle",
             "sub_path": "machine/Classic/UltiMaker Original+ 0.4 nozzle.json"
+        },
+        {
+            "name": "fdm_ultimaker_sseries_common",
+            "sub_path": "machine/SSERIES/fdm_ultimaker_sseries_common.json"
         },
         {
             "name": "UltiMaker S3 0.25 nozzle",
@@ -2678,30 +2702,6 @@
         {
             "name": "UltiMaker S8 0.8 nozzle",
             "sub_path": "machine/SSERIES/UltiMaker S8 0.8 nozzle.json"
-        },
-        {
-            "name": "fdm_machine_common",
-            "sub_path": "machine/fdm_machine_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_classic_common",
-            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_common",
-            "sub_path": "machine/fdm_ultimaker_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_factor_common",
-            "sub_path": "machine/Factor/fdm_ultimaker_factor_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_method_common",
-            "sub_path": "machine/Method/fdm_ultimaker_method_common.json"
-        },
-        {
-            "name": "fdm_ultimaker_sseries_common",
-            "sub_path": "machine/SSERIES/fdm_ultimaker_sseries_common.json"
         }
     ]
 }

@@ -1,6 +1,6 @@
 {
     "name": "MakerBot",
-    "version": "01.00.12.19",
+    "version": "01.00.12.20",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "MakerBot configurations",
@@ -2070,6 +2070,14 @@
     ],
     "filament_list": [
         {
+            "name": "fdm_filament_common",
+            "sub_path": "filament/fdm_filament_common.json"
+        },
+        {
+            "name": "fdm_filament_abs",
+            "sub_path": "filament/fdm_filament_abs.json"
+        },
+        {
             "name": "Generic ABS @MakerBot Cupcake CNC",
             "sub_path": "filament/Legacy/Generic ABS @MakerBot Cupcake CNC.json"
         },
@@ -2146,6 +2154,10 @@
             "sub_path": "filament/Birdwing/Generic ABS-R @MakerBot Replicator Z18.json"
         },
         {
+            "name": "fdm_filament_asa",
+            "sub_path": "filament/fdm_filament_asa.json"
+        },
+        {
             "name": "Generic ASA @MakerBot Method X",
             "sub_path": "filament/Lava/Generic ASA @MakerBot Method X.json"
         },
@@ -2178,12 +2190,20 @@
             "sub_path": "filament/Birdwing/Generic ASA @MakerBot Replicator+.json"
         },
         {
+            "name": "fdm_filament_bvoh",
+            "sub_path": "filament/fdm_filament_bvoh.json"
+        },
+        {
             "name": "Generic BVOH @MakerBot Replicator 2X",
             "sub_path": "filament/Legacy/Generic BVOH @MakerBot Replicator 2X.json"
         },
         {
             "name": "Generic BVOH @MakerBot Replicator Original Dual",
             "sub_path": "filament/Legacy/Generic BVOH @MakerBot Replicator Original Dual.json"
+        },
+        {
+            "name": "fdm_filament_cope",
+            "sub_path": "filament/fdm_filament_cope.json"
         },
         {
             "name": "Generic CoPE @MakerBot Cupcake CNC",
@@ -2290,6 +2310,10 @@
             "sub_path": "filament/Legacy/Generic HIPS @MakerBot Thing-O-Matic Acrylic.json"
         },
         {
+            "name": "fdm_filament_pa",
+            "sub_path": "filament/fdm_filament_pa.json"
+        },
+        {
             "name": "Generic PA @MakerBot Cupcake CNC",
             "sub_path": "filament/Legacy/Generic PA @MakerBot Cupcake CNC.json"
         },
@@ -2366,6 +2390,10 @@
             "sub_path": "filament/Lava/Generic PA-CF @MakerBot Method XL.json"
         },
         {
+            "name": "fdm_filament_pet",
+            "sub_path": "filament/fdm_filament_pet.json"
+        },
+        {
             "name": "Generic PETG @MakerBot Cupcake CNC",
             "sub_path": "filament/Legacy/Generic PETG @MakerBot Cupcake CNC.json"
         },
@@ -2428,6 +2456,10 @@
         {
             "name": "Generic PETG @MakerBot Thing-O-Matic Acrylic",
             "sub_path": "filament/Legacy/Generic PETG @MakerBot Thing-O-Matic Acrylic.json"
+        },
+        {
+            "name": "fdm_filament_pla",
+            "sub_path": "filament/fdm_filament_pla.json"
         },
         {
             "name": "Generic PLA @MakerBot Cupcake CNC",
@@ -2506,6 +2538,10 @@
             "sub_path": "filament/Legacy/Generic PLA @MakerBot Thing-O-Matic Acrylic.json"
         },
         {
+            "name": "fdm_filament_pla_silk",
+            "sub_path": "filament/fdm_filament_pla_silk.json"
+        },
+        {
             "name": "Generic PLA Silk @MakerBot Method",
             "sub_path": "filament/Lava/Generic PLA Silk @MakerBot Method.json"
         },
@@ -2552,6 +2588,10 @@
         {
             "name": "Generic PLA Silk @MakerBot Sketch Sprint",
             "sub_path": "filament/Sketch/Generic PLA Silk @MakerBot Sketch Sprint.json"
+        },
+        {
+            "name": "fdm_filament_pva",
+            "sub_path": "filament/fdm_filament_pva.json"
         },
         {
             "name": "Generic PVA @MakerBot Method",
@@ -2602,6 +2642,10 @@
             "sub_path": "filament/Lava/Generic SR-30 @MakerBot Method XL.json"
         },
         {
+            "name": "fdm_filament_tpu",
+            "sub_path": "filament/fdm_filament_tpu.json"
+        },
+        {
             "name": "Generic TPU @MakerBot Cupcake CNC",
             "sub_path": "filament/Legacy/Generic TPU @MakerBot Cupcake CNC.json"
         },
@@ -2648,50 +2692,6 @@
         {
             "name": "Generic TPU @MakerBot Thing-O-Matic Acrylic",
             "sub_path": "filament/Legacy/Generic TPU @MakerBot Thing-O-Matic Acrylic.json"
-        },
-        {
-            "name": "fdm_filament_abs",
-            "sub_path": "filament/fdm_filament_abs.json"
-        },
-        {
-            "name": "fdm_filament_asa",
-            "sub_path": "filament/fdm_filament_asa.json"
-        },
-        {
-            "name": "fdm_filament_bvoh",
-            "sub_path": "filament/fdm_filament_bvoh.json"
-        },
-        {
-            "name": "fdm_filament_common",
-            "sub_path": "filament/fdm_filament_common.json"
-        },
-        {
-            "name": "fdm_filament_cope",
-            "sub_path": "filament/fdm_filament_cope.json"
-        },
-        {
-            "name": "fdm_filament_pa",
-            "sub_path": "filament/fdm_filament_pa.json"
-        },
-        {
-            "name": "fdm_filament_pet",
-            "sub_path": "filament/fdm_filament_pet.json"
-        },
-        {
-            "name": "fdm_filament_pla",
-            "sub_path": "filament/fdm_filament_pla.json"
-        },
-        {
-            "name": "fdm_filament_pla_silk",
-            "sub_path": "filament/fdm_filament_pla_silk.json"
-        },
-        {
-            "name": "fdm_filament_pva",
-            "sub_path": "filament/fdm_filament_pva.json"
-        },
-        {
-            "name": "fdm_filament_tpu",
-            "sub_path": "filament/fdm_filament_tpu.json"
         }
     ],
     "machine_list": [
