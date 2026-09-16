@@ -5620,7 +5620,11 @@ void GUI_App::check_new_version_sf(bool show_tips, int by_user)
     auto version_check_url = app_config->version_check_url();
 
     UpdaterQuery query{
-        detect_updater_iid(app_config),
+        // No installation id. The endpoint this fork queries is a public
+        // GitHub URL that needs no identification, and sending a stable id
+        // would let a third party count and recognise installations of a
+        // build it did not publish. build_updater_query() drops empty values.
+        std::string{},
         detect_updater_version(),
         detect_updater_os(),
         detect_updater_arch(),

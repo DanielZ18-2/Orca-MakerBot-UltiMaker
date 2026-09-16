@@ -248,7 +248,11 @@ TroubleshootDialog::TroubleshootDialog()
             return out;
         };
 
-        wxString url = "https://github.com/OrcaSlicer/OrcaSlicer/issues/new?template=bug_report.yml";
+        // Bug reports belong to the fork that produced this build. Sending
+        // users of an unofficial build to the upstream issue tracker burdens
+        // a project that cannot reproduce the problem and did not ship the
+        // version in question.
+        wxString url = "https://github.com/DanielZ18-2/Orca-MakerBot-UltiMaker/issues/new?labels=bug";
         wxString os = GetOStype();
         if(!os.IsEmpty())
             url += "&os_type=%22" + os +"%22";

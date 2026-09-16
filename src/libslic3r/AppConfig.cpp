@@ -40,8 +40,20 @@ using namespace nlohmann;
 
 namespace Slic3r {
 
-static const std::string VERSION_CHECK_URL = "https://check-version.orcaslicer.com/latest";
-static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.com/profile";
+// This is an independent fork. It publishes its own releases and must not
+// query - or report to - the upstream OrcaSlicer update service: that service
+// would answer with upstream versions, and every request carries this
+// installation's details to a project that did not build this binary.
+//
+// GitHub's releases endpoint serves exactly the JSON the version check already
+// parses (tag_name, prerelease, html_url, body), so no parsing change is needed.
+// The list form is used on purpose: it also surfaces pre-releases, which is what
+// a test series needs.
+static const std::string VERSION_CHECK_URL = "https://api.github.com/repos/DanielZ18-2/Orca-MakerBot-UltiMaker/releases";
+// Profile bundles ship with the application; the vendor check has never
+// succeeded against the upstream service. Pointing it at the same endpoint
+// keeps it harmless and stops the data from leaving for a third party.
+static const std::string PROFILE_UPDATE_URL = "https://api.github.com/repos/DanielZ18-2/Orca-MakerBot-UltiMaker/releases";
 static const std::string MODELS_STR = "models";
 
 const std::string AppConfig::SECTION_FILAMENTS = "filaments";
