@@ -311,7 +311,15 @@ AboutDialog::AboutDialog()
 
     copyright_hor_sizer->Add(copyright_ver_sizer, 0, wxLEFT, FromDIP(20));
 
-    wxStaticText *html_text = new wxStaticText(this, wxID_ANY, "Copyright(C) 2026 OrcaSlicer Pte Ltd All Rights Reserved", wxDefaultPosition, wxDefaultSize);
+    // Name this build for what it is. Without these two lines the dialog
+    // offers the upstream project as the only origin and the only address
+    // to turn to, for a binary that project neither built nor supports.
+    // The upstream copyright notice stays: the code is theirs.
+    const wxString about_origin =
+        _L("Unofficial fork for MakerBot and UltiMaker - not affiliated with the OrcaSlicer project.")
+        + "\n" + "github.com/DanielZ18-2/Orca-MakerBot-UltiMaker"
+        + "\n" + "Copyright(C) 2026 OrcaSlicer Pte Ltd All Rights Reserved";
+    wxStaticText *html_text = new wxStaticText(this, wxID_ANY, about_origin, wxDefaultPosition, wxDefaultSize);
     html_text->SetForegroundColour(wxColour(107, 107, 107));
 
     copyright_ver_sizer->Add(html_text, 0, wxALL , 0);
