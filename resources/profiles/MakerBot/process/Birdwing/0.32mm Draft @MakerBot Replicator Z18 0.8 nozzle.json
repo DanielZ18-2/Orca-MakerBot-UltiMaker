@@ -22,7 +22,7 @@
     "top_surface_line_width": "0.80",
     "support_line_width": "0.76",
     "initial_layer_line_width": "0.88",
-    "outer_wall_speed": "40",
+    "outer_wall_speed": "49",
     "inner_wall_speed": "49",
     "travel_speed": "150",
     "bridge_speed": "15",
