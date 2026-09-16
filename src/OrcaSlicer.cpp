@@ -1654,7 +1654,11 @@ int CLI::run(int argc, char **argv)
                         BOOST_LOG_TRIVIAL(info) << "object "<<o->name <<", id :" << o->id().id << ", from bbl 3mf\n";
                     }*/
 
-                    Semver cli_ver = *Semver::parse(SoftFever_VERSION);
+                    // Never dereference the optional unchecked: an application
+                    // version string semver cannot parse would crash here on
+                    // every 3MF. A zero version fails closed instead.
+                    const auto cli_ver_parsed = Semver::parse(SoftFever_VERSION);
+                    Semver cli_ver = cli_ver_parsed ? *cli_ver_parsed : Semver(0, 0, 0);
                     if (!allow_newer_file && ((cli_ver.maj() < file_version.maj()) || ((cli_ver.maj() == file_version.maj()) && (cli_ver.min() < file_version.min())))){
                         BOOST_LOG_TRIVIAL(error) << boost::format("Version Check: File Version %1% not supported by current cli version %2%")%file_version.to_string() %SoftFever_VERSION;
                         record_exit_reson(outfile_dir, CLI_FILE_VERSION_NOT_SUPPORTED, 0, cli_errors[CLI_FILE_VERSION_NOT_SUPPORTED], sliced_info);

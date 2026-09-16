@@ -6563,7 +6563,12 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                         load_type  = static_cast<LoadType>(std::stoi(import_project_action));
 
                     // BBS: version check
-                    Semver app_version = *(Semver::parse(SoftFever_VERSION));
+                    // Never dereference the optional unchecked: an application
+                    // version string semver cannot parse would crash on every
+                    // 3MF import.
+                    const auto app_version_parsed = Semver::parse(SoftFever_VERSION);
+                    Semver app_version = app_version_parsed ? *app_version_parsed
+                                                            : Semver(0, 0, 0);
                     const wxString load_3mf_title              = _L("Load 3MF");
                     const wxString newer_3mf_title             = _L("Newer 3MF version");
                     const wxString bambu_project_title         = _L("BambuStudio Project");
