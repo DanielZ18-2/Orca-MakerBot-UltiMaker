@@ -100,7 +100,7 @@ std::string GCodeWriter::preamble()
         FLAVOR_IS(gcfMakerBotLegacy) ||
         FLAVOR_IS(gcfMakerBotBirdwing) ||
         FLAVOR_IS(gcfMakerBotLava) ||
-        FLAVOR_IS(gcfUltiGCode))
+        FLAVOR_IS(gcfGriffin))
     {
         if (this->config.use_relative_e_distances) {
             gcode << "M83 ; use relative distances for extrusion\n";

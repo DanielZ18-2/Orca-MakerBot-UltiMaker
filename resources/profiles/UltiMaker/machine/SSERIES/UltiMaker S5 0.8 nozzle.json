@@ -6,7 +6,7 @@
     "inherits": "fdm_ultimaker_sseries_common",
     "from": "system",
     "instantiation": "true",
-    "gcode_flavor": "ultigcode",
+    "gcode_flavor": "griffin",
     "printer_model": "UltiMaker S5",
     "printer_variant": "0.8",
     "default_print_profile": "0.32mm Draft @UltiMaker S5 0.8 nozzle",

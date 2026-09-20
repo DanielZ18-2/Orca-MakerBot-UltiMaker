@@ -64,9 +64,9 @@ std::string get_archive_extension(GCodeFlavor flavor)
     case gcfMakerBotBirdwing:
     case gcfMakerBotLava:   return ".makerbot";
     case gcfMakerBotLegacy: return ".gcode";
-    // gcfUltiGCode (.ufp) is handled entirely by UltimakerUFPExport - this
+    // gcfGriffin (.ufp) is handled entirely by UltimakerUFPExport - this
     // module is MakerBot-only. Never dispatched here in practice
-    // (BackgroundSlicingProcess.cpp routes gcfUltiGCode straight to
+    // (BackgroundSlicingProcess.cpp routes gcfGriffin straight to
     // UltimakerUFPExport::pack_to_archive).
     default:                return ".gcode";
     }

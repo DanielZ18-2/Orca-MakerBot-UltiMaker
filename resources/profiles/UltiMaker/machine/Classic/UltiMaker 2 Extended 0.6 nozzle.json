@@ -6,7 +6,7 @@
     "inherits": "fdm_ultimaker_classic_common",
     "from": "system",
     "instantiation": "true",
-    "gcode_flavor": "ultigcode",
+    "gcode_flavor": "griffin",
     "printer_model": "UltiMaker 2 Extended",
     "printer_variant": "0.6",
     "default_print_profile": "0.28mm Draft @UltiMaker 2 Extended 0.6 nozzle",

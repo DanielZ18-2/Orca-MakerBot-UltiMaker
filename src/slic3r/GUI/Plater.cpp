@@ -442,8 +442,8 @@ static bool smart_extruder_is_lava_or_method(const DynamicPrintConfig& cfg)
     const std::string id = smart_extruder_identity_from_config(cfg);
     if (printer_model_looks_like_sketch(id)) return false;
     // gcfMakerBotLava + "method"-Name = MakerBot Method/X/XL
-    // gcfUltiGCode  + "method"-Name   = UltiMaker Method X CF
-    // gcfUltiGCode  without "method"   = UltiMaker Classic/S/Factor -> NO smart extruder
+    // gcfGriffin  + "method"-Name   = UltiMaker Method X CF
+    // gcfGriffin  without "method"   = UltiMaker Classic/S/Factor -> NO smart extruder
     // The vendor check now lives in printer_model_looks_like_method, so the
     // name test alone is enough. The flavor stays as a second, independent
     // path: a printer on gcfMakerBotLava is a Lava machine whatever it is
@@ -4265,7 +4265,7 @@ bool Sidebar::should_show_SEMM_buttons()
     if (const auto *_f = cfg.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor")) {
         const auto _fl = _f->value;
         if (_fl == gcfMakerBotLegacy   || _fl == gcfMakerBotBirdwing ||
-            _fl == gcfMakerBotLava      || _fl == gcfUltiGCode)
+            _fl == gcfMakerBotLava      || _fl == gcfGriffin)
             return false;
     }
 
@@ -15657,14 +15657,14 @@ void Plater::export_gcode(bool prefer_removable)
                         // lineage, exported as plain .gcode + GPX-converted .x3g.
                         _gcf_val = gcfMakerBotLegacy;
                     else if (_pn.find("UltiMaker") != std::string::npos)
-                        _gcf_val = gcfUltiGCode;
+                        _gcf_val = gcfGriffin;
                 }
             }
         }
         const wxString _wildcards =
             (_gcf_val == gcfMakerBotBirdwing || _gcf_val == gcfMakerBotLava)
                 ? _L("MakerBot Archive (*.makerbot)|*.makerbot|G-code (*.gcode)|*.gcode")
-            : (_gcf_val == gcfUltiGCode)
+            : (_gcf_val == gcfGriffin)
                 ? _L("UltiMaker File Package (*.ufp)|*.ufp|G-code (*.gcode)|*.gcode")
             : (_gcf_val == gcfMakerBotLegacy)
                 ? _L("X3G File (*.x3g)|*.x3g|G-code (*.gcode)|*.gcode")
@@ -15672,7 +15672,7 @@ void Plater::export_gcode(bool prefer_removable)
         const wxString _dlg_title =
             (_gcf_val == gcfMakerBotBirdwing || _gcf_val == gcfMakerBotLava)
                 ? _L("Save MakerBot archive as:")
-            : (_gcf_val == gcfUltiGCode)
+            : (_gcf_val == gcfGriffin)
                 ? _L("Save UltiMaker file as:")
             : (_gcf_val == gcfMakerBotLegacy)
                 ? _L("Save X3G file as:")
@@ -15681,7 +15681,7 @@ void Plater::export_gcode(bool prefer_removable)
         fs::path _out_file = default_output_file;
         if (_gcf_val == gcfMakerBotBirdwing || _gcf_val == gcfMakerBotLava)
             _out_file = _out_file.parent_path() / (_out_file.stem().string() + ".makerbot");
-        else if (_gcf_val == gcfUltiGCode)
+        else if (_gcf_val == gcfGriffin)
             _out_file = _out_file.parent_path() / (_out_file.stem().string() + ".ufp");
         else if (_gcf_val == gcfMakerBotLegacy)
             _out_file = _out_file.parent_path() / (_out_file.stem().string() + ".x3g");
@@ -16907,7 +16907,7 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
     // so the standalone G-code is generated and then packed into the native archive.
     const auto* _gcf0 = physical_printer_config->option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
     const GCodeFlavor _flavor0 = _gcf0 ? _gcf0->value : gcfMarlinLegacy;
-    const bool _is_native_archive = (_flavor0 == gcfMakerBotBirdwing || _flavor0 == gcfMakerBotLava || _flavor0 == gcfUltiGCode);
+    const bool _is_native_archive = (_flavor0 == gcfMakerBotBirdwing || _flavor0 == gcfMakerBotLava || _flavor0 == gcfGriffin);
     const bool  use_3mf     = (use_3mf_opt != nullptr && use_3mf_opt->value) || _is_native_archive;
 
     upload_job.upload_data.use_3mf = use_3mf;
@@ -16943,7 +16943,7 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         const GCodeFlavor _flavor = _gcf ? _gcf->value : gcfMarlinLegacy;
         if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
             default_output_file.replace_extension(".makerbot");
-        else if (_flavor == gcfUltiGCode)
+        else if (_flavor == gcfGriffin)
             default_output_file.replace_extension(".ufp");
     }
 
@@ -17137,14 +17137,14 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
             std::string _archive;
             if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava)
                 _archive = MakerBotExport::pack_to_archive(_gcode, _cfg);
-            else if (_flavor == gcfUltiGCode)
+            else if (_flavor == gcfGriffin)
                 _archive = UltimakerUFPExport::pack_to_archive(_gcode, _cfg);
             if (!_archive.empty()) {
                 upload_job.upload_data.source_path = _archive;
                 BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker upload: packed native archive -> "
                                         << _archive;
             } else if (_flavor == gcfMakerBotBirdwing || _flavor == gcfMakerBotLava
-                       || _flavor == gcfUltiGCode) {
+                       || _flavor == gcfGriffin) {
                 show_error(this, _L("Failed to build the native printer archive. Please slice again."), false);
                 return;
             }

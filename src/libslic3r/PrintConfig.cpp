@@ -181,7 +181,7 @@ static t_config_enum_values s_keys_map_GCodeFlavor {
     { "makerbot_legacy",   gcfMakerBotLegacy   },
     { "makerbot_birdwing", gcfMakerBotBirdwing },
     { "makerbot_lava",     gcfMakerBotLava     },
-    { "ultigcode",         gcfUltiGCode        }
+    { "griffin",           gcfGriffin        }
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(GCodeFlavor)
 
@@ -3936,11 +3936,11 @@ void PrintConfigDef::init_fff_params()
     def->enum_values.push_back("makerbot_legacy");
     def->enum_values.push_back("makerbot_birdwing");
     def->enum_values.push_back("makerbot_lava");
-    def->enum_values.push_back("ultigcode");
+    def->enum_values.push_back("griffin");
     def->enum_labels.push_back(L("MakerBot Legacy (.x3g)"));
     def->enum_labels.push_back(L("MakerBot Birdwing (.makerbot)"));
     def->enum_labels.push_back(L("MakerBot Lava / Method (.makerbot)"));
-    def->enum_labels.push_back(L("UltiGCode (.ufp)"));
+    def->enum_labels.push_back(L("Griffin (.ufp)"));
     //def->enum_labels.push_back("RepRap/Sprinter");
     //def->enum_labels.push_back("Teacup");
     //def->enum_labels.push_back("MakerWare (MakerBot)");

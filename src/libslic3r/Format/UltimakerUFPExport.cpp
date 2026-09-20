@@ -28,7 +28,7 @@ using namespace GCodeArchiveUtils;
 
 std::string get_archive_extension(GCodeFlavor flavor)
 {
-    return flavor == gcfUltiGCode ? ".ufp" : ".gcode";
+    return flavor == gcfGriffin ? ".ufp" : ".gcode";
 }
 
 // ── Internal: minimal, UltiMaker-eigener G-code-Header-Parser ──────────────
@@ -307,7 +307,7 @@ static std::string build_ufp_model_rels_xml()
 
 std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {
-    if (config.gcode_flavor != gcfUltiGCode)
+    if (config.gcode_flavor != gcfGriffin)
         return {}; // not our flavor - nothing to do
 
     namespace fs = boost::filesystem;

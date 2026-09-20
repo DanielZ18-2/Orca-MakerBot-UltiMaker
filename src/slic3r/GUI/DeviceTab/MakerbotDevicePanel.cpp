@@ -652,7 +652,7 @@ MBDeviceCategory MakerbotDevicePanel::category_for_config(const DynamicPrintConf
     switch (gcf) {
         case gcfMakerBotBirdwing: return MBDeviceCategory::Birdwing;
         case gcfMakerBotLava:     return MBDeviceCategory::Lava;
-        case gcfUltiGCode:        return MBDeviceCategory::UltiMaker;
+        case gcfGriffin:        return MBDeviceCategory::UltiMaker;
         case gcfMakerBotLegacy:
         default:                  return MBDeviceCategory::Legacy;
     }

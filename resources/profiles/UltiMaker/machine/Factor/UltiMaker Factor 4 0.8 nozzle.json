@@ -6,7 +6,7 @@
     "inherits": "fdm_ultimaker_factor_common",
     "from": "system",
     "instantiation": "true",
-    "gcode_flavor": "ultigcode",
+    "gcode_flavor": "griffin",
     "printer_model": "UltiMaker Factor 4",
     "printer_variant": "0.8",
     "default_print_profile": "0.40mm Standard @UltiMaker Factor 4 0.8 nozzle",

@@ -48,7 +48,7 @@ enum GCodeFlavor : unsigned char {
     gcfMakerBotLegacy,    // Replicator 1/2/2X  → .x3g (GPX)
     gcfMakerBotBirdwing,  // Replicator+/Z18/5thGen → .makerbot (JSON-toolpath)
     gcfMakerBotLava,      // Method/Method X/XL + Sketch → .makerbot (print.gcode)
-    gcfUltiGCode          // UltiMaker Classic/S/Factor → .ufp
+    gcfGriffin            // UltiMaker 2+ Connect/3/S3/S5/S7/Factor 4 → .ufp
 };
 
 

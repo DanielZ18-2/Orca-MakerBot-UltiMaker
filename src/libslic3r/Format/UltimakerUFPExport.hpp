@@ -28,7 +28,7 @@
 // (plugins/UFPWriter/UFPWriter.py), as published on GitHub (checked against
 // the "Cura 5.12" / current master branch, June 2026).
 //
-// Output: gcfUltiGCode → .ufp (OPC ZIP: 3D/model.gcode incl. Griffin header,
+// Output: gcfGriffin → .ufp (OPC ZIP: 3D/model.gcode incl. Griffin header,
 //                                Metadata/thumbnail.png, Cura/slicemetadata.json)
 //
 // The original .gcode file is removed after successful archive creation
@@ -50,7 +50,7 @@ std::string get_archive_extension(GCodeFlavor flavor);
 // config     : full print config (used for printer model, temperatures, etc.)
 //
 // Returns the path of the created .ufp archive on success, or an empty
-// string if packing was not needed (flavor isn't gcfUltiGCode) or failed.
+// string if packing was not needed (flavor isn't gcfGriffin) or failed.
 std::string pack_to_archive(const std::string& gcode_path,
                              const PrintConfig& config);
 

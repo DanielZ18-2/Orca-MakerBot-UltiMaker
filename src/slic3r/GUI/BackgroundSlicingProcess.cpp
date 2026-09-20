@@ -838,7 +838,9 @@ void BackgroundSlicingProcess::finalize_gcode()
 			// DEBUG (2026-06-18): unconditional, always logs - tells us exactly what
 			// flavor this dispatch saw at runtime, regardless of which branch (if any)
 			// matches below. Reference: gcfMakerBotLegacy=13, gcfMakerBotBirdwing=14,
-			// gcfMakerBotLava=15, gcfUltiGCode=16 (see PrintConfig.hpp enum order).
+			// gcfMakerBotLava=15, gcfGriffin=16 (see PrintConfig.hpp enum order).
+			// Cheetah and the real UltiGCode will be appended AFTER 16, so
+			// none of the numbers above shift.
 			BOOST_LOG_TRIVIAL(info) << "MakerBot/UltiMaker Fork: finalize_gcode() dispatch sees gcode_flavor="
 				<< (int)_bsp_f2 << " for export_path=" << m_export_path;
 			if (_bsp_f2 == gcfMakerBotBirdwing || _bsp_f2 == gcfMakerBotLava) {
@@ -847,7 +849,7 @@ void BackgroundSlicingProcess::finalize_gcode()
 					BOOST_LOG_TRIVIAL(info) << "MakerBotExport: archive at " << _arch2;
 				else
 					BOOST_LOG_TRIVIAL(warning) << "MakerBotExport: failed for " << export_path;
-			} else if (_bsp_f2 == gcfUltiGCode) {
+			} else if (_bsp_f2 == gcfGriffin) {
 				const std::string _arch2 = UltimakerUFPExport::pack_to_archive(export_path, m_fff_print->config());
 				if (!_arch2.empty())
 					BOOST_LOG_TRIVIAL(info) << "UltimakerUFPExport: archive at " << _arch2;
@@ -922,7 +924,7 @@ void BackgroundSlicingProcess::export_gcode()
 					BOOST_LOG_TRIVIAL(info) << "MakerBotExport: archive created at " << _arch;
 				else
 					BOOST_LOG_TRIVIAL(warning) << "MakerBotExport: failed for " << export_path;
-			} else if (_bsp_f == gcfUltiGCode) {
+			} else if (_bsp_f == gcfGriffin) {
 				const std::string _arch = UltimakerUFPExport::pack_to_archive(export_path, m_fff_print->config());
 				if (!_arch.empty())
 					BOOST_LOG_TRIVIAL(info) << "UltimakerUFPExport: archive created at " << _arch;
