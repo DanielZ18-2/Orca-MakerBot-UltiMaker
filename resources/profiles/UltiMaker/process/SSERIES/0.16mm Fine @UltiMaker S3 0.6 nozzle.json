@@ -1,12 +1,12 @@
 {
     "type": "process",
-    "setting_id": "0.30mm Standard @UltiMaker S3 0.6 nozzle",
-    "name": "0.30mm Standard @UltiMaker S3 0.6 nozzle",
+    "setting_id": "0.16mm Fine @UltiMaker S3 0.6 nozzle",
+    "name": "0.16mm Fine @UltiMaker S3 0.6 nozzle",
     "inherits": "fdm_process_ultimaker_common",
     "from": "system",
     "instantiation": "true",
-    "layer_height": "0.30",
-    "initial_layer_print_height": "0.30",
+    "layer_height": "0.16",
+    "initial_layer_print_height": "0.16",
     "compatible_printers": [
         "UltiMaker S3 0.6 nozzle"
     ],
@@ -28,9 +28,9 @@
     "bridge_speed": "23",
     "sparse_infill_speed": "35",
     "internal_solid_infill_speed": "20",
-    "gap_infill_speed": "32",
+    "gap_infill_speed": "34",
     "top_surface_speed": "20",
-    "support_speed": "46",
+    "support_speed": "48",
     "initial_layer_speed": "20",
     "initial_layer_travel_speed": "100",
     "default_acceleration": "3500",
