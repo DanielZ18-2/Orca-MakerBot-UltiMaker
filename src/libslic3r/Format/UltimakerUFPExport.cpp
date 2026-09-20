@@ -28,7 +28,7 @@ using namespace GCodeArchiveUtils;
 
 std::string get_archive_extension(GCodeFlavor flavor)
 {
-    return flavor == gcfGriffin ? ".ufp" : ".gcode";
+    return (flavor == gcfGriffin || flavor == gcfCheetah) ? ".ufp" : ".gcode";
 }
 
 // ── Internal: minimal, UltiMaker-eigener G-code-Header-Parser ──────────────
@@ -221,7 +221,11 @@ static std::string build_griffin_header(
     hdr.imbue(std::locale::classic()); // numbers ALWAYS in dot format - see GCodeArchiveUtils.hpp
     hdr << ";START_OF_HEADER\n";
     hdr << ";HEADER_VERSION:0.1\n";
-    hdr << ";FLAVOR:Griffin\n";
+    // Cheetah is Griffin plus M214/M215 - Cura itself labels the enum
+    // entry "Griffin+Cheetah". Same header structure, different name.
+    hdr << ";FLAVOR:"
+        << (config.gcode_flavor == gcfCheetah ? "Cheetah" : "Griffin")
+        << "\n";
     hdr << ";GENERATOR.NAME:OrcaSlicer\n";
     hdr << ";GENERATOR.VERSION:" << SLIC3R_VERSION << "\n";
     hdr << ";GENERATOR.BUILD_DATE:" << build_iso_date_today() << "\n";
@@ -307,7 +311,7 @@ static std::string build_ufp_model_rels_xml()
 
 std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {
-    if (config.gcode_flavor != gcfGriffin)
+    if (config.gcode_flavor != gcfGriffin && config.gcode_flavor != gcfCheetah)
         return {}; // not our flavor - nothing to do
 
     namespace fs = boost::filesystem;

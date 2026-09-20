@@ -4961,7 +4961,8 @@ void TabPrinter::build_unregular_pages(bool from_initial_build/* = false*/)
     // calibration guide puts its result.  The machine_max_* values do
     // not reach them (B40) -- that is documented, not hidden.
     bool		is_marlin_flavor = (flavor == gcfMarlinLegacy || flavor == gcfMarlinFirmware || flavor == gcfKlipper || flavor == gcfRepRapFirmware || flavor == gcfRepetier
-                                 || flavor == gcfMakerBotLegacy || flavor == gcfMakerBotBirdwing || flavor == gcfMakerBotLava || flavor == gcfGriffin);
+                                 || flavor == gcfMakerBotLegacy || flavor == gcfMakerBotBirdwing || flavor == gcfMakerBotLava || flavor == gcfGriffin
+                                 || flavor == gcfCheetah);
 
     /* ! Freeze/Thaw in this function is needed to avoid call OnPaint() for erased pages
      * and be cause of application crash, when try to change Preset in moment,
@@ -5530,7 +5531,8 @@ void TabPrinter::toggle_options()
             const bool _is_mb_um = (_f == gcfMakerBotLegacy   ||
                                     _f == gcfMakerBotBirdwing ||
                                     _f == gcfMakerBotLava     ||
-                                    _f == gcfGriffin);
+                                    _f == gcfGriffin     ||
+                                    _f == gcfCheetah);
             if (_is_mb_um) {
                 // These settings are not applicable to MakerBot/UltiMaker hardware
                 toggle_line("pellet_modded_printer",   false);

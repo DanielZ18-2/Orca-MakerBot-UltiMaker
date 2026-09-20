@@ -100,7 +100,8 @@ std::string GCodeWriter::preamble()
         FLAVOR_IS(gcfMakerBotLegacy) ||
         FLAVOR_IS(gcfMakerBotBirdwing) ||
         FLAVOR_IS(gcfMakerBotLava) ||
-        FLAVOR_IS(gcfGriffin))
+        FLAVOR_IS(gcfGriffin) ||
+        FLAVOR_IS(gcfCheetah))
     {
         if (this->config.use_relative_e_distances) {
             gcode << "M83 ; use relative distances for extrusion\n";
@@ -407,6 +408,17 @@ std::string GCodeWriter::set_pressure_advance(double pa) const
             // Repetier M233: X is quadratic (K), Y is linear (L).
             // Applying the value to both parameters simultaneously.
             gcode << "M233 X" << std::setprecision(4) << pa << " Y" << std::setprecision(4) << pa << " ; Override pressure advance value\n";
+        else if (FLAVOR_IS(gcfCheetah))
+            // MakerBot / UltiMaker Fork: Cheetah firmware (S8, Factor 4+)
+            // takes pressure advance as M214 K<seconds> R<smoothing>.
+            // K is the same quantity as Orca's pressure_advance and as
+            // Cura's material_pressure_advance_factor - measured K0.75
+            // on the S8 and K0.125 on the Factor 4+, matching their
+            // material files exactly. R is 0.04 in both Cura outputs and
+            // is not settable from Cura's own tree, so it is taken as the
+            // constant both measurements agree on.
+            gcode << "M214 K" << std::setprecision(4) << pa
+                  << " R0.04 ; Override pressure advance value\n";
         else
             gcode << "M900 K" <<std::setprecision(4)<< pa << "; Override pressure advance value\n";
     }
