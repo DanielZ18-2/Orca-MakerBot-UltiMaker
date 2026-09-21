@@ -13,7 +13,10 @@
         "0.024"
     ],
     "compatible_printers": [
-        "UltiMaker Original+ 0.4 nozzle"
+        "UltiMaker Original+ 0.25 nozzle",
+        "UltiMaker Original+ 0.4 nozzle",
+        "UltiMaker Original+ 0.6 nozzle",
+        "UltiMaker Original+ 0.8 nozzle"
     ],
     "nozzle_temperature": [
         "260"

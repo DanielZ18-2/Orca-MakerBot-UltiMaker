@@ -6,7 +6,7 @@
     "inherits": "fdm_ultimaker_classic_common",
     "from": "system",
     "instantiation": "true",
-    "gcode_flavor": "griffin",
+    "gcode_flavor": "marlin",
     "printer_model": "UltiMaker Original",
     "printer_variant": "0.4",
     "default_print_profile": "0.20mm Standard @UltiMaker Original 0.4 nozzle",
