@@ -1,13 +1,13 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.08.30",
+    "version": "01.00.08.31",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
     "machine_model_list": [
         {
             "name": "UltiMaker 2",
-            "sub_path": "machine/UltiMaker 2.json"
+            "sub_path": "machine/Classic/UltiMaker 2.json"
         },
         {
             "name": "UltiMaker 2 Extended",
@@ -330,10 +330,6 @@
         {
             "name": "0.12mm Extra Fine @UltiMaker S8 0.6 nozzle",
             "sub_path": "process/SSERIES/0.12mm Extra Fine @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.12mm Fine @UltiMaker 2",
-            "sub_path": "process/0.12mm Fine @UltiMaker 2.json"
         },
         {
             "name": "0.12mm Fine @UltiMaker 2 0.25 nozzle",
@@ -716,10 +712,6 @@
             "sub_path": "process/SSERIES/0.18mm Fine @UltiMaker S8 0.6 nozzle.json"
         },
         {
-            "name": "0.18mm Standard @UltiMaker 2",
-            "sub_path": "process/0.18mm Standard @UltiMaker 2.json"
-        },
-        {
             "name": "0.20mm Standard @UltiMaker 2 0.4 nozzle",
             "sub_path": "process/Classic/0.20mm Standard @UltiMaker 2 0.4 nozzle.json"
         },
@@ -1038,10 +1030,6 @@
         {
             "name": "0.24mm Optimal @UltiMaker S8 0.6 nozzle",
             "sub_path": "process/SSERIES/0.24mm Optimal @UltiMaker S8 0.6 nozzle.json"
-        },
-        {
-            "name": "0.25mm Draft @UltiMaker 2",
-            "sub_path": "process/0.25mm Darft @UltiMaker 2.json"
         },
         {
             "name": "0.28mm Draft @UltiMaker 2 0.4 nozzle",
@@ -2709,19 +2697,19 @@
         },
         {
             "name": "UltiMaker 2 0.25 nozzle",
-            "sub_path": "machine/UltiMaker 2 0.25 nozzle.json"
+            "sub_path": "machine/Classic/UltiMaker 2 0.25 nozzle.json"
         },
         {
             "name": "UltiMaker 2 0.4 nozzle",
-            "sub_path": "machine/UltiMaker 2 0.4 nozzle.json"
+            "sub_path": "machine/Classic/UltiMaker 2 0.4 nozzle.json"
         },
         {
             "name": "UltiMaker 2 0.6 nozzle",
-            "sub_path": "machine/UltiMaker 2 0.6 nozzle.json"
+            "sub_path": "machine/Classic/UltiMaker 2 0.6 nozzle.json"
         },
         {
             "name": "UltiMaker 2 0.8 nozzle",
-            "sub_path": "machine/UltiMaker 2 0.8 nozzle.json"
+            "sub_path": "machine/Classic/UltiMaker 2 0.8 nozzle.json"
         },
         {
             "name": "fdm_ultimaker_classic_common",
