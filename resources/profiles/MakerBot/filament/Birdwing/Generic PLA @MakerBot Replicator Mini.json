@@ -13,7 +13,11 @@
         "0.02"
     ],
     "compatible_printers": [
-        "MakerBot Replicator Mini 0.4 nozzle"
+        "MakerBot Replicator Mini 0.2 nozzle",
+        "MakerBot Replicator Mini 0.4 nozzle",
+        "MakerBot Replicator Mini 0.6 nozzle",
+        "MakerBot Replicator Mini 0.8 nozzle",
+        "MakerBot Replicator Mini 1 nozzle"
     ],
     "nozzle_temperature": [
         "215"
