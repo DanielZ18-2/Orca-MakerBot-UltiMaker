@@ -6,8 +6,8 @@
     "machine_tech": "FFF",
     "family": "SSERIES",
     "vendor": "UltiMaker",
-    "bed_model": "ultimaker_S5.stl",
-    "bed_texture": "ultimaker_s5_texture.png",
+    "bed_model": "ultimaker_S8.stl",
+    "bed_texture": "ultimaker_s8_texture.png",
     "hotend_model": "",
     "default_materials": "Generic PLA @UltiMaker S8;Generic PETG @UltiMaker S8;Generic ABS @UltiMaker S8;Generic ASA @UltiMaker S8;Generic PLA Silk @UltiMaker S8;Generic BVOH @UltiMaker S8;Generic CoPE @UltiMaker S8;Generic PA @UltiMaker S8;Generic PP @UltiMaker S8;Generic PVA @UltiMaker S8;Generic TPU @UltiMaker S8"
 }
