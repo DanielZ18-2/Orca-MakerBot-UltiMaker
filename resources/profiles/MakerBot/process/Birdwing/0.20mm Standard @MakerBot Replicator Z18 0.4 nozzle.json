@@ -15,7 +15,7 @@
     "top_shell_layers": "5",
     "top_shell_thickness": "0.80",
     "line_width": "0.40",
-    "outer_wall_line_width": "0.40",
+    "outer_wall_line_width": "0.36",
     "inner_wall_line_width": "0.40",
     "sparse_infill_line_width": "0.40",
     "internal_solid_infill_line_width": "0.40",
