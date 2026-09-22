@@ -60,5 +60,11 @@
     ],
     "chamber_temperature": [
         "37"
+    ],
+    "enable_pressure_advance": [
+        "1"
+    ],
+    "pressure_advance": [
+        "0.125"
     ]
 }

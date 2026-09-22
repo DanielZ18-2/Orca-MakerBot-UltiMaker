@@ -9,8 +9,11 @@
     "filament_type": [
         "ABS"
     ],
+    "enable_pressure_advance": [
+        "1"
+    ],
     "pressure_advance": [
-        "0.024"
+        "0.125"
     ],
     "compatible_printers": [
         "UltiMaker Factor 4+ 0.4 nozzle",

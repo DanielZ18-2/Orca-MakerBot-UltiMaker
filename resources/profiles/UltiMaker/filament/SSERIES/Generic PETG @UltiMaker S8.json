@@ -9,8 +9,11 @@
     "filament_type": [
         "PETG"
     ],
+    "enable_pressure_advance": [
+        "1"
+    ],
     "pressure_advance": [
-        "0.03"
+        "0.75"
     ],
     "compatible_printers": [
         "UltiMaker S8 0.25 nozzle",
