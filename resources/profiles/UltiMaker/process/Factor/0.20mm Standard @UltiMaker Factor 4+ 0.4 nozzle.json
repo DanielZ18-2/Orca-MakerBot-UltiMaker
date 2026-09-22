@@ -11,9 +11,9 @@
         "UltiMaker Factor 4+ 0.4 nozzle"
     ],
     "bottom_shell_layers": "5",
-    "bottom_shell_thickness": "0.8400000000000001",
+    "bottom_shell_thickness": "1.00",
     "top_shell_layers": "5",
-    "top_shell_thickness": "0.8400000000000001",
+    "top_shell_thickness": "1.00",
     "line_width": "0.42",
     "outer_wall_line_width": "0.42",
     "inner_wall_line_width": "0.42",
