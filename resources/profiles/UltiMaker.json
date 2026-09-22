@@ -1,6 +1,6 @@
 {
     "name": "UltiMaker",
-    "version": "01.00.08.32",
+    "version": "01.00.08.33",
     "config_version": "1.0.0.0",
     "force_update": "1",
     "description": "UltiMaker configurations",
@@ -2696,6 +2696,10 @@
             "sub_path": "machine/fdm_ultimaker_common.json"
         },
         {
+            "name": "fdm_ultimaker_classic_common",
+            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
+        },
+        {
             "name": "UltiMaker 2 0.25 nozzle",
             "sub_path": "machine/Classic/UltiMaker 2 0.25 nozzle.json"
         },
@@ -2710,10 +2714,6 @@
         {
             "name": "UltiMaker 2 0.8 nozzle",
             "sub_path": "machine/Classic/UltiMaker 2 0.8 nozzle.json"
-        },
-        {
-            "name": "fdm_ultimaker_classic_common",
-            "sub_path": "machine/Classic/fdm_ultimaker_classic_common.json"
         },
         {
             "name": "UltiMaker 2 Extended 0.25 nozzle",
