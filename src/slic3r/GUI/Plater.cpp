@@ -252,6 +252,13 @@ struct SmartExtruderSidebarItem
     std::string image_file;
 };
 
+// Smart extruder covers live under profiles/MakerBot/ ONLY, and on purpose.
+// The machine model cover a few thousand lines below is looked up per vendor
+// id, but an extruder is a part, not a machine: the same mk14 sits in a
+// MakerBot Method and in an UltiMaker Method. Resolving these per vendor
+// would mean keeping six byte-identical images under every vendor that ever
+// sold a Method. One set, one place -- do not add a vendor argument here
+// without deciding what to do with the duplicates it invites.
 static boost::filesystem::path makerbot_profile_asset_path(const std::string& filename)
 {
     return boost::filesystem::absolute(
