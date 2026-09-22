@@ -2,7 +2,7 @@
 #ifndef slic3r_MakerbotLink_hpp_
 #define slic3r_MakerbotLink_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // Birdwing: raw SSL TCP port 12309 via Boost.Asio (handshake/token bootstrap)
 //           PLUS raw plaintext TCP port 9999 (the actual command/telemetry
 //           channel - confirmed via packet capture against a real Z18 with
@@ -95,7 +95,7 @@ public:
     BirdwingAuthResult birdwing_authorize(std::string& error_or_token,
                                            int          timeout_s = 120) const;
 
-    // Low-level raw SSL RPC (Birdwing only) – opens new connection each call
+    // Low-level raw SSL RPC (Birdwing only) - opens new connection each call
     bool birdwing_rpc(const std::string&    method,
                       const nlohmann::json& params,
                       nlohmann::json&       out,

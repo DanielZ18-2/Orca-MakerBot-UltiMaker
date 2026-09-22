@@ -1,13 +1,13 @@
 #ifndef slic3r_Format_UltimakerUFPExport_hpp_
 #define slic3r_Format_UltimakerUFPExport_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // =============================================================================
 // Post-processes a finished G-code file into the native .ufp (UltiMaker
 // Format Package) archive required by genuine UltiMaker S-Line printers
 // (S3/S5/2+ Connect etc.) and by Cura Connect / the UltiMaker Digital
 // Factory to correctly read back print time, material usage and a preview
-// thumbnail. Called from GCode::do_export() after the .tmp → .gcode rename
+// thumbnail. Called from GCode::do_export() after the .tmp -> .gcode rename
 // succeeds.
 //
 // This module is UltiMaker-only and has no dependency on, or knowledge of,
@@ -28,7 +28,7 @@
 // (plugins/UFPWriter/UFPWriter.py), as published on GitHub (checked against
 // the "Cura 5.12" / current master branch, June 2026).
 //
-// Output: gcfGriffin, gcfCheetah → .ufp (OPC ZIP: 3D/model.gcode incl.
+// Output: gcfGriffin, gcfCheetah -> .ufp (OPC ZIP: 3D/model.gcode incl.
 //                               Griffin header,
 //                                Metadata/thumbnail.png, Cura/slicemetadata.json)
 //
@@ -45,7 +45,7 @@ namespace UltimakerUFPExport {
 // Returns the canonical output extension (with leading dot) for the given flavor.
 std::string get_archive_extension(GCodeFlavor flavor);
 
-// Main entry point – called from GCode::do_export() after the G-code is written.
+// Main entry point - called from GCode::do_export() after the G-code is written.
 //
 // gcode_path : path of the freshly written .gcode file
 // config     : full print config (used for printer model, temperatures, etc.)

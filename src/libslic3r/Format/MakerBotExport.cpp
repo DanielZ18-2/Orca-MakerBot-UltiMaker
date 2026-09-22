@@ -1,5 +1,5 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
-// MakerBotExport.cpp – G-code → .makerbot / .ufp archive packer
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
+// MakerBotExport.cpp - G-code -> .makerbot / .ufp archive packer
 //
 // GOLD VERSION: Kombiniert Alpha (parse_header, build_birdwing_meta,
 // BBox, extrusion_mass_g, extract_thumbnails, Lava-Support) mit
@@ -56,7 +56,7 @@ std::string getenv_string(const char* name)
 } // namespace
 
 
-// ── Public: archive extension helper ────────────────────────────────────────
+// -- Public: archive extension helper ----------------------------------------
 
 std::string get_archive_extension(GCodeFlavor flavor)
 {
@@ -72,7 +72,7 @@ std::string get_archive_extension(GCodeFlavor flavor)
     }
 }
 
-// ── Internal helpers ─────────────────────────────────────────────────────────
+// -- Internal helpers ---------------------------------------------------------
 
 
 // Splits a comma separated per-extruder list from the G-code settings block.
@@ -305,7 +305,7 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
 
     std::string line;
     while (std::getline(gf, line)) {
-        // ── Filament accumulation (G0/G1 with positive E) ───────────────
+        // -- Filament accumulation (G0/G1 with positive E) ---------------
         if (line.size() >= 2 && line[0] == 'G' && (line[1] == '0' || line[1] == '1')) {
             const size_t e_pos = line.find('E');
             if (e_pos != std::string::npos) {
@@ -322,7 +322,7 @@ static HeaderData parse_header(const std::string& gcode_path, const PrintConfig&
             continue;
         }
 
-        // ── Settings comments ────────────────────────────────────────────
+        // -- Settings comments --------------------------------------------
         if (line.empty() || line[0] != ';') continue;
 
         // Skip thumbnail blocks
@@ -595,7 +595,7 @@ static nlohmann::json build_birdwing_meta(
     meta["version"]                  = "1.2.0";
     meta["uses_raft"]                = h.raft_layers > 0;
 
-    // printer_settings – human-readable summary
+    // printer_settings - human-readable summary
     {
         nlohmann::json ps;
         ps["layer_height"]         = h.layer_height;
@@ -639,7 +639,7 @@ static nlohmann::json build_birdwing_meta(
         ext_hw["retract_rate"]      = ret_rate;
         ext_hw["restart_rate"]      = rest_rate;
         ext_hw["temperature"]       = h.temperature;
-        // No slip_compensation_table – Orca calibration handles this
+        // No slip_compensation_table - Orca calibration handles this
         // No acceleration block. The three keys this fork used to write -
         // normal_move, during_retract, after_retract - are not documented in
         // any MakerBot source we hold, and no .makerbot produced by MakerBot's
@@ -671,7 +671,7 @@ static nlohmann::json build_birdwing_meta(
         meta["machine_config"] = machine_config;
     }
 
-    // miracle_config – Birdwing slicer profile
+    // miracle_config - Birdwing slicer profile
     {
         nlohmann::json extrusion_profiles;
         extrusion_profiles["outlines"]      = {{"feedrate", h.outer_wall_speed}};
@@ -802,7 +802,7 @@ static std::string lava_material_id(const std::string& filament_type)
     return boost::algorithm::to_lower_copy(t);
 }
 
-// ── accel_overrides: the only way acceleration reaches a Method ──────────
+// -- accel_overrides: the only way acceleration reaches a Method ----------
 //
 // Wording taken from a Cura-produced reference file
 // (UMMXL_2023_Testwuerfel_20x20.makerbot, Method XL, CuraEngine 5.12.0):
@@ -1220,7 +1220,7 @@ static bool write_zip(const std::string& out_path,
     return ok;
 }
 
-// ── pack_makerbot_birdwing (Birdwing / 5th Gen) ─────────────────────────────
+// -- pack_makerbot_birdwing (Birdwing / 5th Gen) -----------------------------
 
 static bool pack_makerbot_birdwing(const std::string& gcode_path,
                                     const std::string& archive_path,
@@ -1337,7 +1337,7 @@ static bool pack_makerbot_birdwing(const std::string& gcode_path,
     return true;
 }
 
-// ── pack_makerbot_lava (Method / Sketch = Lava format) ───────────────────────
+// -- pack_makerbot_lava (Method / Sketch = Lava format) -----------------------
 
 static bool pack_makerbot_lava(const std::string& gcode_path,
                                 const std::string& archive_path,
@@ -1360,7 +1360,7 @@ static bool pack_makerbot_lava(const std::string& gcode_path,
         if (bt) try { bot_type = dynamic_cast<const ConfigOptionString*>(bt)->value; } catch (...) {}
     }
 
-    // ── Sketch vs. Method: two different archive payloads ─────────────────
+    // -- Sketch vs. Method: two different archive payloads -----------------
     // Cura's MakerbotWriter (plugins/MakerbotWriter/MakerbotWriter.py) branches
     // on the machine's file_formats MIME type:
     //   application/x-makerbot-sketch  -> print.gcode
@@ -1476,7 +1476,7 @@ static bool pack_makerbot_lava(const std::string& gcode_path,
     return true;
 }
 
-// ── Public entry point ───────────────────────────────────────────────────────
+// -- Public entry point -------------------------------------------------------
 
 std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {
@@ -1530,7 +1530,7 @@ std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& co
     if (flavor == gcfMakerBotLava) {
         ok = pack_makerbot_lava(gcode_source, archive_path, config, project_name);
     } else {
-        // gcfMakerBotBirdwing (and anything else → try Birdwing)
+        // gcfMakerBotBirdwing (and anything else -> try Birdwing)
         ok = pack_makerbot_birdwing(gcode_source, archive_path, config, project_name);
     }
 

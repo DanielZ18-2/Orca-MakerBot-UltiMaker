@@ -1,4 +1,4 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // BirdwingHandshakeDialog.cpp
 
 #include "BirdwingHandshakeDialog.hpp"
@@ -21,7 +21,7 @@ namespace GUI {
 BirdwingHandshakeDialog::BirdwingHandshakeDialog(wxWindow* parent,
                                                  const MakerbotLink& link)
     : wxDialog(parent, wxID_ANY,
-               _L("MakerBot Birdwing – Authorize Connection"),
+               _L("MakerBot Birdwing - Authorize Connection"),
                wxDefaultPosition, wxSize(480, 380),
                wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , m_link(link)
@@ -29,7 +29,7 @@ BirdwingHandshakeDialog::BirdwingHandshakeDialog(wxWindow* parent,
 {
     SetFont(wxGetApp().normal_font());
 
-    // ── Animated GIF ─────────────────────────────────────────────────────────
+    // -- Animated GIF ---------------------------------------------------------
     const boost::filesystem::path gif_path =
         boost::filesystem::path(Slic3r::resources_dir()) /
         "profiles" / "MakerBot" / "makerbot_birdwing_handshake.gif";
@@ -42,7 +42,7 @@ BirdwingHandshakeDialog::BirdwingHandshakeDialog(wxWindow* parent,
     else
         m_anim->Hide();
 
-    // ── Status + Countdown ────────────────────────────────────────────────────
+    // -- Status + Countdown ----------------------------------------------------
     m_status = new wxStaticText(this, wxID_ANY,
         _L("Please press the controller wheel on your MakerBot printer\n"
            "to authorize the connection with Orca Slicer."),
@@ -114,7 +114,7 @@ void BirdwingHandshakeDialog::stop_auth()
     *m_alive = false;     // invalidate before detach
     m_timer.Stop();
     if (m_thread.joinable())
-        m_thread.detach(); // never block UI – SSL read times out on its own
+        m_thread.detach(); // never block UI - SSL read times out on its own
     if (m_anim) m_anim->Stop();
 }
 
@@ -125,7 +125,7 @@ void BirdwingHandshakeDialog::on_timer(wxTimerEvent&)
 
     if (m_seconds_left <= 0) {
         stop_auth();
-        m_status->SetLabel(_L("Timeout – the printer did not respond.\n"
+        m_status->SetLabel(_L("Timeout - the printer did not respond.\n"
                               "Please try again and press the controller wheel within 120 seconds."));
         m_status->SetForegroundColour(wxColour(220, 60, 60));
         m_status->Refresh();
@@ -138,7 +138,7 @@ void BirdwingHandshakeDialog::on_auth_result(bool success,
     stop_auth();
     if (success) {
         m_token = token_or_error;
-        m_status->SetLabel(_L("✅  Connection authorized!\n"
+        m_status->SetLabel(_L("Connection authorized!\n"
                               "Orca Slicer is now paired with your MakerBot."));
         m_status->SetForegroundColour(wxColour(0, 160, 80));
         m_status->Refresh();
@@ -155,7 +155,7 @@ void BirdwingHandshakeDialog::on_auth_result(bool success,
         });
         close_timer->StartOnce(1500);
     } else {
-        m_status->SetLabel(wxString::FromUTF8("❌  " + token_or_error));
+        m_status->SetLabel(wxString::FromUTF8(token_or_error));
         m_status->SetForegroundColour(wxColour(220, 60, 60));
         m_status->Wrap(440);
         m_status->Refresh();

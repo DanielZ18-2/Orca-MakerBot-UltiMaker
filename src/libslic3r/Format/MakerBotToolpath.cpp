@@ -1,7 +1,7 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
-// MakerBotToolpath.cpp  — FULLY REWORKED 2026-06-14
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
+// MakerBotToolpath.cpp  - FULLY REWORKED 2026-06-14
 //
-// G-code → Birdwing JSON Toolpath converter.
+// G-code -> Birdwing JSON Toolpath converter.
 // Basiert auf Reverse-Engineering des 1cm_x_1cm_block_Rep+.makerbot
 // aus MakerBot Print 4.10.1 (Resources.zip/app.asar.unpacked/)
 //
@@ -37,7 +37,7 @@
 
 namespace Slic3r {
 
-// ── Locale-independent double parsing ──────────────────────────────────────
+// -- Locale-independent double parsing --------------------------------------
 // Same bug / same fix as in MakerBotExport.cpp::parse_double_safe:
 // std::stod follows the global C locale (setlocale), which
 // wxWidgets typically sets the system locale at startup. Under
@@ -76,7 +76,7 @@ private:
     std::string m_prev;
 };
 
-// ── Tag-Mapping: Orca ;TYPE: → Birdwing JSON-Tag ────────────────────────────
+// -- Tag-Mapping: Orca ;TYPE: -> Birdwing JSON-Tag ----------------------------
 // Referenz: 1cm_x_1cm_block_Rep+.makerbot aus MakerBot Print 4.10.1
 // Valid tags: "Trailing Extrusion Move", "Infill", "Inset",
 //               "Leaky Travel Move", "Travel Move", "Connection",
@@ -99,12 +99,12 @@ static std::string orca_type_to_birdwing_tag(const std::string& orca_type)
     if (orca_type == "Skirt")                  return "Outline";
     if (orca_type == "Brim")                   return "Outline";
     if (orca_type == "Support transition")     return "Support";
-    if (orca_type == "Custom")                 return ""; // start/end gcode → skip
+    if (orca_type == "Custom")                 return ""; // start/end gcode -> skip
     if (orca_type == "Ironing")                return "Infill";
     return "Infill"; // sicherer Default
 }
 
-// ── G-code-Parameter parsen (z.B. "X123.45" → 123.45) ───────────────────────
+// -- G-code-Parameter parsen (z.B. "X123.45" -> 123.45) -----------------------
 static bool parse_gcode_param(const std::string& token, char axis, double& out)
 {
     if (token.empty() || std::toupper(token[0]) != std::toupper(axis))
@@ -112,7 +112,7 @@ static bool parse_gcode_param(const std::string& token, char axis, double& out)
     return parse_double_locale_safe(token.substr(1), out);
 }
 
-// ── Dual-Extruder-Modus ──────────────────────────────────────────────────────
+// -- Dual-Extruder-Modus ------------------------------------------------------
 // Set for the duration of one conversion. In dual mode every move carries BOTH
 // extruder axes ("a" and "b"), the inactive one at 0.0, and metadata.relative
 // lists "b" as well. Verified against method_dual_test.makerbot (MakerBot
@@ -129,7 +129,7 @@ static bool g_dual_axes = false;
 // 100 toggle_fan, 191 fan_duty and 1129 comment entries have "metadata": {}).
 static bool g_lava_format = false;
 
-// ── Befehl als {"command":{...}} emittieren ───────────────────────────────────
+// -- Befehl als {"command":{...}} emittieren -----------------------------------
 // CRITICAL: MakerBot Print ALWAYS expects the outer "command" wrapper!
 static nlohmann::json make_command(
     const std::string& function_name,
@@ -192,7 +192,7 @@ static nlohmann::json make_comment(const std::string& text)
         false);
 }
 
-// ── Layer-Kommentarblock emittieren ──────────────────────────────────────────
+// -- Layer-Kommentarblock emittieren ------------------------------------------
 // Referenz-Format aus 1cm_x_1cm_block_Rep+.makerbot:
 //   "Layer Section 0 (1)"
 //   "Material 0"
@@ -226,9 +226,9 @@ static void emit_layer_comments(
     commands.push_back(make_comment("Width           " + fmt(width)));
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// HAUPT-KONVERTER: G-code → Birdwing JSON Toolpath
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+// HAUPT-KONVERTER: G-code -> Birdwing JSON Toolpath
+// ==============================================================================
 std::string gcode_to_birdwing_jsontoolpath(
     const std::string&        gcode_path,
     const BirdwingBuildVolume& bv,
@@ -240,11 +240,11 @@ std::string gcode_to_birdwing_jsontoolpath(
     const ScopedCNumericLocale locale_guard; // see the comment at the class definition
     g_lava_format = lava_format;
 
-    // ── Pre-pass: does this job switch tools at all? ──────────────────────────
+    // -- Pre-pass: does this job switch tools at all? --------------------------
     // Only a real switch to T1+ makes it a dual job. Orca emits a single "T0"
     // even for single-material prints on a dual machine, which must stay
     // single-axis output.
-    // ── Per-extruder settings from the G-code footer ───────────────────────────
+    // -- Per-extruder settings from the G-code footer ---------------------------
     // Without them tool_temp[1] stays at -1 on dual jobs and the
     // entering extruder never reaches its print temperature. Measured on
     // 3DBenchy_ABS_3h9m.makerbot (Method X, ABS + PETG): 75x standby
@@ -342,7 +342,7 @@ std::string gcode_to_birdwing_jsontoolpath(
 
     nlohmann::json commands = nlohmann::json::array();
 
-    // ── Parser state ──────────────────────────────────────────────────────
+    // -- Parser state ------------------------------------------------------
     // Orca ALWAYS uses relative E (use_relative_e_distances=1 for gcfMakerBotBirdwing)
     // MakerBot G-code sends no M82/M83 - absolute_ext = false is fixed.
     const bool absolute_ext = false;
@@ -364,7 +364,7 @@ std::string gcode_to_birdwing_jsontoolpath(
     // Z18 temperature tower).
     bool   gcode_has_e   = false;
 
-    // ── Dual-extruder state ──────────────────────────────────────────────────
+    // -- Dual-extruder state --------------------------------------------------
     // active_tool addresses the axis: 0 -> "a", 1 -> "b".
     // pending_tool holds a tool change until the next XY move is known: the
     // reference file puts the purge-wall start point into change_toolhead's
@@ -440,7 +440,7 @@ std::string gcode_to_birdwing_jsontoolpath(
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
 
-        // ── Kommentare / Direktiven ──────────────────────────────────────────
+        // -- Kommentare / Direktiven ------------------------------------------
         const size_t semi = line.find(';');
         const std::string body = (semi != std::string::npos)
                                  ? line.substr(0, semi) : line;
@@ -452,7 +452,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             const std::string type = boost::trim_copy(comment.substr(5));
             const std::string new_tag = orca_type_to_birdwing_tag(type);
             if (new_tag.empty()) {
-                // "Custom" → start/end G-code → Ausgabe pausieren
+                // "Custom" -> start/end G-code -> Ausgabe pausieren
                 in_print_area = false;
                 in_custom_block = true;
             } else {
@@ -463,7 +463,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ;WIDTH:xxx – Linienbreite
+        // ;WIDTH:xxx - Linienbreite
         if (!comment.empty() && comment.find("WIDTH:") == 0) {
             double w = 0.0;
             if (parse_double_locale_safe(boost::trim_copy(comment.substr(6)), w))
@@ -483,13 +483,13 @@ std::string gcode_to_birdwing_jsontoolpath(
         if (tokens.empty()) continue;
         const std::string& cmd = tokens[0];
 
-        // ── Positioniermodus ─────────────────────────────────────────────────
+        // -- Positioniermodus -------------------------------------------------
         if (cmd == "G90") { absolute_pos = true;  continue; }
         if (cmd == "G91") { absolute_pos = false; continue; }
-        if (cmd == "M82") { /* absolute_ext = true  – bei Birdwing ignoriert */ continue; }
-        if (cmd == "M83") { /* absolute_ext = false – bei Birdwing Standard  */ continue; }
+        if (cmd == "M82") { /* absolute_ext = true  - ignored by Birdwing */ continue; }
+        if (cmd == "M83") { /* absolute_ext = false - the Birdwing default */ continue; }
 
-        // ── M106 / M107 – Bauteilluefter ──────────────────────────────────────
+        // -- M106 / M107 - Bauteilluefter --------------------------------------
         // The firmware (libparser.so) knows fan_duty and toggle_fan; miracle_grue
         // uses both and tags them with "Fan Speed Change" / "Enable Fan" /
         // "Disable Fan". Without these commands the fan runs constantly at the
@@ -530,7 +530,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── M104 / M109 – Duesentemperatur ────────────────────────────────────
+        // -- M104 / M109 - Duesentemperatur ------------------------------------
         // M109 waits for temperature in Marlin; the Birdwing firmware knows
         // no wait_for_temperature (only Method/Lava), so both are
         // set_toolhead_temperature abgebildet.
@@ -560,13 +560,13 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── G28 – Alle Achsen homen ───────────────────────────────────────────
+        // -- G28 - Alle Achsen homen -------------------------------------------
         if (cmd == "G28") {
             cur_x = 0; cur_y = 0; cur_z = 0;
             continue;
         }
 
-        // ── G92 – Achsenposition setzen ──────────────────────────────────────
+        // -- G92 - Achsenposition setzen --------------------------------------
         if (cmd == "G92") {
             bool e_reset = false;
             for (size_t i = 1; i < tokens.size(); ++i) {
@@ -584,7 +584,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── Tn – tool change: not converted yet ───────────────────────────────
+        // -- Tn - tool change: not converted yet -------------------------------
         // The Birdwing/Lava toolpath addresses the second extruder through its
         // own axis ("b" instead of "a"); meta.json mirrors that with
         // extrusion_distances_mm as a two-element array. That mapping is not
@@ -615,7 +615,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             continue;
         }
 
-        // ── G2 / G3 – arc moves: not supported ────────────────────────────────
+        // -- G2 / G3 - arc moves: not supported --------------------------------
         // The Birdwing toolpath format knows only linear moves. Silently
         // dropping arcs would leave holes in the part, so refuse the export
         // instead. Guard against a user enabling "Arc fitting" in the UI - the
@@ -628,7 +628,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             return {};
         }
 
-        // ── G1 / G0 – Bewegungsbefehl ─────────────────────────────────────────
+        // -- G1 / G0 - Bewegungsbefehl -----------------------------------------
         if (cmd == "G1" || cmd == "G0") {
             double nx = cur_x, ny = cur_y, nz = cur_z, ne = cur_e, nf = -1.0;
             bool has_x = false, has_y = false, has_z = false, has_e = false;
@@ -646,13 +646,13 @@ std::string gcode_to_birdwing_jsontoolpath(
                 }
                 if (parse_gcode_param(tokens[i], 'E', v)) {
                     // Orca Birdwing: IMMER relativ (absolute_ext=false)
-                    // → ne = cur_e + e_raw, e_delta = e_raw
+                    // -> ne = cur_e + e_raw, e_delta = e_raw
                     ne = absolute_ext ? v : cur_e + v;
                     has_e = true;
                     gcode_has_e = true;
                 }
                 if (parse_gcode_param(tokens[i], 'F', v)) {
-                    nf = v / 60.0; // mm/min → mm/s
+                    nf = v / 60.0; // mm/min -> mm/s
                 }
             }
 
@@ -693,7 +693,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             // No XY move -> pure retract / unretract / Z-hop -> handled separately
             const bool has_xy = has_x || has_y;
 
-            // ── Deferred tool change ──────────────────────────────────────────
+            // -- Deferred tool change ------------------------------------------
             // Emitted here, at the first XY move after "Tn", because
             // change_toolhead carries the coordinates the head moves to next.
             // Sequence and values taken 1:1 from method_dual_test.makerbot
@@ -772,7 +772,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             }
 
             // E-Delta (in relativem Modus = raw E-Wert direkt)
-            // Denn: ne = cur_e_alt + e_raw → e_delta = ne - cur_e_alt = e_raw
+            // Denn: ne = cur_e_alt + e_raw -> e_delta = ne - cur_e_alt = e_raw
             const double e_raw = has_e ? [&]() -> double {
                 for (size_t i = 1; i < tokens.size(); ++i) {
                     double v = 0;
@@ -781,7 +781,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 return 0.0;
             }() : 0.0;
 
-            // ── Pure retract move (no XY, negative E) ───────────────────
+            // -- Pure retract move (no XY, negative E) -------------------
             if (!has_xy && has_e && e_raw < -1e-4) {
                 // KORREKTES FORMAT: Tag="Retract", a=negative mm
                 commands.push_back(make_command("move",
@@ -794,7 +794,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 continue;
             }
 
-            // ── Pure restart move (no XY, positive E after retract) ─────
+            // -- Pure restart move (no XY, positive E after retract) -----
             if (!has_xy && has_e && e_raw > 1e-4 && retracted) {
                 // KORREKTES FORMAT: Tag="Restart", a=positive mm
                 commands.push_back(make_command("move",
@@ -807,7 +807,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 continue;
             }
 
-            // ── Z-only move (no XY, no E) -> travel move ─────────────────
+            // -- Z-only move (no XY, no E) -> travel move -----------------
             if (!has_xy && !has_e) {
                 if (in_custom_block) {
                     commands.push_back(make_command("move",
@@ -819,7 +819,7 @@ std::string gcode_to_birdwing_jsontoolpath(
             }
             if (!has_xy && has_e && std::fabs(e_raw) < 1e-4) continue;
 
-            // ── Koordinaten validieren ────────────────────────────────────────
+            // -- Koordinaten validieren ----------------------------------------
             const double json_x = nx - x_offset;
             const double json_y = ny - y_offset;
             if (json_x < -(bv.x / 2 + 10) || json_x > (bv.x / 2 + 10) ||
@@ -830,11 +830,11 @@ std::string gcode_to_birdwing_jsontoolpath(
                 continue;
             }
 
-            // ── XY-Move klassifizieren ────────────────────────────────────────
+            // -- XY-Move klassifizieren ----------------------------------------
             std::string tag;
 
             if (e_raw > 1e-6) {
-                // Positives E → Extrusion
+                // Positives E -> Extrusion
                 if (retracted) {
                     tag = "Restart";
                     retracted = false;
@@ -867,10 +867,10 @@ std::string gcode_to_birdwing_jsontoolpath(
             } else if (!has_e && has_xy && in_print_area && !gcode_has_e &&
                        current_tag != "Travel Move" &&
                        current_tag != "Leaky Travel Move") {
-                // ── Fallback: G-code entirely WITHOUT inline E values ──────────
+                // -- Fallback: G-code entirely WITHOUT inline E values ----------
                 // Only reachable when not a single E parameter has appeared so
                 // far. Extrusion is then derived from the geometry:
-                //   a = L × layer_height × line_width / (π × (d_fil/2)²)
+                //   a = L x layer_height x line_width / (pi x (d_fil/2)^2)
                 //
                 // WARNING - this branch used to run unconditionally. Orca DOES
                 // emit E for every extruding move, and a travel move ("G1 X.. Y..
@@ -886,7 +886,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 if (retracted) { tag = "Restart"; retracted = false; }
                 // a is computed below
             } else if (!has_e && has_xy) {
-                // ── Travel move: XY without E ──────────────────────────────────
+                // -- Travel move: XY without E ----------------------------------
                 // `retracted` is deliberately NOT cleared here - the filament is
                 // still retracted during the travel and only comes back with the
                 // following "G1 E+x", which must be tagged "Restart".
@@ -900,7 +900,7 @@ std::string gcode_to_birdwing_jsontoolpath(
                 }
             }
 
-            // ── a-Wert bestimmen ──────────────────────────────────────────────────
+            // -- a-Wert bestimmen --------------------------------------------------
             double a_val;
             if (has_e) {
                 // E direkt aus G-code (relativ = delta)
@@ -909,20 +909,20 @@ std::string gcode_to_birdwing_jsontoolpath(
                        tag != "Travel Move" &&
                        tag != "Leaky Travel Move") {
                 // No E in the G-code -> compute from geometry
-                // Formula: a = dist × (layer_h × line_w) / A_filament
-                // A_filament = π × (1.77/2)² = 2.4606 mm²
+                // Formula: a = dist x (layer_h x line_w) / A_filament
+                // A_filament = pi x (1.77/2)^2 = 2.4606 mm^2
                 const double dx   = nx - prev_x;
                 const double dy   = ny - prev_y;
                 const double dist = std::sqrt(dx*dx + dy*dy);
                 const double lh   = (layer_height > 1e-5) ? layer_height : 0.2;
                 const double lw   = (layer_w     > 1e-5) ? layer_w     : 0.4;
-                const double fil_area = 3.14159265358979 * 0.885 * 0.885; // (1.77/2)²
+                const double fil_area = 3.14159265358979 * 0.885 * 0.885; // (1.77/2)^2
                 a_val = dist * lh * lw / fil_area;
             } else {
                 a_val = 0.0;
             }
 
-            // ── Move emittieren ───────────────────────────────────────────────
+            // -- Move emittieren -----------------------------------------------
             // Retract has a negative a_val (e_raw) - must NOT be clipped!
             // For everything else: a should be >= 0.
             const double a_emit = (tag == "Retract") ? a_val : std::max(0.0, a_val);

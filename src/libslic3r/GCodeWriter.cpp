@@ -94,9 +94,9 @@ std::string GCodeWriter::preamble()
         FLAVOR_IS(gcfRepetier) ||
         FLAVOR_IS(gcfSmoothie) ||
         FLAVOR_IS(gcfKlipper) ||
-        // Ohne diese vier steht im erzeugten G-Code keine Ansage des
-        // E-Modus. GCodeProcessor nimmt dann "absolut" an und verliert
-        // beim Aufbau der Vorschau den groessten Teil der Wandsegmente.
+        // Without these the generated g-code never announces its E mode.
+        // GCodeProcessor then assumes absolute and loses most of the wall
+        // segments while building the preview.
         FLAVOR_IS(gcfMakerBotLegacy) ||
         FLAVOR_IS(gcfMakerBotBirdwing) ||
         FLAVOR_IS(gcfMakerBotLava) ||

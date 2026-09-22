@@ -1,12 +1,12 @@
 #ifndef slic3r_Format_GPXExport_hpp_
 #define slic3r_Format_GPXExport_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // =============================================================================
 // Post-processes a finished G-code file into the native .x3g archive required
 // by the entire pre-Birdwing MakerBot/Sailfish lineage - Cupcake through
 // Replicator 2X (gcfMakerBotLegacy). Called from GCode::do_export() after the
-// .tmp → .gcode rename succeeds.
+// .tmp -> .gcode rename succeeds.
 //
 // This module is independent of MakerBotExport.* (Birdwing/Lava) and
 // UltimakerUFPExport.* - removing either of those from a build does not
@@ -19,7 +19,7 @@
 // the Windows/macOS packages, and reported failures as a bare exit code.
 // See src/gpx/README.orca.md.
 //
-// Output: gcfMakerBotLegacy → .x3g
+// Output: gcfMakerBotLegacy -> .x3g
 // The original .gcode file is removed after successful conversion.
 // =============================================================================
 
@@ -46,8 +46,8 @@ public:
     // See the .cpp for the verified alias table and its source.
     static std::string gpx_machine_for_config(const PrintConfig& config);
 
-    // ── Dispatch-friendly wrapper, API-compatible with MakerBotExport:: and
-    // UltimakerUFPExport::'s pack_to_archive() ──────────────────────────────
+    // -- Dispatch-friendly wrapper, API-compatible with MakerBotExport:: and
+    // UltimakerUFPExport::'s pack_to_archive() ------------------------------
     static std::string get_archive_extension(GCodeFlavor flavor);
 
     // gcode_path : path of the freshly written .gcode file

@@ -2,14 +2,14 @@
 #ifndef slic3r_BirdwingHandshakeDialog_hpp_
 #define slic3r_BirdwingHandshakeDialog_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // Modal dialog shown while waiting for the user to press the MakerBot
 // Birdwing printer's handwheel to authorize the connection.
 //
 // Shows:
-//   • Animated GIF (resources/profiles/MakerBot/makerbot_birdwing_handshake.gif)
-//   • 120-second countdown timer
-//   • Status text (updated from background auth thread)
+//   * Animated GIF (resources/profiles/MakerBot/makerbot_birdwing_handshake.gif)
+//   * 120-second countdown timer
+//   * Status text (updated from background auth thread)
 //
 // Usage:
 //   BirdwingHandshakeDialog dlg(parent, makerbotlink_instance);

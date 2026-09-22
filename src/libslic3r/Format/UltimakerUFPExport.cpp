@@ -24,14 +24,14 @@ namespace UltimakerUFPExport {
 // Format/MakerBotExport.* irgendeiner Art.
 using namespace GCodeArchiveUtils;
 
-// ── Public: archive extension helper ────────────────────────────────────────
+// -- Public: archive extension helper ----------------------------------------
 
 std::string get_archive_extension(GCodeFlavor flavor)
 {
     return (flavor == gcfGriffin || flavor == gcfCheetah) ? ".ufp" : ".gcode";
 }
 
-// ── Internal: minimal, UltiMaker-eigener G-code-Header-Parser ──────────────
+// -- Internal: minimal, UltiMaker-eigener G-code-Header-Parser --------------
 //
 // Deliberately NOT identical to MakerBotExport.cpp's parse_header() - this
 // module needs only a small subset of the fields (no tool_type, no
@@ -86,7 +86,7 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
 
     std::string line;
     while (std::getline(gf, line)) {
-        // ── Filament-Akkumulation (G0/G1 mit positivem E) ───────────────
+        // -- Filament-Akkumulation (G0/G1 mit positivem E) ---------------
         if (line.size() >= 2 && line[0] == 'G' && (line[1] == '0' || line[1] == '1')) {
             const size_t e_pos = line.find('E');
             if (e_pos != std::string::npos) {
@@ -102,7 +102,7 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
             continue;
         }
 
-        // ── Settings-Kommentare ──────────────────────────────────────────
+        // -- Settings-Kommentare ------------------------------------------
         if (line.empty() || line[0] != ';') continue;
 
         if (line.find("thumbnail begin") != std::string::npos) {
@@ -159,7 +159,7 @@ static GriffinSourceData parse_griffin_source_data(const std::string& gcode_path
     return d;
 }
 
-// ── Griffin-Header (von libCharon zwingend verlangt) ────────────────────────
+// -- Griffin-Header (von libCharon zwingend verlangt) ------------------------
 //
 // Replaces the earlier placeholder implementation, never called here,
 // of this class, AND the separate one living in the MakerBot module,
@@ -269,7 +269,7 @@ static std::string build_griffin_header(
     return hdr.str();
 }
 
-// ── OPC-Containerstruktur ([Content_Types].xml + _rels) ────────────────────
+// -- OPC-Containerstruktur ([Content_Types].xml + _rels) --------------------
 
 static std::string build_ufp_content_types_xml(bool has_thumbnail)
 {
@@ -307,7 +307,7 @@ static std::string build_ufp_model_rels_xml()
     return xml.str();
 }
 
-// ── Public entry point ───────────────────────────────────────────────────────
+// -- Public entry point -------------------------------------------------------
 
 std::string pack_to_archive(const std::string& gcode_path, const PrintConfig& config)
 {

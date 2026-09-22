@@ -1,8 +1,8 @@
 #pragma once
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // MakerBotToolpath.hpp
 //
-// G-code → Birdwing JSON Toolpath converter.
+// G-code -> Birdwing JSON Toolpath converter.
 // Analysed from MakerBot Print 4.10.1 mb_toolpath_parser.js
 //
 // JSON Toolpath format (print.jsontoolpath in .makerbot archive):

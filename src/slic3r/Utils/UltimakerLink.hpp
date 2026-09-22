@@ -1,7 +1,7 @@
 #ifndef slic3r_UltimakerLink_hpp_
 #define slic3r_UltimakerLink_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // REST-API PrintHost for UltiMaker Classic, S/Factor and Method printers.
 // Protokoll: HTTP (Port 80), Auth via X-Api-ID + X-Api-Key Header.
 

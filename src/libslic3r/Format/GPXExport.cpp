@@ -66,7 +66,7 @@ bool contains(const std::string& haystack, const char* needle)
 
 } // namespace
 
-// ── GPX-Maschinen-Zuordnung ──────────────────────────────────────────────────
+// -- GPX machine mapping --------------------------------------------------
 //
 // The short codes used here are taken 1:1 from the actual GPX source
 // and cross-checked against the official MakerBot Desktop "bot_type" values
@@ -255,7 +255,7 @@ bool GPXExport::export_to_x3g(
     return true;
 }
 
-// ── Dispatch-friendly wrapper ────────────────────────────────────────────────
+// -- Dispatch-friendly wrapper ------------------------------------------------
 
 std::string GPXExport::get_archive_extension(GCodeFlavor flavor)
 {

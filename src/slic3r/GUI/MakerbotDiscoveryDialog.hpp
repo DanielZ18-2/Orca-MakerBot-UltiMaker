@@ -1,7 +1,7 @@
 #ifndef slic3r_MakerbotDiscoveryDialog_hpp_
 #define slic3r_MakerbotDiscoveryDialog_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // =============================================================================
 // Network discovery dialog for MakerBot and UltiMaker printers.
 //

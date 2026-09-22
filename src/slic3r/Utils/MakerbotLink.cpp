@@ -1,8 +1,8 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // MakerbotLink.cpp
 //
 // Birdwing (Z18, Replicator+, Mini+, 5th Gen):
-//   RAW TCP SSL on port 12309 (Boost.Asio) – NOT libcurl HTTP!
+//   RAW TCP SSL on port 12309 (Boost.Asio) - NOT libcurl HTTP!
 //   Protocol: JSON-RPC 2.0, newline-delimited, self-signed cert accepted.
 //
 // Lava/Method (Method, Method X, Method XL):
@@ -44,9 +44,9 @@ using tcp      = boost::asio::ip::tcp;
 
 namespace Slic3r {
 
-// ── Birdwing Raw SSL RPC Client ───────────────────────────────────────────────
+// -- Birdwing Raw SSL RPC Client -----------------------------------------------
 // Sends one JSON-RPC request and reads one JSON-RPC response over raw SSL TCP.
-// No HTTP involved – the Z18 speaks newline-terminated JSON directly over TLS.
+// No HTTP involved - the Z18 speaks newline-terminated JSON directly over TLS.
 
 class BirdwingRpcClient
 {
@@ -137,7 +137,7 @@ private:
 };
 
 
-// ── KaitenSession: persistent plaintext RPC on port 9999 ─────────────────────
+// -- KaitenSession: persistent plaintext RPC on port 9999 ---------------------
 // Confirmed via packet capture (Z18, MakerBot Desktop 4.10.1, 2026-06): the
 // real command/telemetry channel is plain TCP on port 9999, newline-
 // delimited JSON-RPC 2.0, no TLS at all. handshake -> authenticate(token) ->
@@ -359,7 +359,7 @@ bool KaitenSession::open(const std::string& host, const std::string& access_toke
 }
 
 
-// ── Konstruktor ───────────────────────────────────────────────────────────────
+// -- Konstruktor ---------------------------------------------------------------
 
 MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
 {
@@ -408,9 +408,9 @@ MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
         m_is_birdwing = (gcf->value == gcfMakerBotBirdwing);
 
     // Default: Birdwing SSL on port 12309
-    // Override: if user entered :2222 → Lava/Method HTTP
+    // Override: if user entered :2222 -> Lava/Method HTTP
     if (m_port == LAVA_PORT && !m_is_birdwing) {
-        // No explicit port → assume Birdwing
+        // No explicit port -> assume Birdwing
         m_port        = SSL_PORT_BIRDWING;
         m_is_birdwing = true;
     }
@@ -423,7 +423,7 @@ MakerbotLink::MakerbotLink(DynamicPrintConfig* config)
 }
 
 
-// ── Birdwing: Raw SSL RPC ─────────────────────────────────────────────────────
+// -- Birdwing: Raw SSL RPC -----------------------------------------------------
 
 bool MakerbotLink::birdwing_rpc(const std::string&    method,
                                  const nlohmann::json& params,
@@ -452,7 +452,7 @@ bool MakerbotLink::birdwing_rpc(const std::string&    method,
 }
 
 
-// ── Single camera frame (YUYV) over Kaiten ────────────────────────────────────
+// -- Single camera frame (YUYV) over Kaiten ------------------------------------
 // Verifiziert am Z18: request_camera_frame -> camera_frame-Notification ->
 // 16-Byte-Header (total,width,height,format als big-endian uint32) + YUYV.
 bool KaitenSession::fetch_camera_frame(int& width, int& height,
@@ -548,7 +548,7 @@ bool KaitenSession::fetch_camera_frame(int& width, int& height,
 }
 
 
-// ── Token-Refresh (HTTPS:443) ────────────────────────────────────────────────
+// -- Token-Refresh (HTTPS:443) ------------------------------------------------
 // Fetches a fresh onetime access_token from client_secret + birdwing_code.
 // Verifiziert gegen conveyor get_birdwing_token / do_auth_get('token', ...).
 bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& error) const
@@ -589,7 +589,7 @@ bool MakerbotLink::refresh_access_token(std::string& token_out, std::string& err
 }
 
 
-// ── pending-print file: remembers the remote_path of the last uploaded ─────
+// -- pending-print file: remembers the remote_path of the last uploaded -----
 // file per printer (host). The Device tab reads it on "start print".
 // Liegt unter ~/.config/OrcaSlicer/makerbot_pending/<host>.txt
 static std::string makerbot_pending_path(const std::string& host)
@@ -616,7 +616,7 @@ static void write_pending_print(const std::string& host, const std::string& remo
     }
 }
 
-// ── Birdwing file upload over Kaiten (put_init/put_raw/put_term) ────────────
+// -- Birdwing file upload over Kaiten (put_init/put_raw/put_term) ------------
 // Verified against a real Z18 (kaiten_upload_probe.py): JSON-RPC over 9999,
 // put_raw sends bare JSON + 32KB raw bytes directly, put_term with CRC32.
 bool MakerbotLink::get_camera_frame(KaitenSession& session, int& width,
@@ -839,7 +839,7 @@ bool MakerbotLink::kaiten_print_and_upload(KaitenSession& session,
 }
 
 
-// ── Plaintext kaiten session (port 9999) ─────────────────────────────────────
+// -- Plaintext kaiten session (port 9999) -------------------------------------
 
 std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& error) const
 {
@@ -875,7 +875,7 @@ std::shared_ptr<KaitenSession> MakerbotLink::open_kaiten_session(std::string& er
 
 
 
-// ── Birdwing Auth Flow ────────────────────────────────────────────────────────
+// -- Birdwing Auth Flow --------------------------------------------------------
 
 MakerbotLink::BirdwingAuthResult
 MakerbotLink::birdwing_authorize(std::string& error_or_token,
@@ -888,19 +888,19 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
     //   Step 1: HTTPS GET https://<printer>:443/auth?response_type=code
     //              &client_id=MakerWare&client_secret=<random>
     //              &username=OrcaSlicer&thingiverse_token=
-    //           → printer blinks yellow, waits for button
-    //           → {"status":"ok","answer_code":"<answer_code>"}
+    //           -> printer blinks yellow, waits for button
+    //           -> {"status":"ok","answer_code":"<answer_code>"}
     //
     //   Step 2: Poll HTTPS GET https://<printer>:443/auth?response_type=answer
     //              &client_id=MakerWare&client_secret=<random>
     //              &answer_code=<answer_code>
-    //           → {"answer":"pending"}  (while waiting)
-    //           → {"answer":"accepted","code":"<birdwing_code>"}  (after press)
+    //           -> {"answer":"pending"}  (while waiting)
+    //           -> {"answer":"accepted","code":"<birdwing_code>"}  (after press)
     //
     //   Step 3: HTTPS GET https://<printer>:443/auth?response_type=token
     //              &client_id=MakerWare&client_secret=<random>
     //              &context=jsonrpc&auth_code=<birdwing_code>
-    //           → {"status":"success","access_token":"<token>"}
+    //           -> {"status":"success","access_token":"<token>"}
     //
     // Re-authentication reuses the stored access_token on port 9999 (KaitenSession).
 
@@ -934,12 +934,12 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
         return ok;
     };
 
-    // ── Step 1: Request a code (triggers yellow blink on Z18) ──────────────
+    // -- Step 1: Request a code (triggers yellow blink on Z18) --------------
     std::string body, err;
     const std::string code_params =
         "response_type=code&username=OrcaSlicer&thingiverse_token=";
     if (!https_get(code_params, body, err)) {
-        error_or_token = "Could not reach Z18 at https://" + m_host + ":443 — " + err;
+        error_or_token = "Could not reach Z18 at https://" + m_host + ":443 - " + err;
         BOOST_LOG_TRIVIAL(warning) << "MakerbotLink birdwing_authorize step1 failed: " << err;
         return BirdwingAuthResult::ConnectionFailed;
     }
@@ -956,7 +956,7 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
     const std::string answer_code = j1["answer_code"].get<std::string>();
     BOOST_LOG_TRIVIAL(info) << "MakerbotLink birdwing_authorize: got answer_code, waiting for button press...";
 
-    // ── Step 2: Poll until button pressed (or timeout) ──────────────────────
+    // -- Step 2: Poll until button pressed (or timeout) ----------------------
     const std::string answer_params =
         "response_type=answer&answer_code=" + Http::url_encode(answer_code);
 
@@ -979,7 +979,7 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
             error_or_token = "Button press was rejected by the printer.";
             return BirdwingAuthResult::ConnectionFailed;
         }
-        // answer == "pending" → keep polling
+        // answer == "pending" -> keep polling
     }
 
     if (birdwing_code.empty()) {
@@ -987,12 +987,12 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
         return BirdwingAuthResult::Timeout;
     }
 
-    // ── Step 3: Exchange birdwing_code for access_token ─────────────────────
+    // -- Step 3: Exchange birdwing_code for access_token ---------------------
     const std::string token_params =
         "response_type=token&context=jsonrpc&auth_code=" + Http::url_encode(birdwing_code);
     std::string tbody, terr;
     if (!https_get(token_params, tbody, terr)) {
-        error_or_token = "Could not fetch access token from printer — " + terr;
+        error_or_token = "Could not fetch access token from printer - " + terr;
         return BirdwingAuthResult::ConnectionFailed;
     }
 
@@ -1019,7 +1019,7 @@ MakerbotLink::birdwing_authorize(std::string& error_or_token,
 
 
 
-// ── Lava/Method: JSON-RPC over HTTP ──────────────────────────────────────────
+// -- Lava/Method: JSON-RPC over HTTP ------------------------------------------
 
 bool MakerbotLink::lava_rpc(const std::string&    method,
                              const nlohmann::json& params,
@@ -1068,7 +1068,7 @@ bool MakerbotLink::lava_rpc(const std::string&    method,
 }
 
 
-// ── PrintHost Interface ───────────────────────────────────────────────────────
+// -- PrintHost Interface -------------------------------------------------------
 
 wxString MakerbotLink::get_test_ok_msg() const
 {
@@ -1084,7 +1084,7 @@ wxString MakerbotLink::get_test_failed_msg(wxString& msg) const
         : "Port 2222 HTTP. For Birdwing printers (Z18/Replicator+) remove :2222.";
     return msg.empty()
         ? wxString::FromUTF8(hint)
-        : msg + wxString::FromUTF8(" — ") + wxString::FromUTF8(hint);
+        : msg + wxString::FromUTF8(" - ") + wxString::FromUTF8(hint);
 }
 
 bool MakerbotLink::test(wxString& curl_info) const
@@ -1092,7 +1092,7 @@ bool MakerbotLink::test(wxString& curl_info) const
     std::string err;
 
     if (m_is_birdwing) {
-        // Handshake only – immediate response, no button press needed
+        // Handshake only - immediate response, no button press needed
         nlohmann::json resp;
         if (birdwing_rpc("handshake", nlohmann::json::object(), resp, err, 10))
             return true;

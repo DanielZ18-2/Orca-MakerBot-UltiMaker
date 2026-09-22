@@ -1,5 +1,5 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
-// MakerbotDiscoveryDialog.cpp – Network auto-discovery
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
+// MakerbotDiscoveryDialog.cpp - Network auto-discovery
 
 #include "MakerbotDiscoveryDialog.hpp"
 #include "GUI.hpp"
@@ -38,13 +38,13 @@
 namespace Slic3r {
 namespace GUI {
 
-// ── mDNS Service Names ────────────────────────────────────────────────────────
+// -- mDNS Service Names --------------------------------------------------------
 static constexpr const char* MDNS_MAKERBOT  = "_makerbot._tcp.local.";
 static constexpr const char* MDNS_ULTIMAKER = "_ultimaker._tcp.local.";
 static constexpr int         UDP_DISCOVERY_PORT = 12307;  // MakerBot Birdwing beacon
 static constexpr int         DISCOVERY_TIMEOUT_MS = 5000;
 
-// ── Constructor ───────────────────────────────────────────────────────────────
+// -- Constructor ---------------------------------------------------------------
 
 MakerbotDiscoveryDialog::MakerbotDiscoveryDialog(wxWindow* parent, int filter)
     : wxDialog(parent, wxID_ANY,
@@ -58,7 +58,7 @@ MakerbotDiscoveryDialog::MakerbotDiscoveryDialog(wxWindow* parent, int filter)
 {
     SetFont(wxGetApp().normal_font());
 
-    // ── List control ──────────────────────────────────────────────────────────
+    // -- List control ----------------------------------------------------------
     m_list = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                             wxLC_REPORT | wxLC_SINGLE_SEL | wxBORDER_SUNKEN);
     m_list->InsertColumn(0, _L("Printer Name"),  wxLIST_FORMAT_LEFT, 160);
@@ -66,10 +66,10 @@ MakerbotDiscoveryDialog::MakerbotDiscoveryDialog(wxWindow* parent, int filter)
     m_list->InsertColumn(2, _L("IP Address"),    wxLIST_FORMAT_LEFT, 120);
     m_list->InsertColumn(3, _L("Protocol"),      wxLIST_FORMAT_LEFT, 170);
 
-    // ── Status line ───────────────────────────────────────────────────────────
+    // -- Status line -----------------------------------------------------------
     m_status = new wxStaticText(this, wxID_ANY, _L("Scanning network..."));
 
-    // ── Buttons ───────────────────────────────────────────────────────────────
+    // -- Buttons ---------------------------------------------------------------
     m_rescan = new wxButton(this, wxID_ANY, _L("Rescan"));
     m_ok     = new wxButton(this, wxID_OK,  _L("Select"));
     auto cancel = new wxButton(this, wxID_CANCEL, _L("Cancel"));
@@ -88,7 +88,7 @@ MakerbotDiscoveryDialog::MakerbotDiscoveryDialog(wxWindow* parent, int filter)
     SetSizerAndFit(main_sizer);
     SetMinSize(wxSize(500, 320));
 
-    // ── Event bindings ────────────────────────────────────────────────────────
+    // -- Event bindings --------------------------------------------------------
     m_ok->Bind(wxEVT_BUTTON,     &MakerbotDiscoveryDialog::on_ok,     this);
     m_rescan->Bind(wxEVT_BUTTON, &MakerbotDiscoveryDialog::on_rescan, this);
     m_list->Bind(wxEVT_LIST_ITEM_ACTIVATED, [this](wxListEvent&) { EndModal_if_selected(); });
@@ -105,7 +105,7 @@ MakerbotDiscoveryDialog::~MakerbotDiscoveryDialog()
     stop_discovery();
 }
 
-// ── Discovery ─────────────────────────────────────────────────────────────────
+// -- Discovery -----------------------------------------------------------------
 
 void MakerbotDiscoveryDialog::start_discovery()
 {
@@ -163,7 +163,7 @@ void MakerbotDiscoveryDialog::add_result(const DiscoveredPrinter& p)
     m_list->SetItem(idx, 3, from_u8(p.protocol));
 }
 
-// ── mDNS Discovery: MakerBot ──────────────────────────────────────────────────
+// -- mDNS Discovery: MakerBot --------------------------------------------------
 
 void MakerbotDiscoveryDialog::discover_mdns_makerbot(std::vector<DiscoveredPrinter>& out)
 {
@@ -215,7 +215,7 @@ void MakerbotDiscoveryDialog::discover_mdns_makerbot(std::vector<DiscoveredPrint
     }
 }
 
-// ── mDNS Discovery: UltiMaker ─────────────────────────────────────────────────
+// -- mDNS Discovery: UltiMaker -------------------------------------------------
 
 void MakerbotDiscoveryDialog::discover_mdns_ultimaker(std::vector<DiscoveredPrinter>& out)
 {
@@ -263,7 +263,7 @@ void MakerbotDiscoveryDialog::discover_mdns_ultimaker(std::vector<DiscoveredPrin
     }
 }
 
-// ── UDP Broadcast Discovery (MakerBot Birdwing Port 12307) ───────────────────
+// -- UDP Broadcast Discovery (MakerBot Birdwing Port 12307) -------------------
 
 void MakerbotDiscoveryDialog::discover_udp_broadcast(std::vector<DiscoveredPrinter>& out)
 {
@@ -338,7 +338,7 @@ void MakerbotDiscoveryDialog::discover_udp_broadcast(std::vector<DiscoveredPrint
     }
 }
 
-// ── Event Handlers ────────────────────────────────────────────────────────────
+// -- Event Handlers ------------------------------------------------------------
 
 void MakerbotDiscoveryDialog::EndModal_if_selected()
 {
@@ -347,7 +347,7 @@ void MakerbotDiscoveryDialog::EndModal_if_selected()
 }
 
 
-// ── Subnet Scan: TCP-Connect auf Port 12309 ───────────────────────────────────
+// -- Subnet Scan: TCP-Connect auf Port 12309 -----------------------------------
 // Birdwing printers do not support mDNS and do not respond to UDP broadcasts
 // across subnet boundaries. Therefore: parallel TCP scan of all hosts in the /24 subnet.
 void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter>& out)
@@ -441,7 +441,7 @@ void MakerbotDiscoveryDialog::discover_subnet_scan(std::vector<DiscoveredPrinter
                     int err = 0; socklen_t len = sizeof(err);
                     getsockopt(sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &len);
                     if (err == 0 && FD_ISSET(sock, &write_fds) && !m_stop) {
-                        // Port 12309 open → likely Birdwing printer
+                        // Port 12309 open -> likely Birdwing printer
                         DiscoveredPrinter p;
                         p.ip          = ip;
                         p.is_makerbot = true;
@@ -498,7 +498,7 @@ void MakerbotDiscoveryDialog::on_rescan(wxCommandEvent&)
 
 void MakerbotDiscoveryDialog::on_timer(wxTimerEvent&)
 {
-    // Heartbeat – currently unused, reserved for progress animation
+    // Heartbeat - currently unused, reserved for progress animation
 }
 
 } // namespace GUI

@@ -1,11 +1,11 @@
 #ifndef slic3r_Format_MakerBotExport_hpp_
 #define slic3r_Format_MakerBotExport_hpp_
 
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // =============================================================================
 // Post-processes a finished G-code file into the native .makerbot archive
 // format required by MakerBot (Birdwing/Lava) printers. Called from
-// GCode::do_export() after the .tmp → .gcode rename succeeds.
+// GCode::do_export() after the .tmp -> .gcode rename succeeds.
 //
 // This module is MakerBot-only and has no dependency on, or knowledge of,
 // UltiMaker/.ufp export - that lives entirely independently in
@@ -14,9 +14,9 @@
 // only share the vendor-neutral helpers in Format/GCodeArchiveUtils.hpp.
 //
 // Output formats by flavor:
-//   gcfMakerBotBirdwing  → .makerbot  (ZIP: print.jsontoolpath + meta.json)
-//   gcfMakerBotLava      → .makerbot  (ZIP: print.gcode + meta.json)
-//   gcfMakerBotLegacy    → .gcode     (plain; user can convert to .x3g via GPX)
+//   gcfMakerBotBirdwing  -> .makerbot  (ZIP: print.jsontoolpath + meta.json)
+//   gcfMakerBotLava      -> .makerbot  (ZIP: print.gcode + meta.json)
+//   gcfMakerBotLegacy    -> .gcode     (plain; user can convert to .x3g via GPX)
 //
 // The original .gcode file is removed after successful archive creation (unless
 // the archive path equals the input path, i.e. the user saved as .makerbot).
@@ -42,7 +42,7 @@ struct BirdwingThumbnails {
 
 std::string get_archive_extension(GCodeFlavor flavor);
 
-// Main entry point – called from GCode::do_export() after the G-code is written.
+// Main entry point - called from GCode::do_export() after the G-code is written.
 //
 // gcode_path  : path of the freshly written .gcode file
 // config      : full print config (used for nozzle temps, flavor, etc.)

@@ -1,4 +1,4 @@
-// MakerBot / UltiMaker Fork – Orca Slicer 2.4
+// MakerBot / UltiMaker Fork - Orca Slicer 2.4
 // Implementierung: UltiMaker REST-API Netzwerkschicht
 
 #include "UltimakerLink.hpp"
@@ -12,7 +12,7 @@
 
 namespace Slic3r {
 
-// ── Konstruktor ───────────────────────────────────────────────────────────────
+// -- Konstruktor ---------------------------------------------------------------
 
 UltimakerLink::UltimakerLink(DynamicPrintConfig *config)
 {
@@ -42,7 +42,7 @@ UltimakerLink::UltimakerLink(DynamicPrintConfig *config)
     }
 }
 
-// ── REST-Helfer ───────────────────────────────────────────────────────────────
+// -- REST-Helfer ---------------------------------------------------------------
 
 bool UltimakerLink::rest_get(const std::string &endpoint,
                               nlohmann::json    &out,
@@ -137,7 +137,7 @@ bool UltimakerLink::rest_post(const std::string &endpoint,
     return true;
 }
 
-// ── Authentifizierung ─────────────────────────────────────────────────────────
+// -- Authentifizierung ---------------------------------------------------------
 
 bool UltimakerLink::check_auth(std::string &error) const
 {
@@ -179,7 +179,7 @@ bool UltimakerLink::check_auth(std::string &error) const
     return false;
 }
 
-// ── PrintHost Interface ───────────────────────────────────────────────────────
+// -- PrintHost Interface -------------------------------------------------------
 
 wxString UltimakerLink::get_test_ok_msg() const
 {
@@ -207,14 +207,14 @@ bool UltimakerLink::upload(PrintHostUpload upload_data,
                             ErrorFn         err_fn,
                             InfoFn          info_fn) const
 {
-    // ── 1. Check auth ────────────────────────────────────────────────────────
+    // -- 1. Check auth --------------------------------------------------------
     std::string err;
     if (!check_auth(err)) {
         err_fn("UltiMaker auth failed: " + err);
         return false;
     }
 
-    // ── 2. Send file as a multipart POST to /api/v1/print_job ──────────────
+    // -- 2. Send file as a multipart POST to /api/v1/print_job --------------
     const std::string url =
         (boost::format("http://%1%:%2%/api/v1/print_job") % m_host % m_port).str();
 

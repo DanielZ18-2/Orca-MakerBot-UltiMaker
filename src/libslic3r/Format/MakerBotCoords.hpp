@@ -7,7 +7,7 @@ namespace Slic3r {
 
 class ConfigBase;
 
-// ── Bettecke <-> Maschinenmitte ──────────────────────────────────────────────
+// -- Bettecke <-> Maschinenmitte ----------------------------------------------
 //
 // MakerBot firmware - Sailfish on the legacy line, the Birdwing/Lava stack on
 // Method and Sketch - places the origin in the MIDDLE of the build platform.
