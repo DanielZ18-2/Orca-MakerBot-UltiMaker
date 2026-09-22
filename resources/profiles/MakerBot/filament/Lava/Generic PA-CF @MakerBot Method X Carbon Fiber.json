@@ -9,9 +9,6 @@
     "filament_type": [
         "PA-CF"
     ],
-    "pressure_advance": [
-        "0.03"
-    ],
     "compatible_printers": [
         "MakerBot Method X Carbon Fiber 0.4 nozzle"
     ],

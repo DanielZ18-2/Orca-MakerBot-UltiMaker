@@ -9,9 +9,6 @@
     "filament_type": [
         "ABS"
     ],
-    "pressure_advance": [
-        "0.024"
-    ],
     "compatible_printers": [
         "MakerBot Replicator Mini 0.2 nozzle",
         "MakerBot Replicator Mini 0.4 nozzle",

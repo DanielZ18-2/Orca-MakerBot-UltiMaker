@@ -4346,7 +4346,20 @@ void TabFilament::toggle_options()
     }
     if (m_active_page->title() == L("Filament"))
     {
-        bool pa = m_config->opt_bool("enable_pressure_advance", 0);
+        // MakerBot / UltiMaker Fork: hide the whole pressure advance
+        // group on firmware that has no such command -- GCodeWriter stays
+        // silent there, so every field in it would be inert. Regel 116.
+        const GCodeFlavor pa_flavor =
+            printer_cfg.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor")->value;
+        const bool firmware_has_pa = flavor_has_pressure_advance(pa_flavor);
+        for (const char* el : {"enable_pressure_advance", "pressure_advance",
+                               "adaptive_pressure_advance",
+                               "adaptive_pressure_advance_overhangs",
+                               "adaptive_pressure_advance_bridges",
+                               "adaptive_pressure_advance_model"})
+            toggle_line(el, firmware_has_pa);
+
+        bool pa = firmware_has_pa && m_config->opt_bool("enable_pressure_advance", 0);
         toggle_option("pressure_advance", pa);
 
         //Orca: Enable the plates that should be visible when multi bed support is enabled or a BBL printer is selected; otherwise, enable only the plate visible for the selected bed type.

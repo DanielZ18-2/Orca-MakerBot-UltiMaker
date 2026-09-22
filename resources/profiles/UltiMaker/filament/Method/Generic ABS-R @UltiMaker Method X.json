@@ -12,9 +12,6 @@
     "filament_retraction_length": [
         "0.5"
     ],
-    "pressure_advance": [
-        "0.024"
-    ],
     "compatible_printers": [
         "UltiMaker Method X 0.4 nozzle"
     ],

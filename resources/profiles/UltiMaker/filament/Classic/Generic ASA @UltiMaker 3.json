@@ -9,9 +9,6 @@
     "filament_type": [
         "ASA"
     ],
-    "pressure_advance": [
-        "0.024"
-    ],
     "compatible_printers": [
         "UltiMaker 3 0.25 nozzle",
         "UltiMaker 3 0.4 nozzle",

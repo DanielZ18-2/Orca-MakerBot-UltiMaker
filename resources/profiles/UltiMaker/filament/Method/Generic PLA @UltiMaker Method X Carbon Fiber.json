@@ -12,9 +12,6 @@
     "filament_retraction_length": [
         "0.75"
     ],
-    "pressure_advance": [
-        "0.02"
-    ],
     "compatible_printers": [
         "UltiMaker Method X Carbon Fiber 0.4 nozzle"
     ],

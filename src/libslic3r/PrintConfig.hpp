@@ -52,6 +52,21 @@ enum GCodeFlavor : unsigned char {
     gcfCheetah            // UltiMaker S8/Factor 4+ → .ufp, Griffin + M214/M215
 };
 
+// MakerBot / UltiMaker Fork: does this flavor have a pressure advance
+// command at all? Klipper has SET_PRESSURE_ADVANCE, RepRapFirmware M572,
+// Repetier M233, Marlin M900 (Linear Advance), and Cheetah M214. Sailfish,
+// Birdwing, Lava and Griffin firmware read none of them, and an unknown
+// command in the file is at best ignored.
+//
+// Three places ask: the writer stays silent, the filament tab hides the
+// settings, and the calibration menu does not offer the tower. Regel 116 --
+// a setting that cannot reach the machine is worse than a missing one.
+inline bool flavor_has_pressure_advance(GCodeFlavor flavor)
+{
+    return flavor != gcfMakerBotLegacy && flavor != gcfMakerBotBirdwing &&
+           flavor != gcfMakerBotLava   && flavor != gcfGriffin;
+}
+
 
 enum class FuzzySkinType {
     None,

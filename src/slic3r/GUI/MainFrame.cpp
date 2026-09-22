@@ -82,6 +82,19 @@
 namespace Slic3r {
 namespace GUI {
 
+// MakerBot / UltiMaker Fork: does the printer that is selected right now have
+// a pressure advance command? Used by the calibration menu; the same question
+// the writer and the filament tab ask. Regel 116.
+static bool printer_flavor_has_pressure_advance()
+{
+    PresetBundle* bundle = wxGetApp().preset_bundle;
+    if (bundle == nullptr)
+        return true;
+    const ConfigOptionEnum<GCodeFlavor>* opt =
+        bundle->printers.get_edited_preset().config.option<ConfigOptionEnum<GCodeFlavor>>("gcode_flavor");
+    return opt == nullptr || flavor_has_pressure_advance(opt->value);
+}
+
 wxDEFINE_EVENT(EVT_SELECT_TAB, wxCommandEvent);
 wxDEFINE_EVENT(EVT_HTTP_ERROR, wxCommandEvent);
 wxDEFINE_EVENT(EVT_USER_LOGIN, wxCommandEvent);
@@ -3417,7 +3430,11 @@ void MainFrame::init_menubar_as_editor()
                 m_pa_calib_dlg = new PA_Calibration_Dlg((wxWindow*)this, wxID_ANY, m_plater);
             m_pa_calib_dlg->ShowModal();
         }, "", nullptr,
-        [this]() {return m_plater->is_view3D_shown();; }, this);
+        // MakerBot / UltiMaker Fork: the tower is pointless on firmware
+        // without a pressure advance command -- the measured value could
+        // never be written. Regel 116.
+        [this]() { return m_plater->is_view3D_shown() &&
+                          printer_flavor_has_pressure_advance(); }, this);
 
     // Flow rate (Wizard Dialog)
     append_menu_item(m_topbar->GetCalibMenu(), wxID_ANY, _L("Flow ratio"), _L("Flow Rate Calibration"),
@@ -3538,7 +3555,11 @@ void MainFrame::init_menubar_as_editor()
                 m_pa_calib_dlg = new PA_Calibration_Dlg((wxWindow*)this, wxID_ANY, m_plater);
             m_pa_calib_dlg->ShowModal();
         }, "", nullptr,
-        [this]() {return m_plater->is_view3D_shown();; }, this);
+        // MakerBot / UltiMaker Fork: the tower is pointless on firmware
+        // without a pressure advance command -- the measured value could
+        // never be written. Regel 116.
+        [this]() { return m_plater->is_view3D_shown() &&
+                          printer_flavor_has_pressure_advance(); }, this);
 
     // Flowrate (with submenu)
     // ORCA: Flow rate (Wizard Dialog)

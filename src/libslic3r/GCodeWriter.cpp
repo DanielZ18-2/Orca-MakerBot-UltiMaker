@@ -452,6 +452,12 @@ std::string GCodeWriter::set_pressure_advance(double pa) const
             // constant both measurements agree on.
             gcode << "M214 K" << std::setprecision(4) << pa
                   << " R0.04 ; Override pressure advance value\n";
+        // MakerBot / UltiMaker Fork: the four flavors below have no
+        // pressure advance command, so the writer says nothing rather than
+        // sending them an M900 they cannot read. Same construction as
+        // set_jerk_xy() for Cheetah. Regel 116.
+        else if (! flavor_has_pressure_advance(this->config.gcode_flavor.value))
+            return std::string();
         else
             gcode << "M900 K" <<std::setprecision(4)<< pa << "; Override pressure advance value\n";
     }

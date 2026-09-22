@@ -9,9 +9,6 @@
     "filament_type": [
         "PLA"
     ],
-    "pressure_advance": [
-        "0.02"
-    ],
     "compatible_printers": [
         "UltiMaker S7 0.25 nozzle",
         "UltiMaker S7 0.4 nozzle",

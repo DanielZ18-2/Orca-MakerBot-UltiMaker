@@ -9,9 +9,6 @@
     "filament_type": [
         "PETG"
     ],
-    "pressure_advance": [
-        "0.03"
-    ],
     "compatible_printers": [
         "MakerBot Replicator 2X 0.2 nozzle",
         "MakerBot Replicator 2X 0.4 nozzle",
