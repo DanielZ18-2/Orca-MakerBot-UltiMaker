@@ -2572,6 +2572,19 @@ void TabPrint::build()
         optgroup->append_single_option_line("initial_layer_travel_jerk", "speed_settings_jerk_xy#initial-layer-travel");
         optgroup->append_single_option_line("travel_jerk", "speed_settings_jerk_xy#travel");
 
+        // MakerBot / UltiMaker Fork: Cheetah takes true jerk in m/s3, not a
+        // velocity step in mm/s. ConfigManipulation shows exactly one of the
+        // two groups, chosen by gcode_flavor. Regel 116.
+        optgroup = page->new_optgroup(L("Jerk(XY), Cheetah firmware"), L"param_jerk", 15);
+        optgroup->append_single_option_line("cheetah_default_jerk", "speed_settings_jerk_xy#default");
+        optgroup->append_single_option_line("cheetah_outer_wall_jerk", "speed_settings_jerk_xy#outer-wall");
+        optgroup->append_single_option_line("cheetah_inner_wall_jerk", "speed_settings_jerk_xy#inner-wall");
+        optgroup->append_single_option_line("cheetah_infill_jerk", "speed_settings_jerk_xy#infill");
+        optgroup->append_single_option_line("cheetah_top_surface_jerk", "speed_settings_jerk_xy#top-surface");
+        optgroup->append_single_option_line("cheetah_initial_layer_jerk", "speed_settings_jerk_xy#initial-layer");
+        optgroup->append_single_option_line("cheetah_travel_jerk", "speed_settings_jerk_xy#travel");
+        optgroup->append_single_option_line("cheetah_initial_layer_travel_jerk", "speed_settings_jerk_xy#initial-layer-travel");
+
         optgroup = page->new_optgroup(L("Advanced"), L"param_advanced", 15);
         optgroup->append_single_option_line("max_volumetric_extrusion_rate_slope", "speed_settings_advanced");
         optgroup->append_single_option_line("max_volumetric_extrusion_rate_slope_segment_length", "speed_settings_advanced");

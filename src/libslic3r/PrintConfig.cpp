@@ -3377,6 +3377,94 @@ void PrintConfigDef::init_fff_params()
     def->ratio_over = "travel_jerk";
     def->set_default_value(new ConfigOptionFloatOrPercent(100, true));
 
+    // MakerBot / UltiMaker Fork: Cheetah firmware (UltiMaker S8, Factor 4+)
+    // takes TRUE jerk through M215, in mm/s3 -- the third derivative of
+    // position. Marlin's M205 takes a velocity step in mm/s. These are two
+    // different physical quantities, no formula converts one into the other,
+    // and so the two firmware families need two sets of settings. The writer
+    // picks by flavor; see GCodeWriter::set_jerk_true(). Regel 116.
+    //
+    // The unit here is m/s3 because that is how Cura carries the same values
+    // ("unit": "m/s3" in ultimaker_s8.def.json), and the numbers that come
+    // out of it -- 1, 2, 5, 10 -- are readable. The writer multiplies by 1000
+    // on the way out, which is what M215 wants.
+    //
+    // Deliberately coFloat and not coFloatOrPercent the way Orca's own
+    // initial_layer_travel_jerk is: the measured travel jerk is the same
+    // value on every layer of both machines, so a ratio_over would add an
+    // unknown for nothing.
+    def = this->add("cheetah_default_jerk", coFloat);
+    def->label = L("Default");
+    def->category = L("Speed");
+    def->tooltip = L("Default true jerk, for firmware that takes a jerk instead of a velocity step.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_outer_wall_jerk", coFloat);
+    def->label = L("Outer wall");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk of outer walls.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_inner_wall_jerk", coFloat);
+    def->label = L("Inner wall");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk of inner walls.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_infill_jerk", coFloat);
+    def->label = L("Infill");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk for infill.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_top_surface_jerk", coFloat);
+    def->label = L("Top surface");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk for top surface.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_initial_layer_jerk", coFloat);
+    def->label = L("First layer");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk for the first layer.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_travel_jerk", coFloat);
+    def->label = L("Travel");
+    def->category = L("Speed");
+    def->tooltip = L("True jerk for travel.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def = this->add("cheetah_initial_layer_travel_jerk", coFloat);
+    def->label = L("First layer travel");
+    def->category = L("Speed");
+    def->tooltip = L("True travel jerk of the first layer.");
+    def->sidetext = L(u8"m/s\u00B3" /* m/s3 */);
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
     def = this->add("initial_layer_line_width", coFloatOrPercent);
     def->label = L("First layer");
     def->category = L("Quality");

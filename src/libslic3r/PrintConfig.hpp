@@ -1065,6 +1065,18 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,              top_surface_jerk))
     ((ConfigOptionFloat,              initial_layer_jerk))
     ((ConfigOptionFloat,              travel_jerk))
+
+    // Orca: Cheetah's true jerk, carried in m/s3 -- a different
+    // physical quantity from the mm/s above. See
+    // cheetah_default_jerk in PrintConfig.cpp. Regel 116.
+    ((ConfigOptionFloat,              cheetah_default_jerk))
+    ((ConfigOptionFloat,              cheetah_outer_wall_jerk))
+    ((ConfigOptionFloat,              cheetah_inner_wall_jerk))
+    ((ConfigOptionFloat,              cheetah_infill_jerk))
+    ((ConfigOptionFloat,              cheetah_top_surface_jerk))
+    ((ConfigOptionFloat,              cheetah_initial_layer_jerk))
+    ((ConfigOptionFloat,              cheetah_travel_jerk))
+    ((ConfigOptionFloat,              cheetah_initial_layer_travel_jerk))
     ((ConfigOptionBool,               precise_z_height))
     ((ConfigOptionFloat,              default_junction_deviation))
 

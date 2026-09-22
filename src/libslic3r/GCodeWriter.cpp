@@ -277,6 +277,14 @@ std::string GCodeWriter::set_acceleration_internal(Acceleration type, unsigned i
 
 std::string GCodeWriter::set_jerk_xy(double jerk)
 {
+    // MakerBot / UltiMaker Fork: Cheetah firmware has no M205, and its jerk
+    // is a different physical quantity -- true jerk in m/s3, not a velocity
+    // step in mm/s. Converting the one into the other has no meaning, so this
+    // function stays silent for Cheetah and set_jerk_true() carries the
+    // cheetah_*_jerk settings instead. Regel 116.
+    if (FLAVOR_IS(gcfCheetah))
+        return std::string();
+
     if (jerk < 0.01 || is_approx(jerk, m_last_jerk))
         return std::string();
     
@@ -326,6 +334,31 @@ std::string GCodeWriter::set_jerk_xy(double jerk)
 
     return gcode.str();
 
+}
+
+// MakerBot / UltiMaker Fork: M215 takes TRUE jerk -- the third derivative of
+// position -- in mm/s3. Cura carries the same values in m/s3 and so do our
+// cheetah_*_jerk settings, so the factor on the way out is 1000. The mm/s
+// maxima in machine_max_jerk_x/y are Marlin limits on a velocity step and are
+// NOT comparable with this quantity, so nothing is clamped against them.
+// Regel 116.
+std::string GCodeWriter::set_jerk_true(double jerk_ms3)
+{
+    if (! FLAVOR_IS(gcfCheetah))
+        return std::string();
+    if (jerk_ms3 < 0.001 || is_approx(jerk_ms3, m_last_true_jerk))
+        return std::string();
+
+    m_last_true_jerk = jerk_ms3;
+
+    std::ostringstream gcode;
+    const long long jerk_mms3 = (long long) (jerk_ms3 * 1000. + 0.5);
+    gcode << "M215 X" << jerk_mms3 << " Y" << jerk_mms3;
+
+    if (GCodeWriter::full_gcode_comment) gcode << " ; adjust jerk";
+    gcode << "\n";
+
+    return gcode.str();
 }
 
 std::string GCodeWriter::set_accel_and_jerk(unsigned int acceleration, double jerk)

@@ -21,7 +21,7 @@ public:
         m_curr_extruder_id (-1),
         m_single_extruder_multi_material(false),
         m_last_acceleration(0), m_max_acceleration(0),m_last_travel_acceleration(0), m_max_travel_acceleration(0),
-        m_last_jerk(0), m_max_jerk_x(0), m_max_jerk_y(0),
+        m_last_jerk(0), m_last_true_jerk(0), m_max_jerk_x(0), m_max_jerk_y(0),
         m_last_bed_temperature(0), m_last_bed_temperature_reached(true),
         m_lifted(0),
         m_to_lift(0),
@@ -54,6 +54,10 @@ public:
     std::string set_print_acceleration(unsigned int acceleration)   { return set_acceleration_internal(Acceleration::Print, acceleration); }
     std::string set_travel_acceleration(unsigned int acceleration)  { return set_acceleration_internal(Acceleration::Travel, acceleration); }
     std::string set_jerk_xy(double jerk);
+    // MakerBot / UltiMaker Fork: true jerk in m/s3 for Cheetah firmware
+    // (M215). A different physical quantity from set_jerk_xy's mm/s velocity
+    // step -- see cheetah_default_jerk in PrintConfig.cpp. Regel 116.
+    std::string set_jerk_true(double jerk_ms3);
     // Orca: set acceleration and jerk in one command for Klipper
     std::string set_accel_and_jerk(unsigned int acceleration, double jerk);
     std::string set_junction_deviation(double junction_deviation); 
@@ -145,6 +149,8 @@ public:
     double          m_max_jerk_x;
     double          m_max_jerk_y;
     double          m_last_jerk;
+    // Orca: last true jerk in m/s3, Cheetah only.
+    double          m_last_true_jerk;
     double          m_max_jerk_z;
     double          m_max_jerk_e;
     double          m_max_junction_deviation;

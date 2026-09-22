@@ -599,6 +599,10 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
 
     // Orca: use booleans to avoid repeated comparisons with enum values
     const bool gcf_is_marlin_firmware = gcflavor == GCodeFlavor::gcfMarlinFirmware;
+    // MakerBot / UltiMaker Fork: Cheetah firmware has no M205. Its jerk is a
+    // different physical quantity and lives in the cheetah_*_jerk settings,
+    // so exactly one of the two jerk groups is ever shown. Regel 116.
+    const bool gcf_is_cheetah         = gcflavor == GCodeFlavor::gcfCheetah;
     const bool gcf_is_klipper = gcflavor == GCodeFlavor::gcfKlipper;
 
     bool have_volumetric_extrusion_rate_slope = config->option<ConfigOptionFloat>("max_volumetric_extrusion_rate_slope")->value > 0;
@@ -712,6 +716,7 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
 
     toggle_line("default_junction_deviation", gcf_is_marlin_firmware);
     toggle_field("default_junction_deviation", junction_deviation_enabled);
+    toggle_line("default_jerk", !gcf_is_cheetah);
     toggle_field("default_jerk", !junction_deviation_enabled);
 
     const std::initializer_list<const char*> jerk_options = {
@@ -719,14 +724,39 @@ void ConfigManipulation::toggle_print_fff_options(DynamicPrintConfig *config, co
         "initial_layer_travel_jerk", "top_surface_jerk", "travel_jerk", "infill_jerk"
     };
 
-    if (junction_deviation_enabled) {
+    // MakerBot / UltiMaker Fork: the same seven roles again, in m/s3 for
+    // Cheetah firmware. Showing both groups at once would invite a user to
+    // fill in the set the machine ignores, so exactly one is visible.
+    // Regel 116.
+    const std::initializer_list<const char*> cheetah_jerk_options = {
+        "cheetah_outer_wall_jerk", "cheetah_inner_wall_jerk", "cheetah_initial_layer_jerk",
+        "cheetah_initial_layer_travel_jerk", "cheetah_top_surface_jerk",
+        "cheetah_travel_jerk", "cheetah_infill_jerk"
+    };
+
+    toggle_line("cheetah_default_jerk", gcf_is_cheetah);
+
+    if (gcf_is_cheetah) {
         for (auto el : jerk_options)
             toggle_line(el, false);
-    } else {
-        const bool have_default_jerk = config->has("default_jerk") && config->opt_float("default_jerk") > 0;
-        for (auto el : jerk_options) {
+        const bool have_cheetah_default = config->has("cheetah_default_jerk") &&
+                                          config->opt_float("cheetah_default_jerk") > 0;
+        for (auto el : cheetah_jerk_options) {
             toggle_line(el, true);
-            toggle_field(el, have_default_jerk);
+            toggle_field(el, have_cheetah_default);
+        }
+    } else {
+        for (auto el : cheetah_jerk_options)
+            toggle_line(el, false);
+        if (junction_deviation_enabled) {
+            for (auto el : jerk_options)
+                toggle_line(el, false);
+        } else {
+            const bool have_default_jerk = config->has("default_jerk") && config->opt_float("default_jerk") > 0;
+            for (auto el : jerk_options) {
+                toggle_line(el, true);
+                toggle_field(el, have_default_jerk);
+            }
         }
     }
 
