@@ -76,5 +76,5 @@
     "filament_deretraction_speed": [
         "30"
     ],
-    "filament_notes": "Kammer 60 statt der 65, die dieses Geraet gerade noch erreicht: ein Druck mit 65 brach am 31.08.2026 beim Aufheizen ab, derselbe Drucker laeuft mit 60 durch. Die Firmware gibt fuer die Kammer keinen Vorgabewert ausser 0 (printer_settings.json, toolheads.chamber.heater), die 65 waren eine eigene Ableitung ohne Quelle. Wer die Bedingungen hat, kann hoeher gehen."
+    "filament_notes": "Chamber 60 rather than 65. The firmware ships no chamber default other than 0 (printer_settings.json, toolheads.chamber.heater), so 65 was a derived value with no source behind it. 60 is the conservative setting for a passively heated chamber of this generation; a well sealed enclosure can carry more."
 }

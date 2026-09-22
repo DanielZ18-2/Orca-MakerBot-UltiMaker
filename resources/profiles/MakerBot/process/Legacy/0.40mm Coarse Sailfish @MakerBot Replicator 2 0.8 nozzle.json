@@ -5,7 +5,7 @@
     "inherits": "0.40mm Coarse @MakerBot Replicator 2 0.8 nozzle",
     "from": "system",
     "instantiation": "true",
-    "description": "Nur fuer Drucker mit Sailfish-Firmware. Das Grundprofil ohne \"Sailfish\" im Namen ist auf die Werksfirmware ausgelegt, die keine Beschleunigungssteuerung besitzt und oberhalb von 50 mm/s Schritte verlieren kann. Vor der Wahl einmal die Firmware auslesen (eeprom_2x_lesen.gcode) - steht dort Version 7.x mit Variante 0x80, ist es Sailfish.",
+    "description": "For printers running Sailfish firmware only. The base profile without \"Sailfish\" in its name targets the factory firmware, which has no acceleration control and can lose steps above 50 mm/s. Check the firmware before choosing this profile: Sailfish reports version 7.x with variant 0x80.",
     "compatible_printers": [
         "MakerBot Replicator 2 0.8 nozzle"
     ],
