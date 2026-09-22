@@ -52,3 +52,47 @@ for V in MakerBot UltiMaker; do
     echo "WARNUNG: $V Versionen weichen ab - Repo $A, System $B, Paket $C"
   fi
 done
+
+# ---------------------------------------------------------------------------
+# Uebersetzungen an BEIDE Stellen bringen - dieselbe Falle wie oben.
+#
+# Gefunden 2026-09-22: build/package/resources/i18n stand auf dem 29. Juni,
+# genau wie die Profile es vor dem Block darueber taten. 5504 Eintraege im
+# Paket gegen 5607 in der Quelle - 103 Texte, die die gebaute Anwendung nicht
+# kennt, darunter der ganze Birdwing-Kopplungsdialog.
+#
+# Der Bau erzeugt die .mo NICHT; das passiert nur im Install-/Package-Schritt,
+# den wir hier nicht fahren. msgfmt uebersetzt
+# localization/i18n/<L>/OrcaSlicer_<L>.po nach resources/i18n/<L>/OrcaSlicer.mo.
+# Die .mo sind gitignoriert - dieser Lauf ist die einzige Stelle, die sie
+# aktuell haelt. Wer einen _L()-Text aendert und das hier auslaesst, aendert
+# die msgid und verliert die Uebersetzung in jeder Sprache, ohne Warnung.
+# ---------------------------------------------------------------------------
+PO=~/Orca_Dev/localization/i18n
+MO=~/Orca_Dev/resources/i18n
+PKGI=~/Orca_Dev/build/package/resources/i18n
+
+if ! command -v msgfmt >/dev/null; then
+  echo "WARNUNG: msgfmt fehlt (sudo apt-get install -y gettext) - Kataloge bleiben alt."
+else
+  N=0
+  for D in "$PO"/*/; do
+    L=$(basename "$D")
+    [ -f "$D/OrcaSlicer_$L.po" ] || continue
+    mkdir -p "$MO/$L" "$PKGI/$L"
+    msgfmt -o "$MO/$L/OrcaSlicer.mo" "$D/OrcaSlicer_$L.po"
+    cp "$MO/$L/OrcaSlicer.mo" "$PKGI/$L/OrcaSlicer.mo"
+    N=$((N+1))
+  done
+  echo "OK: $N Kataloge uebersetzt und nach $PKGI gespiegelt"
+
+  # Gegenprobe: Quelle und Paket muessen gleich viele Eintraege tragen.
+  Z='import gettext,sys;print(len(gettext.GNUTranslations(open(sys.argv[1],"rb"))._catalog))'
+  A=$(python3 -c "$Z" "$MO/de/OrcaSlicer.mo")
+  B=$(python3 -c "$Z" "$PKGI/de/OrcaSlicer.mo")
+  if [ "$A" = "$B" ]; then
+    echo "OK: Katalog de $A Eintraege (Quelle = Paket)"
+  else
+    echo "WARNUNG: Katalog de weicht ab - Quelle $A, Paket $B"
+  fi
+fi
