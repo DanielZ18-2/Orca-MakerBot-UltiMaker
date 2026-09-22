@@ -20713,7 +20713,7 @@ msgid "Scanning network..."
 msgstr ""
 
 #: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
-msgid "MakerBot Birdwing – Authorize Connection"
+msgid "MakerBot Birdwing - Authorize Connection"
 msgstr ""
 
 #: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
@@ -20724,7 +20724,7 @@ msgstr ""
 
 #: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
 msgid ""
-"Timeout – the printer did not respond.\n"
+"Timeout - the printer did not respond.\n"
 "Please try again and press the controller wheel within 120 seconds."
 msgstr ""
 
@@ -20734,7 +20734,7 @@ msgstr ""
 
 #: src/slic3r/GUI/BirdwingHandshakeDialog.cpp
 msgid ""
-"✅  Connection authorized!\n"
+"Connection authorized!\n"
 "Orca Slicer is now paired with your MakerBot."
 msgstr ""
 
