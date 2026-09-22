@@ -3271,6 +3271,14 @@ void GCode::_do_export(Print& print, GCodeOutputStream &file, ThumbnailsGenerato
             double jerk = print.default_object_config().outer_wall_jerk.value;
             gcode += m_writer.set_jerk_xy(jerk);
         }
+        // MakerBot / UltiMaker Fork: Cheetah takes TRUE jerk in m/s3 from its
+        // own settings. set_jerk_true() emits only for Cheetah and set_jerk_xy()
+        // only for the others, so both may be offered and exactly one speaks.
+        // Regel 116.
+        if (print.default_object_config().cheetah_outer_wall_jerk.value > 0) {
+            gcode += m_writer.set_jerk_true(
+                print.default_object_config().cheetah_outer_wall_jerk.value);
+        }
 
         auto params = print.calib_params();
 
@@ -4829,6 +4837,9 @@ LayerResult GCode::process_layer(
         if (m_config.default_jerk.value > 0 && m_config.initial_layer_jerk.value > 0) {
             gcode += m_writer.set_jerk_xy(m_config.initial_layer_jerk.value);
         }
+        if (m_config.cheetah_default_jerk.value > 0 && m_config.cheetah_initial_layer_jerk.value > 0) {
+            gcode += m_writer.set_jerk_true(m_config.cheetah_initial_layer_jerk.value);
+        }
 
         if (m_writer.get_gcode_flavor() == gcfMarlinFirmware && m_config.default_junction_deviation.value > 0) {
             gcode += m_writer.set_junction_deviation(m_config.default_junction_deviation.value);
@@ -4858,6 +4869,9 @@ LayerResult GCode::process_layer(
 
       if (m_config.default_jerk.value > 0 && m_config.initial_layer_jerk.value > 0) {
         gcode += m_writer.set_jerk_xy(m_config.default_jerk.value);
+      }
+      if (m_config.cheetah_default_jerk.value > 0 && m_config.cheetah_initial_layer_jerk.value > 0) {
+        gcode += m_writer.set_jerk_true(m_config.cheetah_default_jerk.value);
       }
 
         // Transition from 1st to 2nd layer. Adjust nozzle temperatures as prescribed by the nozzle dependent
@@ -6517,12 +6531,34 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         }
     }
 
+    // MakerBot / UltiMaker Fork: the same role selection over the
+    // cheetah_*_jerk settings, which carry TRUE jerk in m/s3. Two different
+    // physical quantities cannot share one chain, so there are two, and the
+    // writer lets exactly one of them speak. Regel 116.
+    double true_jerk = 0;
+    if (m_config.cheetah_default_jerk.value > 0) {
+        if (this->on_first_layer() && m_config.cheetah_initial_layer_jerk.value > 0) {
+            true_jerk = m_config.cheetah_initial_layer_jerk.value;
+        } else if (m_config.cheetah_outer_wall_jerk.value > 0 && is_external_perimeter(path.role())) {
+            true_jerk = m_config.cheetah_outer_wall_jerk.value;
+        } else if (m_config.cheetah_inner_wall_jerk.value > 0 && is_internal_perimeter(path.role())) {
+            true_jerk = m_config.cheetah_inner_wall_jerk.value;
+        } else if (m_config.cheetah_top_surface_jerk.value > 0 && is_top_surface(path.role())) {
+            true_jerk = m_config.cheetah_top_surface_jerk.value;
+        } else if (m_config.cheetah_infill_jerk.value > 0 && is_infill(path.role())) {
+            true_jerk = m_config.cheetah_infill_jerk.value;
+        } else {
+            true_jerk = m_config.cheetah_default_jerk.value;
+        }
+    }
+
     if (m_writer.get_gcode_flavor() == gcfKlipper) {
         gcode += m_writer.set_accel_and_jerk(acceleration_i, jerk);
 
     } else {
         gcode += m_writer.set_print_acceleration(acceleration_i);
         gcode += m_writer.set_jerk_xy(jerk);
+        gcode += m_writer.set_jerk_true(true_jerk);
     }
 
     // calculate effective extrusion length per distance unit (e_per_mm)
@@ -7437,6 +7473,7 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
 
     // Orca: we don't need to optimize the Klipper as only set once
     double jerk_to_set = 0.0;
+    double true_jerk_to_set = 0.0;   // Orca: Cheetah's m/s3, see Regel 116
     unsigned int acceleration_to_set = 0;
     
     if (this->on_first_layer()) {
@@ -7448,6 +7485,10 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
         }
         if (m_config.default_jerk.value > 0 && initial_layer_travel_jerk > 0) {
             jerk_to_set = initial_layer_travel_jerk;
+        }
+        if (m_config.cheetah_default_jerk.value > 0 &&
+            m_config.cheetah_initial_layer_travel_jerk.value > 0) {
+            true_jerk_to_set = m_config.cheetah_initial_layer_travel_jerk.value;
         }
     } else { // ORCA: Handle short-travel acceleration and jerk for outer perimeters (if applicable)
         const bool is_short_travel = travel.length() < scale_(EXTRUDER_CONFIG(retraction_minimum_travel));
@@ -7476,6 +7517,16 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
                     jerk_to_set = m_config.travel_jerk.value;
             }
         }
+
+        if (m_config.cheetah_default_jerk.value > 0) {
+            if ((role == erExternalPerimeter || role == erOverhangPerimeter) && is_short_travel) {
+                if (m_config.cheetah_outer_wall_jerk.value > 0)
+                    true_jerk_to_set = m_config.cheetah_outer_wall_jerk.value;
+            } else {
+                if (m_config.cheetah_travel_jerk.value > 0)
+                    true_jerk_to_set = m_config.cheetah_travel_jerk.value;
+            }
+        }
     }
     
     if (m_writer.get_gcode_flavor() == gcfKlipper) {
@@ -7483,6 +7534,7 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
     } else {
         gcode += m_writer.set_travel_acceleration(acceleration_to_set);
         gcode += m_writer.set_jerk_xy(jerk_to_set);
+        gcode += m_writer.set_jerk_true(true_jerk_to_set);
     }
 
     // if a retraction would be needed, try to use reduce_crossing_wall to plan a

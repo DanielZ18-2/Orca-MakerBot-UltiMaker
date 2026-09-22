@@ -50,5 +50,29 @@
     "support_base_pattern": "lightning",
     "support_object_xy_distance": "1.2",
     "support_top_z_distance": "0.3",
-    "support_bottom_z_distance": "0.3"
+    "support_bottom_z_distance": "0.3",
+    "cheetah_default_jerk": [
+        "5000"
+    ],
+    "cheetah_outer_wall_jerk": [
+        "1000"
+    ],
+    "cheetah_inner_wall_jerk": [
+        "5000"
+    ],
+    "cheetah_infill_jerk": [
+        "5000"
+    ],
+    "cheetah_top_surface_jerk": [
+        "1000"
+    ],
+    "cheetah_initial_layer_jerk": [
+        "2500"
+    ],
+    "cheetah_travel_jerk": [
+        "5000"
+    ],
+    "cheetah_initial_layer_travel_jerk": [
+        "5000"
+    ]
 }

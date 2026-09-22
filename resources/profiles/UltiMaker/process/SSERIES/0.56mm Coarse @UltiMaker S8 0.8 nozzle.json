@@ -43,5 +43,29 @@
     "initial_layer_acceleration": "2000",
     "initial_layer_travel_acceleration": "2000",
     "top_surface_acceleration": "10000",
-    "initial_layer_infill_speed": "20"
+    "initial_layer_infill_speed": "20",
+    "cheetah_default_jerk": [
+        "10000"
+    ],
+    "cheetah_outer_wall_jerk": [
+        "2000"
+    ],
+    "cheetah_inner_wall_jerk": [
+        "10000"
+    ],
+    "cheetah_infill_jerk": [
+        "10000"
+    ],
+    "cheetah_top_surface_jerk": [
+        "10000"
+    ],
+    "cheetah_initial_layer_jerk": [
+        "5000"
+    ],
+    "cheetah_travel_jerk": [
+        "10000"
+    ],
+    "cheetah_initial_layer_travel_jerk": [
+        "10000"
+    ]
 }
