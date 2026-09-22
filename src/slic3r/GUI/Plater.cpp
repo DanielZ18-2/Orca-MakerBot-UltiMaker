@@ -252,24 +252,37 @@ struct SmartExtruderSidebarItem
     std::string image_file;
 };
 
-// Smart extruder covers live under profiles/MakerBot/ ONLY, and on purpose.
-// The machine model cover a few thousand lines below is looked up per vendor
-// id, but an extruder is a part, not a machine: the same mk14 sits in a
-// MakerBot Method and in an UltiMaker Method. Resolving these per vendor
-// would mean keeping six byte-identical images under every vendor that ever
-// sold a Method. One set, one place -- do not add a vendor argument here
-// without deciding what to do with the duplicates it invites.
-static boost::filesystem::path makerbot_profile_asset_path(const std::string& filename)
+// Smart extruder covers live in the folder of the vendor that ships the
+// machine, and every vendor keeps its own copy. A vendor folder here is a
+// distribution unit, not just a place: PresetUpdater fetches config per
+// vendor (sync_vendor_config, "?vendor=" + id), Incompat::remove() deletes a
+// whole vendor DIRECTORY, and check_installed_vendor_profiles() removes a
+// vendor's directory outright when that vendor is not installed. A folder
+// that reaches into another vendor's folder is not a unit, so the same mk14
+// image sits under MakerBot and under UltiMaker -- both sell a Method, and
+// both have to be complete on their own.
+static boost::filesystem::path smart_extruder_asset_path(const std::string& vendor,
+                                                         const std::string& filename)
 {
     return boost::filesystem::absolute(
-        boost::filesystem::path(resources_dir()) / "profiles" / "MakerBot" / filename
+        boost::filesystem::path(resources_dir()) / "profiles" / vendor / filename
     ).make_preferred();
 }
 
-static std::string makerbot_profile_asset_or_placeholder(const std::string& filename)
+// vendor -> MakerBot -> placeholder. The fallback is deliberate: an imported
+// 3MF or a user copy may carry no printer_vendor, and an image from the wrong
+// vendor's folder is still the right picture of the same part.
+static std::string smart_extruder_asset_or_placeholder(const std::string& vendor,
+                                                       const std::string& filename)
 {
-    const boost::filesystem::path path = makerbot_profile_asset_path(filename);
-    return boost::filesystem::exists(path) ? path.string() : std::string("printer_placeholder");
+    if (! vendor.empty()) {
+        const boost::filesystem::path path = smart_extruder_asset_path(vendor, filename);
+        if (boost::filesystem::exists(path))
+            return path.string();
+    }
+    const boost::filesystem::path fallback = smart_extruder_asset_path("MakerBot", filename);
+    return boost::filesystem::exists(fallback) ? fallback.string()
+                                               : std::string("printer_placeholder");
 }
 
 // Safe string extraction – never throws on missing/wrong-type keys.
@@ -996,7 +1009,9 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
             combo->SetToolTip(items[size_t(sel)].label);
             if (image) {
                 image->SetBitmap(create_scaled_bitmap(
-                    makerbot_profile_asset_or_placeholder(items[size_t(sel)].image_file),
+                    smart_extruder_asset_or_placeholder(
+                        config_string_if_present(cfg, "printer_vendor"),
+                        items[size_t(sel)].image_file),
                     this->plater, PRINTER_THUMBNAIL_SIZE.GetHeight()));
                 image->SetToolTip(items[size_t(sel)].label);
             }
@@ -2323,7 +2338,9 @@ Sidebar::Sidebar(Plater *parent)
                 if (sel >= 0 && size_t(sel) < items.size()) {
                     const auto& item = items[size_t(sel)];
                     image->SetBitmap(create_scaled_bitmap(
-                        makerbot_profile_asset_or_placeholder(item.image_file),
+                        smart_extruder_asset_or_placeholder(
+                            config_string_if_present(cfg, "printer_vendor"),
+                            item.image_file),
                         this, PRINTER_THUMBNAIL_SIZE.GetHeight()));
                     image->SetToolTip(item.label);
                     combo->SetToolTip(item.label);
