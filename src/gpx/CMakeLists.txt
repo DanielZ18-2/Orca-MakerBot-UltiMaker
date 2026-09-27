@@ -56,11 +56,18 @@ target_compile_definitions(gpx PRIVATE
 # _stricmp. msvc/ supplies stand-ins for exactly what GPX uses, is searched
 # before the system headers, and exists only for MSVC - the vendored sources
 # stay unchanged. _USE_MATH_DEFINES makes <math.h> declare M_PI.
+#
+# strcasecmp/strncasecmp are mapped as plain compile definitions. A
+# force-included header was tried first, but the Visual Studio generator
+# drops a $<COMPILE_LANGUAGE:C> generator expression in compile options, the
+# header never reached the compiler (C4013), and the link failed on
+# strcasecmp. GPXConvert.cpp, the one C++ file in the target, uses neither name.
 if (MSVC)
     target_include_directories(gpx BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/msvc)
-    target_compile_definitions(gpx PRIVATE _USE_MATH_DEFINES)
-    target_compile_options(gpx PRIVATE
-        "$<$<COMPILE_LANGUAGE:C>:/FI${CMAKE_CURRENT_SOURCE_DIR}/msvc/gpx_msvc_compat.h>"
+    target_compile_definitions(gpx PRIVATE
+        _USE_MATH_DEFINES
+        strcasecmp=_stricmp
+        strncasecmp=_strnicmp
     )
 endif ()
 
