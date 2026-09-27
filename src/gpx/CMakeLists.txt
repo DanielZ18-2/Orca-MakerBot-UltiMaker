@@ -51,6 +51,19 @@ target_compile_definitions(gpx PRIVATE
     $<$<C_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
 )
 
+# Upstream GPX builds on Windows with MinGW, which ships POSIX headers. MSVC
+# has no <unistd.h>, <libgen.h> or <sys/param.h> and spells strcasecmp
+# _stricmp. msvc/ supplies stand-ins for exactly what GPX uses, is searched
+# before the system headers, and exists only for MSVC - the vendored sources
+# stay unchanged. _USE_MATH_DEFINES makes <math.h> declare M_PI.
+if (MSVC)
+    target_include_directories(gpx BEFORE PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/msvc)
+    target_compile_definitions(gpx PRIVATE _USE_MATH_DEFINES)
+    target_compile_options(gpx PRIVATE
+        "$<$<COMPILE_LANGUAGE:C>:/FI${CMAKE_CURRENT_SOURCE_DIR}/msvc/gpx_msvc_compat.h>"
+    )
+endif ()
+
 # Upstream is a 20k-line C code base that predates most of these warnings.
 # Silence them here rather than patching the vendored sources - the goal is to
 # keep the diff against upstream at zero apart from the config.h redirect.
