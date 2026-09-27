@@ -479,6 +479,10 @@ jobs:
 
       - name: Run external slicer regression tests
         if: runner.os == 'Linux' && inputs.arch != 'aarch64'
+        # The suite is cloned at its newest commit and tracks upstream main,
+        # not the OrcaSlicer release this fork is based on. It reports, but
+        # does not stop the packages from being uploaded.
+        continue-on-error: ${{ github.repository != 'OrcaSlicer/OrcaSlicer' }}
         timeout-minutes: 20
         shell: bash
         run: |
