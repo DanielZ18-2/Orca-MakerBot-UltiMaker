@@ -4,9 +4,14 @@ Stand 21.08.2026 · gilt für den Fork
 `DanielZ18-2/Orca-MakerBot-UltiMaker`, Zweig
 `feature/makerbot-ultimaker-native-support`
 
-> **Für den Pull Request:** Dieses Dokument muss vor der Einreichung ins
-> Englische übertragen werden. Upstream-Dokumentation unter `doc/` ist
-> durchgehend englisch.
+> **Überholt in Teilen.** Die aktuelle Fassung zum Stand von Test 2
+> (`v2026.9.0-test2`) ist die englische:
+> [Calibration_MakerBot_UltiMaker.md](Calibration_MakerBot_UltiMaker.md).
+> Abweichend von dieser deutschen Fassung vom 21.08. gilt: Pressure Advance ist auf
+> S8 und Factor 4+ wirksam und sonst ausgeblendet, die Method erhält
+> Beschleunigung über den Dateikopf, Kreisbögen brechen den Export bei
+> Birdwing und Method ab, und die UltiMaker 2-Familie ist bis auf Weiteres
+> nicht druckbar.
 
 ---
 

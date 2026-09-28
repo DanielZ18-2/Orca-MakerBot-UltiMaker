@@ -57,6 +57,10 @@ are the variants that come with their own profiles.
 
 ### Classic
 
+> **UltiMaker 2, 2+, 2 Go, 2 Extended and 2 Extended+: do not print with this build.**
+> It writes a `.ufp` file for them, which their firmware cannot read. The 2+ Connect and
+> the 3 / 3 Extended are not affected.
+
 | Model | Extruders | Build volume (mm) | Nozzles (mm) |
 |---|---|---|---|
 | Original | 1 | 210 × 210 × 205 | 0.25, 0.4, 0.6, 0.8 |
@@ -97,6 +101,9 @@ are the variants that come with their own profiles.
 
 The Method series is listed under both vendors, as it is in the vendors' own software.
 Both entries use the same Method firmware dialect and machine identifiers.
+
+How to calibrate filaments on these printers, and which calibrations have an effect on
+which of them: [Calibration_MakerBot_UltiMaker.md](Calibration_MakerBot_UltiMaker.md).
 
 See the [release notes](https://github.com/DanielZ18-2/Orca-MakerBot-UltiMaker/releases/tag/v2026.9.0-test2)
 for what changed since test 1 and the known limitations.
