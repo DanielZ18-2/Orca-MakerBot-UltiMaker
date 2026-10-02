@@ -30,11 +30,11 @@ PKG=~/Orca_Dev/build/package/resources/profiles
 SRC=~/Orca_Dev/resources/profiles
 
 for V in MakerBot UltiMaker; do
-  rm -rf "$SYS/$V"
+  rm -rf "${SYS:?}/${V:?}"
   cp -r "$SRC/$V" "$SYS/"
   cp "$SRC/$V.json" "$SYS/"
 
-  rm -rf "$PKG/$V"
+  rm -rf "${PKG:?}/${V:?}"
   cp -r "$SRC/$V" "$PKG/"
   cp "$SRC/$V.json" "$PKG/"
 done
